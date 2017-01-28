@@ -1,0 +1,381 @@
+{% extends "!page.html" %}
+
+
+{% block header %}
+<style>
+
+
+
+body {
+    background-color: black;
+}
+
+#XHEAD {
+    deadbackground-color: yellow !important;
+}
+.main_title{
+    margin: 10px;
+    font-size: 14pt;
+    vertical-align: top;
+    color: #999999;
+    font-family: Verdana;
+}
+
+.main_title a {
+    color: yellow;
+}
+
+.main_title small{
+    margin: 10px;
+    font-size: 8pt;
+    vertical-align: top;
+    color: #999999;
+    font-weight: normal
+    font-family: Verdana;
+}
+
+.externals_nav {
+    float: right;
+    margin-right: 20px;
+}
+.externals_nav li {
+    display: inline;
+    list-style-type: none;
+    margin: 2px;
+        sswidth: 50px;
+} 
+
+.externals_nav a {
+    text-decoration: none;
+    color: #999999;
+    padding: 5px;
+    font-family: Verdana;
+    font-size: 10pt;
+}
+.externals_nav a:hover {
+    background-color: #333333;
+    color: white;
+}
+    
+        
+.module_nav {
+    float: right;
+    ssmargin-right: 150px;
+
+    deadbackground-color: red !important;
+}
+.module_nav li {
+    display: inline;
+    list-style-type: none;
+    margin: 2px;
+    width: 50px;
+}
+.module_nav a {
+    text-decoration: none;
+    background-color: #222222;
+    color: #eeeeee;
+    border-radius: 5px;
+    padding: 5px;
+    border: 1px solid #efefef;
+    font-family: Verdana;
+    font-size: 10pt;
+    font-weight: bold;
+}
+.module_nav a:hover {
+    background-color: #333333;
+}
+.module_nav a.selected{
+    background-color: #999999;
+    color: black;
+}
+
+.related{
+    background-color: #222222 !important; 
+    margin-right: 10px;
+    
+}
+.related a {
+    color: #dddddd !important; 
+    text-shadow: none;
+        font-size: 10pt !important;
+}
+div.related ul {
+    padding-left: 300px;
+}
+.related ul li {
+    color: #FFFF00 !important;
+}
+
+.sphinxsidebarwrapper {
+    width: 300px;
+    background-color: #DDDDDD;
+}
+.sphinxsidebarwrapper h3  {
+    border-bottom: 1px solid white;
+}
+.sphinxsidebarwrapper h3 a {
+    font-family: Verdana;
+}
+div.bodywrapper {
+    margin-left: 300px;
+}
+.sphinxsidebar ul {
+    margin-left: 0;
+}
+.sphinxsidebar ul li{
+    sborder-top: 1px solid #dddddd !important;
+    ssbackground-color: white;
+    padding: 2px !important;
+}
+.sphinxsidebar ul li a{
+    font-weight: bold;
+    font-size: 9pt;
+    color: #333333;
+    font-family: Verdana;
+}
+.sphinxsidebar ul ul{
+    width: 250px;
+}
+.sphinxsidebar ul ul li{
+    border-top: none !important;
+}
+.sphinxsidebar ul ul li a{
+    font-weight: normal;
+    font-size: 9pt;
+    font-family: Verdana;
+}
+
+
+
+/**************************************************/
+/* Main */
+/**************************************************/
+div.body {
+    font-size: 10pt;
+}
+
+div.body h1{
+    border-radius: 10px !important;
+    padding: 5px 10px;
+    font-size: 20pt;
+    background-color: #444444 !important;
+    color: #dddddd;
+   font-family: Verdana;
+}
+
+
+
+div.body h2{
+
+    border-top: 2px solid #999999;
+    border-right: 2px solid #999999;
+    border-top-right-radius: 10px !important;
+    deadborder-bottom-right-radius: 10px !important;
+    background-color: #bbbbbb !important;
+    font-size: 12pt;
+    font-family: monospace;
+
+    padding: 5px 10px;
+}
+div.body h3{
+    border-top: 2px solid #dddddd;
+    border-right: 2px solid #aaaaaa;
+    border-top-right-radius: 10px !important;
+    deadborder-bottom-right-radius: 10px !important;
+    background-color: #dddddd !important;
+    font-size: 10pt;
+    font-family: monospace;
+    padding: 5px 10px;
+}
+
+div.body p {
+    padding-left: 30px;
+    padding-right: 30px;
+    max-width: 600px;
+}
+div.body ul, ol {
+    padding-left: 50px;
+    padding-right: 50px;
+     max-width: 600px;
+}
+div.body li p {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+div.body ul, ul {
+     padding-left: 30px;
+    padding-right: 30px;
+}
+
+.admonition {
+    margin-left: 60px;
+    margin-right: 60px;
+}
+
+
+.field-name {
+    width: 80px;
+    text-align: right;
+}
+
+pre {
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    background-color: #eeeeee;
+    margin-left: 30px;
+    margin-right: 30px;
+    font-size: 9pt;
+    padding: 4px;
+}
+
+table.docutils {
+    box-shadow: 9px 10px 34px -16px rgba(0,0,0,0.75);
+}
+table.docutils thead {
+    background-color: #dddddd;
+}
+table.docutils th {
+    padding: 5px;
+}
+table.docutils td {
+    padding: 2px;
+}
+
+table.field-list{
+    box-shadow: none;
+    background-color: #eeeeee;
+}
+
+table.field-list tr{
+    border-bottom: 1px solid #cccccc;
+}
+table.field-list th {
+    padding: 5px;
+    width: 100px;
+    border-right: 1px solid #cccccc;
+    font-size: 9pt;
+    deadbackground-color: red;
+    color: #888888;
+}
+table.field-list td {
+    padding: 5px;
+    border-left: 1px solid #cccccc;
+}
+
+dl.class p {
+    padding-left: 5px;
+}
+
+.ags-csv-rule {
+    background-color: #00CCCC;
+    color: black;
+    padding: 3px 6px 3px 6px;
+    border-radius: 5px;
+    font-size: 8pt;
+    border: 1px solid black;
+}
+.ags-data-rule {
+    background-color:#FFFF00;
+    color: black;
+    padding: 3px 6px 3px 6px;
+    border-radius: 5px;
+    font-size: 8pt;
+    border: 1px solid black;
+}
+
+.viewcode-link {
+    font-size: 8pt;
+}
+
+/**************************************************/
+/* API stuff */
+/**************************************************/
+/* a whole class container */
+dl.class {
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #efefef;
+    box-shadow: 2px 2px 5px 0 #822775;
+}
+/* class Name */
+dl.class dt .descname{
+	color: #822775;
+	font-size: 13pt;
+	font-family: monospace;
+}
+
+a.reference code.py-class span.pre {
+    color: #822775 !important;
+    font-family: monospace;
+}
+
+
+/* class attribute */
+dl.attribute dt .descname {
+    color: #AD833E;
+    font-size: 11pt;
+    font-family: monospace;
+}
+
+
+/* class method  */
+dl.method dt .descname {
+    color: #1B68B8;
+	font-size: 11pt;
+	font-family: monospace;
+
+}
+
+/* a whole function container */
+dl.function {
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #efefef;
+    box-shadow: 2px 2px 5px 0 #298815;
+}
+/* function */
+dl.function dt .descname {
+    color: #298815 !important;
+}
+
+a.reference code.py-func span.pre {
+    color: #298815 !important;
+    font-family: monospace;
+}
+
+/* glossary */
+dl.glossary dt {
+    background-color: #eeeeee;
+    font-family: monospace;
+    border-top: 1px solid #dddddd;
+    border-right: 1px solid #dddddd;
+    border-top-right-radius: 20px;
+    padding: 3px 5px;
+
+}
+dl.glossary dd {
+    border-right: 1px solid #dddddd;
+    margin-bottom: 10px;
+}
+</style>
+    
+    <div id="XHEAD">
+
+  
+   <ul class="externals_nav">
+    <li><a href="{{INFO.www}}" target="github">Website</a></li>
+    <li><a href="{{INFO.home}}" target="github">Project</a></li>
+    <li><a href="{{INFO.issues}}" target="issues">Issues</a></li>
+  </ul>
+  
+	{{foo}}
+ 
+  
+  <h1 class="main_title"><a href="/">{{INFO.short}}</a> - Developer Docs <small>v{{INFO.version}}</small></h1>
+  </div>
+  {{ super() }}
+{% endblock %}
+
+
