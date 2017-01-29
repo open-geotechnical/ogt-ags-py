@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import os
 import glob
@@ -214,9 +215,17 @@ def read_file(file_path):
         return f.read(), None
     return None, "Error reading '%' " % file_path
 
+def user_dir():
+    return os.path.expanduser("~")
+
+def ogt_dir():
+    return os.path.join(user_dir(), "open-geotechnical")
 
 def sanity_check():
     """Check env is sane with ags-data-dict"""
-    home_dir = os.path.expanduser("~")
+    if not os.path.exists(ogt_dir()):
+        return False, "No data dict"
     print "home_dir=", home_dir
+    return True, foo
+
 

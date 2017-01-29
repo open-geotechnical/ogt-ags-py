@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
+import sys
 import argparse
 
 from ogt import FORMATS
@@ -70,6 +70,7 @@ if __name__ == "__main__":
     ok, mess =  ogt.utils.sanity_check()
     if not ok:
         print mess
+        print "please run ogt-cli setup to downlaod data dict"
         sys.exit(0)
 
     if args.command == "serve":
