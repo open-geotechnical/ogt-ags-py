@@ -1,10 +1,19 @@
 ogt-ags-py
 ============================
 
-Experimental idea for a lib,
-for interpolations with ags data format
+Experimental library and tools for validating and converting ags dataformat files.
 
-In Python
+Written in Python
 
+TODO
+===========
+
+- [x] convert to json - needs testing
+- [ ] convert to geojson - started
+- [x] convert to yaml - needs testing
+- [ ] convert to xlsx (Excel) - started 
+- [ ] convert to ods (LibreOffice) 
+- [ ] validator - started
+- [ ] gui - started
 
 
