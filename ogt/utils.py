@@ -6,6 +6,8 @@ import glob
 import json
 import urllib2
 
+import ogt.ags4
+
 from . import EXAMPLES_DIR, HAVE_YAML
 
 def to_yaml(data):
@@ -227,12 +229,17 @@ def user_dir():
 def ogt_dir():
     return os.path.join(user_dir(), "open-geotechnical")
 
-def sanity_check():
+def initialise():
     """Check env is sane with ags-data-dict"""
     if not os.path.exists(ogt_dir()):
         return False, "No data dict"
     if not os.path.exists(ags4_file()):
         return False, "Missing ags4 data dict"
+
+    ogt.ags4.AGS4_DD, err = read_json_file(ags4_file())
+    if err:
+        return False, err
+    ogt.ags4.AGS4_DD.keys()
     return True, None
 
 def ags4_file():

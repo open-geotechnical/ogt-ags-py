@@ -8,6 +8,9 @@ import ogt.ogt_doc
 #from ogt import ogt_group
 from ogt import utils, EXAMPLES_DIR
 
+AGS4_DD = None
+"""This dict contains all the ags4 data, loaded in utils.initialise()"""
+
 
 class AGS4_DESCRIPTOR:
     """Constants defining the data descriptors (See :ref:`ags4_rule_3`)"""
@@ -98,8 +101,7 @@ def all():
         - A `dict` with the data if succesful, else `None`
         - An Error message `str` if error, otherwise `None`
     """
-    print "all()"
-    return utils.read_json_file(AGS4_ALL_FILE)
+    return AGS4_DD
 
 
 def groups():
@@ -111,7 +113,7 @@ def groups():
         - A `dict` with the data id succesful, else `None`
         - An Error message `str` if error, otherwise `None`
     """
-    return utils.read_json_file(AGS4_GROUPS_FILE)
+    return AGS4_DD.get("groups")
 
 def abbrs():
     """Return all :term:`abbreviations` in the ags4 data dict
@@ -122,7 +124,7 @@ def abbrs():
         - A `dict` with the data id succesful, else `None`
         - An Error message `str` if error, otherwise `None`
     """
-    return utils.read_json_file(AGS4_ABBRS_FILE)
+    return AGS4_DD.get("groups")
 
 
 

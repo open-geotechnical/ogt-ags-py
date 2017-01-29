@@ -79,8 +79,8 @@ if __name__ == "__main__":
             print "Update successful"
         sys.exit(0)
 
-    ## Do sanity check
-    ok, mess =  ogt.utils.sanity_check()
+    ## Load agsdata dict etc
+    ok, mess =  ogt.utils.initialise()
     if not ok:
         print mess
         print "Have u run `ogt-cli update` to download data dict"
