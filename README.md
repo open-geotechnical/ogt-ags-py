@@ -5,6 +5,18 @@ Experimental library and tools for validating and converting ags dataformat file
 
 Written in Python
 
+Command line
+===========================
+```bash
+# convert ags file to json
+./ogt-cli.py convert -b -o -f json ./my_project.ags
+
+# convert ags file to yaml
+./ogt-cli.py convert -b -o -f  yaml ./my_project.ags
+
+```
+
+
 TODO
 ===========
 
