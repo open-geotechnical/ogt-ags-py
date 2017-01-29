@@ -4,7 +4,7 @@ import os
 import glob
 import glob
 import json
-import csv
+import urllib2
 
 from . import EXAMPLES_DIR, HAVE_YAML
 
@@ -215,6 +215,12 @@ def read_file(file_path):
         return f.read(), None
     return None, "Error reading '%' " % file_path
 
+def write_file(file_path, contents):
+    with open(file_path, "w") as f:
+        f.write(contents)
+        return None
+    return "OOPS in write_file()"
+
 def user_dir():
     return os.path.expanduser("~")
 
@@ -225,7 +231,31 @@ def sanity_check():
     """Check env is sane with ags-data-dict"""
     if not os.path.exists(ogt_dir()):
         return False, "No data dict"
-    print "home_dir=", home_dir
-    return True, foo
+    if not os.path.exists(ags4_file()):
+        return False, "Missing ags4 data dict"
+    return True, None
+
+def ags4_file():
+    return os.path.join(ogt_dir(), "ags4.min.json")
 
 
+def update():
+    if not os.path.exists(ogt_dir()):
+        os.makedirs(ogt_dir())
+
+    u = "http://agsplay.daffodil.uk.com/ags4.min.json"
+    print "Requesting: %s" % u
+    try:
+        response = urllib2.urlopen(u)
+    except Exception as e:
+        return e
+
+    txt = response.read()
+
+    ## check its ok
+    try:
+        json.loads(txt)
+    except Exception as e:
+        return e
+    write_file(ags4_file(), txt)
+    return None

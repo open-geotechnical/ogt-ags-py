@@ -54,6 +54,9 @@ p_server.add_argument("-a", dest="address", help="eg localhost, 0.0.0.0,  123.12
 p_server.add_argument("-p", dest="port", help="Port No, default: 1377", default=1377)
 p_server.add_argument("-d", dest="debug", help="Dev mode shows debug and restart on files changed", action="store_true",  default=False)
 
+#=======================
+## Update
+p_update = sub_parsers.add_parser("update", description="Setup and update")
 
 
 #=======================
@@ -67,10 +70,20 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    ## Update comes first
+    if args.command == "update":
+        err = ogt.utils.update()
+        if err:
+            print "Update failed: %s" % err
+        else:
+            print "Update successful"
+        sys.exit(0)
+
+    ## Do sanity check
     ok, mess =  ogt.utils.sanity_check()
     if not ok:
         print mess
-        print "please run ogt-cli setup to downlaod data dict"
+        print "Have u run `ogt-cli update` to download data dict"
         sys.exit(0)
 
     if args.command == "serve":
