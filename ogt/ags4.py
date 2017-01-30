@@ -5,8 +5,8 @@ from operator import itemgetter
 
 
 import ogt.ogt_doc
-#from ogt import ogt_group
-from ogt import utils, EXAMPLES_DIR
+import ogt.utils
+#from ogt import utils, EXAMPLES_DIR
 
 AGS4_DD = None
 """This dict contains all the ags4 data, loaded in utils.initialise()"""
@@ -95,11 +95,8 @@ def doc_to_ags4_csv(doc):
 def all():
     """Return everything in the ags4 data dict
 
-    :rtype: tuple
-    :return:
-
-        - A `dict` with the data if succesful, else `None`
-        - An Error message `str` if error, otherwise `None`
+    :rtype: dict
+    :return:  the data if succesful, else `None`
     """
     return AGS4_DD
 
@@ -107,24 +104,31 @@ def all():
 def groups():
     """Return all :term:`GROUP` s in the ags4 data dict
 
-    :rtype: tuple
-    :return:
-
-        - A `dict` with the data id succesful, else `None`
-        - An Error message `str` if error, otherwise `None`
+    :rtype: dict
+    :return:  the data if succesful, else `None`
     """
     return AGS4_DD.get("groups")
+
+def group(group_code):
+    """Return all :term:`GROUP` s in the ags4 data dict
+
+    :param group_code: The four character group code to initialize with
+    :type group_code: str
+    :rtype: dict
+    :return:  the data if successful, else `None`
+    """
+    if AGS4_DD == None:
+        return None
+    return AGS4_DD.get("groups").get(group_code)
+
 
 def abbrs():
     """Return all :term:`abbreviations` in the ags4 data dict
 
-    :rtype: tuple
-    :return:
-
-        - A `dict` with the data id succesful, else `None`
-        - An Error message `str` if error, otherwise `None`
+    :rtype: dict
+    :return:  the data if succesful, else `None`
     """
-    return AGS4_DD.get("groups")
+    return AGS4_DD.get("abbrs")
 
 
 
@@ -132,29 +136,20 @@ def abbrs():
 class AGS4GroupDataDict:
 
     """Data dictionary of an ags :term:`GROUP`, reads the :ref:`json` definiton file"""
-    def __init__(self, group_code, auto_load=True):
+    def __init__(self, group_code):
         """
         :param group_code: The four character group code
         :type group_code: str
         """
 
         self.group_code = group_code
-        #self.group_description = None
 
         self.raw_dict = None
-        self.dd_loaded = False
-        if auto_load:
-            self.load_def()
+        self.load_def()
 
     def load_def(self):
         """Loads the definition file"""
-        try:
-            file_path = group_file_name( self.group_code )
-            self.raw_dict, err = utils.read_json_file(file_path)
-            self.dd_loaded = True
-            return None
-        except Exception as e:
-            return str(e)
+        self.raw_dict = group(self.group_code)
 
 
 
@@ -276,9 +271,7 @@ def run_tests(rules):
         - A list of ags errors
         - A list of system errors
     """
-    ## get files
-    tests_dir = os.path.join(EXAMPLES_DIR, "ags4_tests")
-    files = os.listdir(tests_dir)
+
 
     files, err = utils.list_examples("ags4_tests")
     if err:
@@ -317,7 +310,7 @@ def validate_ags4_file(file_path, rules=[]):
     #print "rules=", rules
 
     doc, err = ogt.ogt_doc.create_doc_from_ags4_file(file_path)
-    contents, err = utils.read_file(file_path)
+    contents, err = ogt.utils.read_file(file_path)
     if err:
         return None, err
 

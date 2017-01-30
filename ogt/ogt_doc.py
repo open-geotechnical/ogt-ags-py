@@ -13,12 +13,7 @@ from . import FORMATS
 #from ogt.ags4 import AGS4_DESCRIPTOR
 import ogt.ags4
 import ogt.ogt_group
-
-#from ogt import ags4
-
-#from ogt import ogt_group
-
-from ogt import utils
+import ogt.utils
 
 
 class OGTDocument:
@@ -329,7 +324,7 @@ class OGTDocument:
                 - An `error` string is error occured, else `None`
         """
 
-        return utils.to_json( self.to_dict(include_source=include_source,
+        return ogt.utils.to_json( self.to_dict(include_source=include_source,
                                              include_stats=include_stats,
                                              edit_mode=edit_mode),
                               minify=minify)
@@ -349,7 +344,7 @@ class OGTDocument:
                 - `None` if error else a `str` with :ref:`yaml` encoded data
                 - An `error` string is error occured, else `None`
         """
-        return utils.to_yaml( self.to_dict(include_source=include_source,
+        return ogt.utils.to_yaml( self.to_dict(include_source=include_source,
                                            include_stats=include_stats,
                                            edit_mode=edit_mode) )
 
@@ -378,8 +373,8 @@ class OGTDocument:
         ## BNG British National grid
         elif "LOCA_NATE" in loca.headings and "LOCA_NATN" in loca.headings:
             for rec in loca.data:
-                east = utils.to_int(rec.get("LOCA_NATE"))
-                north = utils.to_int(rec.get("LOCA_NATN"))
+                east = ogt.utils.to_int(rec.get("LOCA_NATE"))
+                north = ogt.utils.to_int(rec.get("LOCA_NATN"))
                 if east and north:
                     lat, lon = bng_to_latlon.OSGB36toWGS84(east, north)
                     features.append(make_feature(rec, lat, lon))
@@ -388,8 +383,8 @@ class OGTDocument:
         if len(features) > 0:
             f = geojson.FeatureCollection(features)
             print f
-            print utils.to_json(f, minify=minify)
-            return utils.to_json(f, minify=minify)
+            print ogt.utils.to_json(f, minify=minify)
+            return ogt.utils.to_json(f, minify=minify)
         return None, None
 
     def write_excel(self):
@@ -510,15 +505,10 @@ class OGTDocument:
 
 
         ## Unused Groups
-        all_g, err = ogt.ags4.groups()
+        all_g = ogt.ags4.groups()
         dic['unused_groups'] = None
-        if err != None:
-            pass
-        else:
-            ags_groups = all_g.keys()
-            dic['unused_groups'] = sorted(list( set(ags_groups) - set(self.groups.keys())))
-
-
+        ags_groups = all_g.keys()
+        dic['unused_groups'] = sorted(list( set(ags_groups) - set(self.groups.keys())))
 
         return dic
 
@@ -539,7 +529,7 @@ def create_doc_from_json_file( json_file_path):
         - An :class:`~ogt.ogt_doc.OGTDocument` object on success, else `None`
         - An `Error` message if error, otherwise `None`
     """
-    data, err = utils.read_json_file(json_file_path)
+    data, err = ogt.utils.read_json_file(json_file_path)
     if err:
         return None, err
 
