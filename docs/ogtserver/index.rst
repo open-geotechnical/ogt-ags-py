@@ -1,5 +1,5 @@
 #############################
-ogtserver:  www server API
+ogtserver:  HTTP Server API
 #############################
 
 **Index**

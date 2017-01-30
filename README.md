@@ -1,9 +1,10 @@
 ogt-ags-py
 ============================
 
-Experimental library and tools for validating and converting ags dataformat files.
+Experimental library and tools for validating and converting ags dataformat files, written in Python
 
-Written in Python
+- Docs at https://open-geotechnical.github.io/ogt-ags-py/
+- Code at https://github.com/open-geotechnical/ogt-ags-py
 
 Command line
 ===========================
@@ -28,5 +29,6 @@ TODO
 - [ ] validator - started
 - [ ] gui - started
 - [ ] server 
+- [ ] packaging
 
 

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     
+     height="100" width="100">
+    
+    <rect x="0" y="0" height="100" width="100"
+          style="stroke:None; fill: #FFD7FF;"/>
+    
+    
+    <text x="50" y="80" style="
+          text-anchor: middle; 
+          font-family:Verdana;
+          font-size: 90;
+          fill: #972397; 
+          stroke: none; 
+          ">ID</text> 
+    
+</svg>
+    

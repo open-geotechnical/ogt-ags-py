@@ -405,7 +405,7 @@ def report_to_string(report):
     return ret
 
 def rule_1(doc):
-    """ Validate :ref:`ags4_rule_1`
+    """ Validate :ref:`www:ags4_rule_1`
 
     :param raw_str:
     :rtype: tuple
@@ -440,7 +440,7 @@ def rule_1(doc):
     return warnings, errors
 
 def rule_2(doc):
-    """ Validate :ref:`ags4_rule_2`
+    """ Validate :ref:`www:ags4_rule_2`
 
     :param doc:
     :type doc: :class:`~ogt.ogt_doc.OGTDocument`
@@ -517,7 +517,7 @@ def rule_2(doc):
 
 
 def rule_3(doc):
-    """Validate  :ref:`ags4_rule_3`
+    """Validate  :ref:`www:ags4_rule_3`
 
     :param doc:
     :type doc: :class:`~ogt.ogt_doc.OGTDocument`
@@ -545,7 +545,7 @@ def rule_3(doc):
 
 
 def rule_4(doc):
-    """Validate  :ref:`ags4_rule_4`
+    """Validate  :ref:`www:ags4_rule_4`
 
     :param doc:
     :type doc: :class:`~ogt.ogt_doc.OGTDocument`
@@ -595,7 +595,7 @@ def rule_4(doc):
     return problems, errors
 
 def rule_5(doc):
-    """Validate  :ref:`ags4_rule_5`
+    """Validate  :ref:`www:ags4_rule_5`
 
     .. todo:: Rule 5 validation
 
@@ -614,7 +614,7 @@ def rule_5(doc):
     return problems, errors
 
 def rule_6(doc):
-    """Validate  :ref:`ags4_rule_6`
+    """Validate  :ref:`www:ags4_rule_6`
 
     .. todo:: Rule 6 validation
 

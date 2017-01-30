@@ -22,7 +22,10 @@ body {
 }
 
 .main_title a {
-    color: yellow;
+    color: #F29F00;
+}
+.main_title a:hover {
+    text-decoration: none;
 }
 
 .main_title small{
@@ -36,7 +39,7 @@ body {
 
 .externals_nav {
     float: right;
-    margin-right: 20px;
+    margin-right: 100px;
 }
 .externals_nav li {
     display: inline;
@@ -368,7 +371,7 @@ dl.glossary dd {
 
   
    <ul class="externals_nav">
-    <li><a href="{{INFO.www}}" target="github">Website</a></li>
+    <li><a href="{{INFO.www}}" target="github">Main Website</a></li>
     <li><a href="{{INFO.home}}" target="github">Project</a></li>
     <li><a href="{{INFO.issues}}" target="issues">Issues</a></li>
   </ul>
@@ -376,7 +379,7 @@ dl.glossary dd {
 	{{foo}}
  
   
-  <h1 class="main_title"><a href="/">{{INFO.short}}</a> - Developer Docs <small>v{{INFO.version}}</small></h1>
+  <h1 class="main_title"><a href="/ogt-ags-py"><img src="/_static/logo-small.png"> {{INFO.short}}</a> - Developer Docs <small>v{{INFO.version}}</small></h1>
   </div>
   {{ super() }}
 {% endblock %}

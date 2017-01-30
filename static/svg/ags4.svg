@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     
+     height="100" width="100">
+    
+    <rect x="0" y="0" height="100" width="100"
+          style="stroke:None; fill: #ffffff;"/>
+    
+    <text x="50" y="30" style="
+          text-anchor: middle; 
+          font-family:Verdana;
+          font-size: 40;
+          fill: #178950; 
+          stroke: none; 
+          ">AGS</text>
+    
+    <text x="50" y="98" style="
+          text-anchor: middle; 
+          font-family:Verdana;
+          font-size: 90;
+          fill: #000000; 
+          stroke: none; 
+          ">4</text> 
+    
+</svg>
