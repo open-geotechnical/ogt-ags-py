@@ -83,7 +83,7 @@ class OGTGroup:
 
         if self._headings_sort == None:
             dd = self.data_dict()
-            print "dd=", dd, self.headings
+            #print "dd=", dd, self.headings
             if dd == None:
                 return []
             self._headings_sort = []

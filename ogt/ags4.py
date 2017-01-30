@@ -273,7 +273,7 @@ def run_tests(rules):
     """
 
 
-    files, err = utils.list_examples("ags4_tests")
+    files, err = ogt.utils.list_examples("ags4_tests")
     if err:
         return None, err
 

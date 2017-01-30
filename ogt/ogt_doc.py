@@ -259,7 +259,7 @@ class OGTDocument:
                 # write out and done
                 zipee.close()
 
-                siz = utils.file_size(target_file_path, human=True)
+                siz = ogt.utils.file_size(target_file_path, human=True)
                 return "Wrote: %s `%s`" % (siz, target_file_path), None
 
             except Exception as e:
@@ -272,7 +272,7 @@ class OGTDocument:
                 with open(target_file_path, "w") as f:
                     f.write(blob)
                     f.close()
-                siz = utils.file_size(target_file_path, human=True)
+                siz = ogt.utils.file_size(target_file_path, human=True)
                 return "Wrote: %s `%s`" % (siz, target_file_path), None
 
             except Exception as e:
