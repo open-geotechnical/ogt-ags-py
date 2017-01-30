@@ -8,7 +8,7 @@ import os
 
 PROJECT_VERSION = "0.0.1"
 
-PROJECT_SHORT = "ogt-py"
+PROJECT_SHORT = "ogt-ags-py"
 PROJECT_LONG = "Open GeoTechnical AGS Tools"
 
 PROJECT_DESCRIPTION = "Lib and tools for playing geotechnical stuff"
@@ -18,7 +18,7 @@ PROJECT_DOMAIN = "ogt.daffodil.uk.com"
 PROJECT_WWW = "http://open-geotechnical.github.io/"
 PROJECT_HOME = "https://github.com/open-geotechnical/ogt-ags-py"
 PROJECT_ISSUES = "https://github.com/open-geotechnical/ogt-ags-py/issues"
-PROJECT_API_DOCS = "http://open-geotechnical.github.io/ogt-ags-py/ogt"
+PROJECT_API_DOCS = "http://open-geotechnical.github.io/ogt-ags-py"
 
 
 def get_project_info():
