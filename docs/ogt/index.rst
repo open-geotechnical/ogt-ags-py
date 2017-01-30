@@ -2,7 +2,58 @@
 ogt:  Base API
 #####################
 
-The base API deals with:
+The base API converts ags4 files into various formats, and provided validation (WIP) to the data dictionary
+
+
+.. graphviz::
+
+   digraph {
+      Project [shape=box]
+      Document [label="Document.ags"]
+      Group1 [label="Group"]
+      Group2 [label="Group"]
+
+      Head11 [label="Heading", color=blue]
+      Head12 [label="Heading", color=blue]
+
+      Head21 [label="Heading", color=blue]
+      Head22 [label="Heading", color=blue]
+
+      dd1 [label="Data Dict", color=green]
+      dd2 [label="Data Dict", color=green]
+
+      Files [label="Files"]
+      f1 [label="File", color=blue]
+      f2 [label="File", color=blue]
+
+      Agsdd [label="Ags Data Dict", color=green]
+
+      Project -> Files
+
+      Files -> f1
+      Files -> f2
+
+      Project -> Document
+
+
+
+      Document -> Group1
+      Document -> Group2
+
+
+      Group1 -> Head11
+      Group1 -> Head12
+      Group2 -> Head21
+      Group2 -> Head22
+
+      Group1 -> dd1
+      Group2 -> dd2
+
+      Agsdd -> dd1
+      Agsdd -> dd2
+   }
+
+
 
 - **Project**
     - An AGS zip file and its images, media etc (coming soon)
@@ -25,9 +76,8 @@ The base API deals with:
     - see :mod:`ogt.utils`
     - the :ref:`json` functions, eg :func:`~ogt.utils.to_json`, :func:`~ogt.utils.read_json_file`
 
-**Index**
-
-
+Index
+-------------
 .. toctree::
     :maxdepth: 3
 

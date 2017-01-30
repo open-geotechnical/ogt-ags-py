@@ -63,9 +63,10 @@ extensions = [
     #'sphinx.ext.coverage',
     #'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
-    #'sphinx.ext.githubpages',
+    'sphinx.ext.graphviz',
     'autoprogram',
-    #'ogt_ext',
+    #'sphinx.ext.inheritance_diagram',
+        #'ogt_ext',
 ]
 
 ## Were autodoc so set stuff aphabetically
