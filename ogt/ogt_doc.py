@@ -6,35 +6,57 @@ import StringIO
 import hashlib
 import zipfile
 
-import geojson
-import bng_to_latlon # https://github.com/fmalina/bng_latlon
+from . import HAVE_GEOJSON
+if HAVE_GEOJSON:
+    import geojson
+    import bng_to_latlon # https://github.com/fmalina/bng_latlon
 
 from . import FORMATS
-#from ogt.ags4 import AGS4_DESCRIPTOR
 import ogt.ags4
 import ogt.ogt_group
 import ogt.utils
 
 
 class OGTDocument:
-    """Represents and `.ags` file"""
+    """Class :class:`~ogt.ogt_doc.OGTDocument` represents an ags file and
+    contains the groups (:class:`~ogt.ogt_group.OGTGroup`).
+
+    .. code-block:: python
+
+        from ogt import ogt_doc
+
+        doc = ogt_doc.OGTDocument()
+        err = doc.load_ags4_file("/path/to/my.ags")
+        if err:
+            print err
+        else:
+            # print the groups index
+            print doc.groups_index()
+
+            # Headings in the SAMP group
+            print doc.group("SAMP").headings()
+
+            # Return a list of units used in the document
+            print doc.units()
+
+    """
 
     def __init__(self):
 
         self.source_file_path = None
-        """Path to original source file, if any"""
+        """Full path to original source file, if any"""
 
         self.source = ""
-        """The original source string"""
+        """The original source files contents as string"""
 
         self.groups = {}
-        """A `dict` with group code to :class:`~ogt.ogt_group.OGTGroup` instances"""
+        """A `dict` of group code to :class:`~ogt.ogt_group.OGTGroup` instances"""
 
         self.lines = []
-        """A list of original source lines (line 1 = idx zero)"""
+        """A `list` of strings with original source lines"""
 
         self.csv_rows = []
-        """A list of csv rows"""
+        """A `list` of a list of csv rows"""
 
         self.error_rows = {}
         """A `list` of rows with errors"""
@@ -55,27 +77,28 @@ class OGTDocument:
         return hasher.hexdigest()
 
     def groups_sort(self):
-        """Return a list of group_codes in preffered order"""
+        """Return a list of group_codes in preferred order (see :func:`~ogt.ogt_group.groups_sort`)"""
         return ogt.ogt_group.groups_sort(self.groups.keys())
 
 
     def groups_count(self):
-        """Return no of groups in document
+        """Returns no of groups in document
 
         :rtype: int
-        :return: No of groups
+        :return: Groups count
         """
         return len(self.groups.keys())
 
     def append_group(self, grp):
-        """
+        """Appends an :class;`~ogt.ogt_group.OGTGroup` instance to this document
+
         :param grp: The group object to add
         :type grp: ~ogt.ogt_group.OGTGroup
         :return: An `Error` message is group exists, else `None`
         """
         if grp.group_code in  self.groups:
             return "Error: Group already exists in doc"
-        grp.parentDoc = self
+        grp.docParent = self
         #self.groups_sort.append(grp.group_code)
         self.groups[grp.group_code] = grp
         return None
@@ -150,7 +173,7 @@ class OGTDocument:
         :param include_source: If `True`, the original ags source is also included.
         :type include_source: bool
 
-        :param zip: If `True`, the orgiginal and converted file are packaged in a zip
+        :param zip: If `True`, the original and converted file are packaged in a zip
         :type zip: bool
 
         :param minify: If `True`, all white space is removed from output file
@@ -512,6 +535,181 @@ class OGTDocument:
 
         return dic
 
+
+
+    def load_ags4_file( self, ags4_file_path):
+        """Loads document from an :term:`ags4` formatted file
+
+        :param ags4_file_path: absolute or relative path to file, will be at source_file_path
+        :type ags4_file_path: str
+        :rtype: str
+        :return: A String if an error else None
+
+        .. todo:: Ensure we can read ascii
+        """
+        try:
+            # TODO ensure asccii ??
+            self.source_file_path = ags4_file_path
+            with open(ags4_file_path, "r") as f:
+                err =  self.load_ags4_string(  f.read() )
+                if err:
+                    return err
+                return None
+
+        except IOError as e:
+            return None,  e
+
+        # should never happen
+        return  "WTF in `load_ags4_file`"
+
+
+
+    def load_ags4_string(self, ags4_str):
+        """Load  document from an :term:`ags4` formatted string
+
+        Hackers guide
+        This is a tthree step parsing process.
+        -
+
+
+        :param ags4_str: string to load
+        :type ags4_str: str
+        :rtype: str
+        :return: An `Error` message if string not loaded, else `None`
+        """
+
+
+
+
+        ## Copy source as a string into mem here
+        self.source = ags4_str
+
+        # first:
+        #  - split ags_string into lines
+        #  - and parse each line into csv
+        #  - and add to the doc
+        for lidx, line in enumerate(self.source.split("\n")):
+
+            # removing and trailing whitespace eg \r
+            # were on nix land, so assemble with CRLF when dumping to ags
+            stripped = line.strip()
+
+            if stripped == "":
+                # blank line
+                self.lines.append([])
+                self.csv_rows.append([])
+                continue
+
+            # decode the csv line
+            reader = csv.reader( StringIO.StringIO(stripped) )
+            row =  reader.next() # first row of reader
+
+            self.lines.append(line)
+            self.csv_rows.append(row)
+
+        # second
+        # walk the decoded rows, and recognise the groups
+        # me mark the start_index, and end index of group
+        curr_grp = None
+        for lidx, row in enumerate(self.csv_rows):
+
+            line_no = lidx + 1
+            lenny = len(row)
+            #print row
+            if lenny == 0:
+                # blank row so reset groups
+                if curr_grp:
+                    curr_grp.csv_end_index = lidx
+                    #print "idx=", curr_grp.csv_start_index, curr_grp.csv_end_index
+                    #print curr_grp.csv_rows()
+                curr_grp = None
+                continue
+
+            if lenny < 2:
+                # min of two items, so add to errors
+                self.error_rows[lidx + 1] = row
+
+            else:
+                typ = row[0] # first item is row type
+                #xrow = row[1:] # row without data descriptor
+
+                if typ == ogt.ags4.AGS4_DESCRIPTOR.group:
+
+                    ## we got a new group
+                    curr_grp = ogt.ogt_group.OGTGroup(row[1])
+                    #curr_grp.csv_rows.append(row)
+                    curr_grp.csv_start_index = lidx
+                    self.append_group(curr_grp)
+
+                else:
+                    if curr_grp == None:
+                        self.error_rows[line_no] = row
+                    #else:
+                    #   curr_grp.csv_rows.append(row)
+        # thirdly
+        # - we parse each group's csv rows into the parts
+        for group_code, grp in self.groups.items():
+            #print group_code, "<<<<<<<<<"
+            #print grp.csv_rows()
+
+            for idx, row in enumerate(grp.csv_rows()):
+                typ = row[0]
+                xrow = row[1:] # row without data descriptor
+
+                if typ == ogt.ags4.AGS4_DESCRIPTOR.group:
+                    pass
+
+                elif typ == ogt.ags4.AGS4_DESCRIPTOR.heading:
+                    grp.headings_source_sort = xrow
+                    for idx, head_code in enumerate(grp.headings_source_sort):
+                        grp.headings[head_code] = xrow[idx]
+
+                elif typ == ogt.ags4.AGS4_DESCRIPTOR.unit:
+                    if grp.headings_source_sort == None:
+                        self.error_rows[line_no] = row
+                    else:
+                        for idx, head_code in enumerate(grp.headings_source_sort):
+                            grp.units[head_code] = xrow[idx]
+
+                elif typ == ogt.ags4.AGS4_DESCRIPTOR.type:
+                    if grp.headings_source_sort == None:
+                        self.error_rows[line_no] = row
+                    else:
+                        for idx, head_code in enumerate(grp.headings_source_sort):
+                            grp.types[head_code] = xrow[idx]
+
+                elif typ == ogt.ags4.AGS4_DESCRIPTOR.data:
+
+                    if grp.headings_source_sort == None:
+                        self.error_rows[line_no] = row
+                    else:
+                        dic = {}
+                        for idx, head_code in enumerate(grp.headings_source_sort):
+                            dic[head_code] = xrow[idx]
+                        grp.data.append( dic )
+
+        print self.error_rows
+
+        return  None
+
+
+def create_doc_from_ags4_file(ags_file_path):
+    """Convenience function to create and load an OGTDocument from an ags file
+
+    .. code-block:: python
+
+        doc, err = ogt_doc.create_doc_from_ags4_file("/path/to/my.ags")
+        if err:
+            print err
+        else:
+            print doc.group("PROJ")
+    """
+    doc = OGTDocument()
+    err = doc.load_ags4_file(ags_file_path)
+    return doc, err
+
+
+
 def create_doc_from_json_file( json_file_path):
     """Creates a document from a :ref:`json` formatted file
 
@@ -569,169 +767,4 @@ def create_doc_from_json_file( json_file_path):
 
 
     return doc, None
-
-
-def create_doc_from_ags4_file( ags4_file_path):
-    """Creates a document from an :term:`ags4` formatted file
-
-    .. code-block:: python
-
-        doc, err = ags4.create_doc_from_ags4_file("/path/to/my.ags")
-        if err:
-            print err
-
-    :param ags4_file_path: absolute or relative path to file
-    :type ags4_file_path: str
-    :rtype: tuple
-    :return: A `tuple` containing
-
-        - An :class:`~ogt.ogt_doc.OGTDocument` object on success, else `None`
-        - An `Error` message if error, otherwise `None`
-    """
-    try:
-        # TODO ensure asccii ??
-        with open(ags4_file_path, "r") as f:
-            doc = OGTDocument()
-            error =  load_doc_from_ags4_string( doc, f.read() )
-            doc.source_file_path = ags4_file_path
-            return doc, None
-
-    except IOError as e:
-        return None,  e
-
-    # should never happen
-    return None, "WTF in `create_doc_from_ags4_file`"
-
-
-
-def load_doc_from_ags4_string(doc, ags4_str):
-    """Load a document  from an :term:`ags4` formatted string
-
-    .. code-block:: python
-
-        doc = OGTDocument()
-        err =  load_doc_from_ags4_string( doc, str_of_ags )
-
-    :param doc: Document instance to load
-    :type doc: ~ogt.ogt_doc.OGTDocument
-    :param ags4_str: string to load
-    :type ags4_str: str
-    :rtype: str
-    :return: An `Error` message if string not loaded, else `None`
-    """
-
-    doc.source = ags4_str
-
-    # first:
-    #  - split ags_string into lines
-    #  - and parse each line into csv
-    #  - and add to the doc
-    for lidx, line in enumerate(ags4_str.split("\n")):
-
-        # removing and trailing whitespace eg \r
-        # were on nix land, so assemble with CRLF when dumping to ags
-        stripped = line.strip()
-
-        if stripped == "":
-            # blank line
-            doc.lines.append([])
-            doc.csv_rows.append([])
-            continue
-
-        # decode the csv line
-        reader = csv.reader( StringIO.StringIO(stripped) )
-        row =  reader.next() # first row of reader
-
-        doc.lines.append(line)
-        doc.csv_rows.append(row)
-
-    # second
-    # walk the decoded rows, and recognise the groups
-    # me mark the start_index, and end index of group
-    curr_grp = None
-    for lidx, row in enumerate(doc.csv_rows):
-
-        line_no = lidx + 1
-        lenny = len(row)
-        #print row
-        if lenny == 0:
-            # blank row so reset groups
-            if curr_grp:
-                curr_grp.csv_end_index = lidx
-                #print "idx=", curr_grp.csv_start_index, curr_grp.csv_end_index
-                #print curr_grp.csv_rows()
-            curr_grp = None
-            continue
-
-        if lenny < 2:
-            # min of two items, so add to errors
-            doc.error_rows[lidx + 1] = row
-
-        else:
-            typ = row[0] # first item is row type
-            #xrow = row[1:] # row without data descriptor
-
-            if typ == ogt.ags4.AGS4_DESCRIPTOR.group:
-
-                ## we got a new group
-                curr_grp = ogt.ogt_group.OGTGroup(row[1])
-                #curr_grp.csv_rows.append(row)
-                curr_grp.csv_start_index = lidx
-                doc.append_group(curr_grp)
-
-            else:
-                if curr_grp == None:
-                    doc.error_rows[line_no] = row
-                #else:
-                #   curr_grp.csv_rows.append(row)
-    # thirdly
-    # - we parse each group's csv rows into the parts
-    for group_code, grp in doc.groups.items():
-        #print group_code, "<<<<<<<<<"
-        #print grp.csv_rows()
-
-        for idx, row in enumerate(grp.csv_rows()):
-            typ = row[0]
-            xrow = row[1:] # row without data descriptor
-
-            if typ == ogt.ags4.AGS4_DESCRIPTOR.group:
-                pass
-
-            elif typ == ogt.ags4.AGS4_DESCRIPTOR.heading:
-                grp.headings_source_sort = xrow
-                for idx, head_code in enumerate(grp.headings_source_sort):
-                    grp.headings[head_code] = xrow[idx]
-
-            elif typ == ogt.ags4.AGS4_DESCRIPTOR.unit:
-                if grp.headings_source_sort == None:
-                    doc.error_rows[line_no] = row
-                else:
-                    for idx, head_code in enumerate(grp.headings_source_sort):
-                        grp.units[head_code] = xrow[idx]
-
-            elif typ == ogt.ags4.AGS4_DESCRIPTOR.type:
-                if grp.headings_source_sort == None:
-                    doc.error_rows[line_no] = row
-                else:
-                    for idx, head_code in enumerate(grp.headings_source_sort):
-                        grp.types[head_code] = xrow[idx]
-
-            elif typ == ogt.ags4.AGS4_DESCRIPTOR.data:
-
-                if grp.headings_source_sort == None:
-                    doc.error_rows[line_no] = row
-                else:
-                    dic = {}
-                    for idx, head_code in enumerate(grp.headings_source_sort):
-                        dic[head_code] = xrow[idx]
-                    grp.data.append( dic )
-
-    print doc.error_rows
-
-    return  None
-
-
-
-
-
 

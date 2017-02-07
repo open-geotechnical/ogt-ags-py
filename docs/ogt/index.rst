@@ -19,14 +19,14 @@ The base API converts ags4 files into various formats, and provided validation (
       Head21 [label="Heading", color=blue]
       Head22 [label="Heading", color=blue]
 
-      dd1 [label="Data Dict", color=green]
-      dd2 [label="Data Dict", color=green]
+      dd1 [label="Group Data Dict", color=green]
+      dd2 [label="Group Data Dict", color=green]
 
       Files [label="Files"]
       f1 [label="File", color=blue]
       f2 [label="File", color=blue]
 
-      Agsdd [label="Ags Data Dict", color=green]
+      Agsdd [label="Ags4 Data Dict", color=green]
 
       Project -> Files
 
@@ -51,6 +51,12 @@ The base API converts ags4 files into various formats, and provided validation (
 
       Agsdd -> dd1
       Agsdd -> dd2
+
+      Head11 -> dd1
+      Head12 -> dd1
+
+      Head21 -> dd2
+      Head22 -> dd2
    }
 
 
@@ -86,4 +92,5 @@ Index
     ogt_group.rst
     utils.rst
     ags4.rst
+    notes.rst
 

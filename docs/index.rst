@@ -30,7 +30,8 @@ This project is some R&D for converting AGS data using Python. Circa Jan 2017 is
 
 
 
-**Contents:**
+API Docs
+-------------------
 
 .. toctree::
     :maxdepth: 1
@@ -40,6 +41,8 @@ This project is some R&D for converting AGS data using Python. Circa Jan 2017 is
     ogtgui/index.rst
     ogtserver/index.rst
     commands.rst
+    todo.rst
+
 
 Indices and tables
 ==================

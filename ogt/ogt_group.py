@@ -3,7 +3,22 @@
 import ogt.ags4
 
 def groups_sort(unsorted_groups):
-    """Returns a preffered order for the groups"""
+    """Returns a prefered order for the groups.
+
+    .. note::
+
+        This is a bit hacky as the ags spec does not define
+        any groups order, however PROJ does sensibly tend to come first etc.
+
+
+        So this return a list with
+
+        - at start PROJ, TRAN, LOCA, HDPH, GEOL, SAMP
+        - at end ABBR. DICT, FILE, TYPE, UNIT
+        - and everything else in the middle sorted alphabetically
+
+    :return: An `list` of group codes
+    """
 
     start = ["PROJ", "TRAN", "LOCA", "HDPH", "GEOL", "SAMP"]
     end = ["ABBR", "DICT", "FILE", "TYPE", "UNIT"]
@@ -36,7 +51,7 @@ class OGTGroup:
         :param group_code: The four character group code to initialize with
         :type group_code: str
         """
-        self.parentDoc = None
+        self.docParent = None
         """Pointer to parent :class:`~ogt.ogt_doc.OGTDocument` instance"""
 
         self.group_code = group_code
@@ -77,7 +92,7 @@ class OGTGroup:
 
     def csv_rows(self):
         """Returns the csv rows used in this group"""
-        return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
+        return self.docParent.csv_rows[self.csv_start_index:self.csv_end_index]
 
     def headings_sort(self):
 
