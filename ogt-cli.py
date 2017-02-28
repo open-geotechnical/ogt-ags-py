@@ -84,7 +84,7 @@ if __name__ == "__main__":
     ok, mess =  ogt.utils.initialise()
     if not ok:
         print mess
-        print "Have u run `ogt-cli update` to download data dict"
+        print "Have u run `ogt-cli.py update` to download data dict"
         sys.exit(0)
 
     if args.command == "serve":
