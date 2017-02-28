@@ -36,8 +36,9 @@ p_convert.add_argument("--stats", dest="inc_stats", action="store_true", help="i
 p_convert.add_argument("-w", "--write_file", dest="write_file",  help="output file to write")
 
 p_convert.add_argument("-z", "--zip", dest="zip", action="store_true", help="output as a zip file containing original and converted file")
-#p_convert.add_argument("-v", "--validate", dest="validate", action="store_false", help="validates ags file")
 
+#p_convert.add_argument("-v", "--validate", dest="validate", action="store_false", help="validates ags file")
+p_convert.add_argument("source_file", type=str, help="AGS4 file to convert")
 
 
 #=======================
@@ -46,7 +47,7 @@ p_validate = sub_parsers.add_parser("validate", help="Validate files")
 p_validate.add_argument("-p",   action="store_false",  dest="printable", help="Human print output")
 p_validate.add_argument("-r", "--rules", type=int, dest="rules",  nargs='+', default=[], help="Rules to check")
 p_validate.add_argument("-t", "--tests", action="store_true", dest="run_tests", help="Run Tests")
-
+p_convert.add_argument("source_file", type=str, help="AGS4 file to validate")
 #=======================
 ## WWW server
 p_server = sub_parsers.add_parser("serve", description="Run the www server")
@@ -64,7 +65,7 @@ p_update = sub_parsers.add_parser("update", description="Setup and update")
 x_parsers = [p_convert, p_validate]
 for p in x_parsers:
     p.add_argument("--debug", dest="debug", action="store_false", help="debug")
-    p.add_argument("source_file", type=str, help="File to convert")
+
 
 if __name__ == "__main__":
 

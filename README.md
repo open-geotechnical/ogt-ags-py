@@ -17,6 +17,22 @@ Command line
 
 ```
 
+Requirements
+===========================
+
+The Installer is not started yet, so in the meantime the following
+python2.7+ packages need installing, if you need them:
+
+- openpyxl
+- pyyaml 
+- geojson
+- bng_latlon
+
+eg
+
+```bash
+pip install geojson
+```
 
 TODO
 ===========
