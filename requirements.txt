@@ -4,5 +4,9 @@ pyyaml
 geojson
 bng_latlon
 
+flask
+
+
+# Only required for generating the docs
 sphinx
 sphinxcontrib-fulltoc
