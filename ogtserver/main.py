@@ -1,14 +1,17 @@
 
+import os
 
 from flask import Flask, render_template
 
+HERE_PATH =  os.path.abspath( os.path.dirname( __file__ ))
+PROJECT_ROOT = os.path.abspath( os.path.join(HERE_PATH, "..") )
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="", static_folder=os.path.join(PROJECT_ROOT, "static"))
 
 nav = [
     {"url": "/", "label": "Home"},
     {"url": "/about", "label": "About"},
-    {"url": "/widget", "label": "AGS4 Data Dict"},
+    {"url": "/ags4/widget", "label": "AGS4 Data Dict"},
     {"url": "/viewer", "label":"Viewer"}
 ]
 
@@ -31,7 +34,7 @@ def index():
 
 
 
-@app.route('/spec/ags4')
-def ags4_spec():
-    c = make_context("/about", "About")
-    return render_template('<b>SPECCC {{name}}</b>!', c=c)
+@app.route('/ags4/widget')
+def ags4_widget():
+    c = make_context("/ags4/widget", "AGS4 Widget")
+    return render_template('ags4_widget.html', c=c)
