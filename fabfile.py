@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from fabric.api import env, local, run, cd, lcd, sudo, warn_only, prompt
+from fabric.api import env, local, run, cd, lcd, sudo, warn_only, prompt, shell_env
 
 os.environ["__GEN_DOCS__"] = "1"
 
@@ -14,12 +14,12 @@ DOCS_BUILD_DIR = os.path.join(TEMP_LOCAL, "docs_build")
 
 
 def docs_server(port=8080):
-    """Run local HTTP server with docs"""
+    """Run simple local HTTP server with docs"""
     with lcd(TEMP_LOCAL + "/docs_build"):
         local("python -m SimpleHTTPServer %s" % port)
 
 def docs_clean():
-    """Clean current docs-build """
+    """Clean current docs build """
     local("rm ./docs/_static/favicon.*")
     local("rm -f -r temp/*")
 
@@ -42,6 +42,7 @@ def docs_build(clear=None):
 
 
 def svg2icons():
+    """Converts the svg icons to png"""
     src_d = os.path.join(HERE_PATH, "static", "svg")
     target_d = os.path.join(HERE_PATH, "static", "icons")
 
@@ -60,3 +61,12 @@ def svg2icons():
 def pyclean():
     """Delete all `.pyc` python compiled files"""
     local(' find . | grep -E "(__pycache__|\.pyc$)" | xargs rm -rf ')
+
+def server(port=1377):
+    """Locally runs the ogtserver"""
+    main = os.path.join(HERE_PATH, "ogtserver", "main.py")
+    with shell_env(FLASK_DEBUG="1", FLASK_APP=main):
+        local("flask run --host=0.0.0.0 --port=%s" % (port))
+
+
+

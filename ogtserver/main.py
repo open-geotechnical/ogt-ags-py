@@ -1,27 +1,37 @@
 
 
-from bottle import Bottle, route, run, template
+from flask import Flask, render_template
 
-app = Bottle()
 
-def start_server(address='127.0.0.1', port=8080, debug=False):
-    """Start the http server
+app = Flask(__name__)
 
-    :param host:
-    :param port:
-    :param debug:
-    :return:
+nav = [
+    {"url": "/", "label": "Home"},
+    {"url": "/about", "label": "About"},
+    {"url": "/widget", "label": "AGS4 Data Dict"},
+    {"url": "/viewer", "label":"Viewer"}
+]
+
+def make_context(url, page_title):
+    c = {"site_name": "OGT Server",
+        "nav": nav, "url": url, "page_title": page_title
+    }
     """
+    c['page_title']= ""
+    for n in nav:
+        if n['url'] = page:
+            c['page_title']
+    """
+    return c
 
-    run(host=address, port=port, reloader=debug, debug=debug)
-
-
-@route('/')
+@app.route('/')
 def index():
-    return template('<b>Hello {{name}}</b>!', name="AGS")
+    c = make_context("/", "OGT Server")
+    return render_template('index.html', c=c)
 
 
 
-@route('/spec/ags4')
+@app.route('/spec/ags4')
 def ags4_spec():
-    return template('<b>SPECCC {{name}}</b>!', name="AGS")
+    c = make_context("/about", "About")
+    return render_template('<b>SPECCC {{name}}</b>!', c=c)
