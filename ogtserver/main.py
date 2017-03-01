@@ -61,6 +61,10 @@ def index():
     c = make_page_context("/", "OGT Server")
     return render_template('index.html', c=c)
 
+@app.route('/about')
+def about():
+    c = make_page_context("/about", "About")
+    return render_template('about.html', c=c)
 
 #@app.route('/ags4/data-dict')
 @app.route('/ags4/data-dict.<ext>')
