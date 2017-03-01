@@ -29,7 +29,7 @@ def initialise():
     ogt.ags4.AGS4_DD, err = ogt.utils.read_json_file(ags4dd_file())
     if err:
         return err
-    ogt.ags4.AGS4_DD.keys()
+    #ogt.ags4.AGS4_DD.keys()
     return None
 
 class AGS4_DESCRIPTOR:

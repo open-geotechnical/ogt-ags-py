@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, jsonify, request, flash, redirect
 #from flask.ext.api import renderers
 
-from ogt import ags4
+from ogt import ags4, ogt_doc
 
 err = ags4.initialise()
 if err:
@@ -125,28 +125,28 @@ def allowed_file(filename):
 def c_convert():
 
     c = make_page_context("/convert", "AGS4 Convert")
-
+    c['err_mess'] = None
     if request.method == "POST":
         if 'ags_file' not in request.files:
-            #flash('No file part')
-            return sredirect(request.url)
-        file = request.files['ags_file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            #flash('No selected file')
-            return sredirect(request.url)
+            c['err_mess'] = "Need a file"
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            """
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            """
-            ags_text =  file.read()
-            dic = convert
+        else:
+            file = request.files['ags_file']
+            # if user does not select file, browser also
+            # submit a empty part without filename
+            if file.filename == '':
+                c['err_mess'] = "Need a file"
 
-            #return redirect(url_for('uploaded_file',
-            #                        filename=filename))
+            else:
+                if file and allowed_file(file.filename):
+
+
+                    doc = ogt_doc.OGTDocument()
+                    doc.source_file_path = secure_filename(file.filename)
+                    err = doc.load_ags4_string(file.read())
+
+                    return jsonify(doc.to_dict())
+
 
 
 

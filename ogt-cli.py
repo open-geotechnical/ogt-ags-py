@@ -47,14 +47,16 @@ p_validate = sub_parsers.add_parser("validate", help="Validate files")
 p_validate.add_argument("-p",   action="store_false",  dest="printable", help="Human print output")
 p_validate.add_argument("-r", "--rules", type=int, dest="rules",  nargs='+', default=[], help="Rules to check")
 p_validate.add_argument("-t", "--tests", action="store_true", dest="run_tests", help="Run Tests")
-p_convert.add_argument("source_file", type=str, help="AGS4 file to validate")
+p_validate.add_argument("source_file", type=str, help="AGS4 file to validate")
+
 #=======================
 ## WWW server
+"""
 p_server = sub_parsers.add_parser("serve", description="Run the www server")
 p_server.add_argument("-a", dest="address", help="eg localhost, 0.0.0.0,  123.12.23.45", default='127.0.0.1')
 p_server.add_argument("-p", dest="port", help="Port No, default: 1377", default=1377)
 p_server.add_argument("-d", dest="debug", help="Dev mode shows debug and restart on files changed", action="store_true",  default=False)
-
+"""
 #=======================
 ## Update
 p_update = sub_parsers.add_parser("update", description="Setup and update")
@@ -81,19 +83,20 @@ if __name__ == "__main__":
         sys.exit(0)
 
     ## Load agsdata dict etc
-    ok, mess =  ogt.utils.initialise()
-    if not ok:
-        print mess
-        print "Have u run `ogt-cli.py update` to download data dict"
+    err =  ogt.ags4.initialise()
+    if err:
+        print err
+        print "Have you run `ogt-cli.py update` to download data dict ?"
         sys.exit(0)
 
+    """
     if args.command == "serve":
 
         import ogtserver.main
         ogtserver.main.start_server(port=args.port, address=args.address, debug=args.debug)
+    """
 
-
-    elif args.command == "validate":
+    if args.command == "validate":
         if args.source_file.endswith(".ags"):
             report, err = ogt.ags4.validate_ags4_file(args.source_file, args.rules)
 
