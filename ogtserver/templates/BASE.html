@@ -1,4 +1,5 @@
 {% set BOOTSTRAP = "/bootstrap-3.3.7" %}
+{% set EXT4 = "/js/ext-4.2.1-gpl" %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -20,13 +21,13 @@
 
     {% if LOAD_EXT %}
     <!-- EXTJS -->
-    <link rel="stylesheet" type="text/css" href="/js/{{EXT_VER}}/resources/css/ext-all.css">
+    <link rel="stylesheet" type="text/css" href="{{EXT4}}/resources/css/ext-all.css">
     {# <link rel="stylesheet" type="text/css" href="/css/resources/css/ext-all-gray.css"> #}
-    <script type="text/javascript" charset="utf-8" src="/js/{{EXT_VER}}/ext-all.js"></script>
+    <script type="text/javascript" charset="utf-8" src="{{EXT4}}/ext-all.js"></script>
     {% endif %}
 
     <!-- Custom styles for this template -->
-    <link href="/css/ags2go.1.css" rel="stylesheet">
+    <link href="/css/ogt.1.css" rel="stylesheet">
 
 
 

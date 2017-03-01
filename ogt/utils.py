@@ -223,32 +223,11 @@ def write_file(file_path, contents):
         return None
     return "OOPS in write_file()"
 
-def user_dir():
-    """Path to users home dir"""
-    return os.path.expanduser("~")
 
-def ogt_dir():
-    """Path to open-getechnical cache directory"""
-    return os.path.join(user_dir(), "open-geotechnical")
 
-def initialise():
-    """Check env is sane and loads the ags data dict file"""
-    if not os.path.exists(ogt_dir()):
-        return False, "No data dict"
-    if not os.path.exists(ags4dd_file()):
-        return False, "Missing ags4 data dict"
 
-    ogt.ags4.AGS4_DD, err = read_json_file(ags4dd_file())
-    if err:
-        return False, err
-    ogt.ags4.AGS4_DD.keys()
-    return True, None
 
-def ags4dd_file():
-    """
-    :return: str with path to the `ags4.min.json` data dict file
-    """
-    return os.path.join(ogt_dir(), "ags4.min.json")
+
 
 
 def update():

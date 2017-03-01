@@ -64,9 +64,10 @@ def pyclean():
 
 def server(port=1377):
     """Locally runs the ogtserver"""
+    print os.environ.get("PYTHONPATH")
     main = os.path.join(HERE_PATH, "ogtserver", "main.py")
     with shell_env(FLASK_DEBUG="1", FLASK_APP=main):
-        local("flask run --host=0.0.0.0 --port=%s" % (port))
+        local("/usr/bin/python2.7 -m flask run --host=0.0.0.0 --port=%s" % (port))
 
 
 

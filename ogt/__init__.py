@@ -51,6 +51,12 @@ TEMP_WORKSPACE = os.path.join(PROJECT_ROOT_PATH, "temp_workspace")
 EXAMPLES_DIR = os.path.join(PROJECT_ROOT_PATH, "example_files")
 """Path to examples folder"""
 
+USER_HOME = os.path.expanduser("~")
+"""Path to users home dir"""
+
+USER_TEMP = os.path.join(USER_HOME, "open-geotechnical")
+"""Path to open-getechnical cache directory"""
+
 
 
 

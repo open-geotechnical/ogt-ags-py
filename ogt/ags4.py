@@ -4,6 +4,7 @@ import io
 from operator import itemgetter
 
 
+from ogt import USER_TEMP
 import ogt.ogt_doc
 import ogt.utils
 #from ogt import utils, EXAMPLES_DIR
@@ -11,6 +12,25 @@ import ogt.utils
 AGS4_DD = None
 """This dict contains all the ags4 data, loaded in utils.initialise()"""
 
+def ags4dd_file():
+    """
+    :return: str with path to the `ags4.min.json` data dict file
+    """
+    return os.path.join(USER_TEMP, "ags4.min.json")
+
+def initialise():
+    """Check env is sane and loads the ags data dict file"""
+    if not os.path.exists(USER_TEMP):
+        os.makedirs(USER_TEMP)
+
+    if not os.path.exists(ags4dd_file()):
+        return "Missing ags4 data dict"
+
+    ogt.ags4.AGS4_DD, err = ogt.utils.read_json_file(ags4dd_file())
+    if err:
+        return err
+    ogt.ags4.AGS4_DD.keys()
+    return None
 
 class AGS4_DESCRIPTOR:
     """Constants defining the data descriptors (See :ref:`ags4_rule_3`)"""
