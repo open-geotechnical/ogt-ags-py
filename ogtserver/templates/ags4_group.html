@@ -1,0 +1,30 @@
+
+{% extends "BASE.html" %}
+
+
+
+{% block main %}
+
+<h1>AGS4 Group</h1>
+
+
+<h2>{{c.ags4_group.group_description}}</h2>
+<h3>{{c.ags4_group.class}}</h3>
+
+<table>
+{% for head in c.ags4_group.headings %}
+    <tr>
+        <td><b>{{head.head_code}}</b></td>
+        <td>{{head.head_description}}</td>
+        <td>{{head.unit}}</td>
+        <td>{{head.type}}</td>
+        <td>{{head.example}}</td>
+    </tr>
+{% endfor %}
+</table>
+
+        NOTES:
+        TODO
+
+
+{% endblock main %}

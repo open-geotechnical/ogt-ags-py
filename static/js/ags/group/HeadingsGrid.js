@@ -16,7 +16,8 @@ Ext.define('ags.group.HeadingsGrid' ,{
 				{header: 'Heading', dataIndex: 'head_code', flex: 1, menuDisabled: true, sortable: true, renderer: R.bold},
 				{header: 'Unit', dataIndex: 'unit', width: 50, menuDisabled: true, sortable: true},
 				{header: 'Type', dataIndex: 'data_type', width: 50, menuDisabled: true, sortable: true},
-				{header: 'Description', dataIndex: 'description', flex: 3, menuDisabled: true, sortable: true},
+				{header: 'Example', dataIndex: 'example', width: 100, menuDisabled: true, sortable: true},
+				{header: 'Description', dataIndex: 'head_description', flex: 3, menuDisabled: true, sortable: true},
 				{header: 'Added',  dataIndex: 'date_added',  flex: 1, menuDisabled: true, sortable: true}
 
 			],

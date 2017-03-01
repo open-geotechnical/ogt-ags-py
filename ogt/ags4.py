@@ -129,6 +129,16 @@ def groups():
     """
     return AGS4_DD.get("groups")
 
+def classified_groups():
+    """Returns groups nested n classification"""
+    classes = {}
+    for gcode, grp in groups().iteritems():
+        cls = grp['class']
+        if not cls in classes:
+            classes[cls] = {}
+        classes[cls][gcode] = grp
+    return classes
+
 def group(group_code):
     """Return all :term:`GROUP` s in the ags4 data dict
 

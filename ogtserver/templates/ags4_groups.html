@@ -5,7 +5,17 @@
 
 {% block main %}
 
+<h1>AGS4 Groups</h1>
 
+{% for cls in c.ags4_classified_groups|sort %}
+<h2>{{cls}}</h2>
 
+<ul>
+{% for gcode in c.ags4_classified_groups[cls]|sort %}
+    <li><a href="/ags4/group/{{gcode}}"><b>{{gcode}}</b>: {{c.ags4_classified_groups[cls][gcode].group_description}}</a></li>
+{% endfor %}
+</ul>
+
+{% endfor %}
 
 {% endblock main %}

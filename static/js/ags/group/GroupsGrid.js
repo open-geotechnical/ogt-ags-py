@@ -13,7 +13,7 @@ Ext.define('ags.group.GroupsGrid' ,{
 
 			columns: [
 				{header: 'Group', dataIndex: 'group_code', flex: 1, menuDisabled: true, sortable: true, renderer: R.bold},
-				{header: 'Description', dataIndex: 'description', flex: 3, menuDisabled: true, sortable: true},
+				{header: 'Description', dataIndex: 'group_description', flex: 3, menuDisabled: true, sortable: true},
 				{header: 'Class',  dataIndex: 'class',  flex: 2, menuDisabled: true, sortable: true}
 
 			],
@@ -34,7 +34,7 @@ Ext.define('ags.group.GroupsGrid' ,{
 
 					//var proxy = Ext.getStore("abbrev_items").getProxy()
 					//console.log("proxy", proxy);
-					sto.getProxy().url = "/ajax/ags/4/group/" + rec.get("group_code");
+					sto.getProxy().url = "/ags4/group/" + rec.get("group_code") + ".json";
 					sto.load()
 				}
 			}

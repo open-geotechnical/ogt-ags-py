@@ -1,4 +1,8 @@
 
+# NOTE from pedro
+# This is a qucik hack as POC
+# ideally we want renderers and some dynamics
+
 import os
 
 import yaml
@@ -64,16 +68,44 @@ def ags4_dd_json(ext="json"):
 
     return "NOT Handled : `%s`" % ext
 
+@app.route('/ags4/groups')
 @app.route('/ags4/groups.<ext>')
 def ags4_groups(ext="html"):
     if ext == "json":
-        return jsonify(ags4.groups())
+        return jsonify({"groups": ags4.groups(), "success": True})
 
     if ext in ["yml", "yaml"]:
         return yaml.dump(ags4.all())
+
     c = make_page_context("/ags4/groups", "AGS4 Groups")
+
+    # TODO Make its nested based on class
+    c['ags4_classified_groups'] = ags4.classified_groups()
+    #print c['ags4_classified_groups']
     return render_template("ags4_groups.html", c=c)
 
+
+@app.route('/ags4/groups_list.<ext>')
+def ags4_groups_list(ext="json"):
+    if ext == "json":
+        return jsonify({"groups_list": ags4.groups().values(), "success": True})
+
+
+@app.route('/ags4/group/<group_code>')
+@app.route('/ags4/group/<group_code>.<ext>')
+def ags4_group(group_code, ext="html"):
+    if ext == "json":
+        return jsonify({"group": ags4.group(group_code), "success": True})
+
+    if ext in ["yml", "yaml"]:
+        return yaml.dump(ags4.all())
+
+    c = make_page_context("/ags4/group", "AGS4 Group")
+
+    # TODO Make its nested based on class
+    c['ags4_group'] = ags4.group(group_code)
+    print c['ags4_group']
+    return render_template("ags4_group.html", c=c)
 
 
 @app.route('/ags4/widget')
