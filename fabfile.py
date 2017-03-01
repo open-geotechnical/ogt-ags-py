@@ -13,6 +13,17 @@ TEMP_LOCAL = os.path.join(HERE_PATH, "temp_workspace")
 DOCS_BUILD_DIR = os.path.join(TEMP_LOCAL, "docs_build")
 
 
+HOST_ADDRESS = 'ogtserver.daffodil.uk.com'
+HOST_USER = "ogt"
+
+env.hosts = [ HOST_ADDRESS ]
+env.user = HOST_USER
+env.use_ssh_config = True # using key, not password
+env.password = "--using-ssh-key--"
+#env.shell = "/bin/sh -c"
+env.shell = "/bin/bash -l -c"
+
+
 def docs_server(port=8080):
     """Run simple local HTTP server with docs"""
     with lcd(TEMP_LOCAL + "/docs_build"):
@@ -70,4 +81,6 @@ def server(port=1377):
         local("/usr/bin/python2.7 -m flask run --host=0.0.0.0 --port=%s" % (port))
 
 
-
+def sshtest():
+    run("ls -al")
+    run("whoami")

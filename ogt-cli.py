@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     ## Update comes first
     if args.command == "update":
-        err = ogt.utils.update()
+        err = ogt.ags4.update()
         if err:
             print "Update failed: %s" % err
         else:

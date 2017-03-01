@@ -2,7 +2,8 @@
 import os
 import io
 from operator import itemgetter
-
+import urllib, urllib2
+import json
 
 from ogt import USER_TEMP
 import ogt.ogt_doc
@@ -11,6 +12,32 @@ import ogt.utils
 
 AGS4_DD = None
 """This dict contains all the ags4 data, loaded in utils.initialise()"""
+
+
+def update():
+    """Downloads data dict file from online
+
+    :return: An error if one occured,  else None
+    """
+    if not os.path.exists(USER_TEMP):
+        os.makedirs(USER_TEMP)
+
+    u = "https://open-geotechnical.github.io/data/ags4.min.json"
+    print "Requesting: %s" % u
+    try:
+        response = urllib2.urlopen(u)
+    except Exception as e:
+        return e
+
+    txt = response.read()
+
+    ## check its ok
+    try:
+        json.loads(txt)
+    except Exception as e:
+        return e
+    ogt.utils.write_file(ags4dd_file(), txt)
+    return None
 
 def ags4dd_file():
     """

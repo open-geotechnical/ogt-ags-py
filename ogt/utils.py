@@ -8,7 +8,7 @@ import urllib2
 
 import ogt.ags4
 
-from . import EXAMPLES_DIR, HAVE_YAML
+from . import EXAMPLES_DIR, HAVE_YAML, USER_TEMP
 
 def to_yaml(data):
     """Serializes python data to a :ref:`yaml` string
@@ -228,29 +228,3 @@ def write_file(file_path, contents):
 
 
 
-
-
-def update():
-    """Downloads data dict file from online
-
-    :return: An error if one occured,  else None
-    """
-    if not os.path.exists(ogt_dir()):
-        os.makedirs(ogt_dir())
-
-    u = "https://open-geotechnical.github.io/data/ags4.min.json"
-    print "Requesting: %s" % u
-    try:
-        response = urllib2.urlopen(u)
-    except Exception as e:
-        return e
-
-    txt = response.read()
-
-    ## check its ok
-    try:
-        json.loads(txt)
-    except Exception as e:
-        return e
-    write_file(ags4dd_file(), txt)
-    return None
