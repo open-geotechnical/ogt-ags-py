@@ -21,7 +21,7 @@ Ext.define('ags.group.GroupsStore', {
 			autoLoad: true,
 			proxy: {
 				type: 'ajax',
-				url: "/ajax/ags/4/groups",
+				url: "/ags4/groups.json",
 				reader: {
 					type: 'json',
 					root: "groups",
