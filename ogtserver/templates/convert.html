@@ -1,0 +1,34 @@
+
+{% extends "BASE.html" %}
+
+{% block main %}
+
+<div class="container">
+    <h2>Convert AGS4</h2>
+
+    <div class="row">
+
+    <form method="POST" action="/convert" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="ags_file">AGS File</label>
+            <input type="file" id="ags_file" name="ags_file">
+            <p class="help-block">Select the AGS4 File to upload</p>
+        </div>
+        <div class="radio">
+            <label>
+            <input type="radio" name="download" value="0" checked> Reply in browser
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+            <input type="radio" name="download" value="1"> Popup download dialog
+            </label>
+        </div>
+        <button type="submit" class="btn btn-success">Convert</button>
+    </form>
+
+    </div>
+</div>
+
+
+{% endblock main %}

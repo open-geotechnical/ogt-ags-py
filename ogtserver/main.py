@@ -7,7 +7,8 @@ import os
 
 import yaml
 
-from flask import Flask, render_template, jsonify
+from werkzeug.utils import secure_filename
+from flask import Flask, render_template, jsonify, request, flash, redirect
 #from flask.ext.api import renderers
 
 from ogt import ags4
@@ -31,11 +32,15 @@ class YAMLRenderer(renderers.BaseRenderer):
         return yaml.dump(data, encoding=self.charset)
 """
 
+ALLOWED_UPLOADS = ['ags', 'ags4']
+
+
 nav = [
     {"url": "/", "label": "Home"},
     {"url": "/about", "label": "About"},
     {"url": "/ags4/widget", "label": "AGS4 Data Dict"},
-    {"url": "/viewer", "label":"Viewer"}
+    {"url": "/viewer", "label":"Viewer"},
+    {"url": "/convert", "label":"Convert"}
 ]
 
 def make_page_context(url, page_title):
@@ -112,3 +117,37 @@ def ags4_group(group_code, ext="html"):
 def ags4_widget():
     c = make_page_context("/ags4/widget", "AGS4 Widget")
     return render_template('ags4_widget.html', c=c)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_UPLOADS
+
+@app.route('/convert', methods=["GET", "POST"])
+def c_convert():
+
+    c = make_page_context("/convert", "AGS4 Convert")
+
+    if request.method == "POST":
+        if 'ags_file' not in request.files:
+            #flash('No file part')
+            return sredirect(request.url)
+        file = request.files['ags_file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            #flash('No selected file')
+            return sredirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            """
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            """
+            ags_text =  file.read()
+            dic = convert
+
+            #return redirect(url_for('uploaded_file',
+            #                        filename=filename))
+
+
+
+    return render_template('convert.html', c=c)
