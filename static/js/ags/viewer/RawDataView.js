@@ -39,7 +39,7 @@ Ext.define('ags.viewer.RawDataView' ,{
 		this.down("[g_name=raw_text]").setValue(doc.source);
 
 		// no of lines is the array length.. and some opitz
-		var glines = doc.lines;
+		var glines = doc.source_lines;
 		var lenny = glines.length;
 
 		// no of cols to create cos we have to arrange

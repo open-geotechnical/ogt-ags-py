@@ -61,6 +61,20 @@ class OGTDocument:
         self.error_rows = {}
         """A `list` of rows with errors"""
 
+        self.minify = False
+        """Option whether to minify output Json only"""
+
+        self.edit_mode = False
+        """Option to extend output"""
+
+        self.inc_stats = False
+        """Include stats"""
+
+        self.include_source = False
+        """Include source code on out"""
+
+        #self.include_lines
+
     def hash(self):
         """Calculate the `sha1` hash
 
@@ -304,7 +318,7 @@ class OGTDocument:
 
         return None, "Error: OOPS unexpected error"
 
-    def to_dict(self, include_source=False, edit_mode=False, include_stats=False):
+    def to_dict(self):
         """Return the document data
 
         :param include_source: if `True` then the source string is included in the **source:** key.
@@ -322,18 +336,19 @@ class OGTDocument:
 
         # loop groups and add struct based on edit_mode
         for k, g in self.groups.iteritems():
-            dic['groups'][k] = g.to_dict(edit_mode=edit_mode)
+            dic['groups'][k] = g.to_dict(edit_mode=self.edit_mode)
 
         # include source raw source
-        if include_source:
+        if self.include_source:
             dic['source'] = self.source
+            dic['source_lines'] = self.lines
 
         # include statistics
-        if include_stats:
+        if self.include_stats:
             dic['stats'] = self.stats()
         return dic
 
-    def to_json(self, include_source=False, edit_mode=False, minify=False, include_stats=False):
+    def to_json(self): #, include_source=False, edit_mode=False, minify=False, include_stats=False):
         """Return the document data in :ref:`json` format
 
         :param include_source: if `True` then the source string is included in the **source:** key.
@@ -347,10 +362,7 @@ class OGTDocument:
                 - An `error` string is error occured, else `None`
         """
 
-        return ogt.utils.to_json( self.to_dict(include_source=include_source,
-                                             include_stats=include_stats,
-                                             edit_mode=edit_mode),
-                              minify=minify)
+        return ogt.utils.to_json( self.to_dict(), minify=self.minify)
 
 
 

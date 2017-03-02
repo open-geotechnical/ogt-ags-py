@@ -54,7 +54,7 @@ EXAMPLES_DIR = os.path.join(PROJECT_ROOT_PATH, "example_files")
 USER_HOME = os.path.expanduser("~")
 """Path to users home dir"""
 
-USER_TEMP = os.path.join(USER_HOME, "open-geotechnical")
+USER_TEMP = os.path.join(USER_HOME, "ogt-cache")
 """Path to open-getechnical cache directory"""
 
 

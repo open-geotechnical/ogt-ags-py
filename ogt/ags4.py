@@ -22,21 +22,25 @@ def update():
     if not os.path.exists(USER_TEMP):
         os.makedirs(USER_TEMP)
 
-    u = "https://open-geotechnical.github.io/data/ags4.min.json"
-    print "Requesting: %s" % u
-    try:
-        response = urllib2.urlopen(u)
-    except Exception as e:
-        return e
 
-    txt = response.read()
 
-    ## check its ok
-    try:
-        json.loads(txt)
-    except Exception as e:
-        return e
-    ogt.utils.write_file(ags4dd_file(), txt)
+    for blobby in ["ags4.min.json", "ags4_examples.min.json"]:
+        u = "https://open-geotechnical.github.io/data/%s" % blobby
+        print "Requesting: %s" % u
+        try:
+            response = urllib2.urlopen(u)
+        except Exception as e:
+            return e
+
+        txt = response.read()
+
+        ## check its ok
+        try:
+            json.loads(txt)
+        except Exception as e:
+            print e
+
+        ogt.utils.write_file(os.path.join(USER_TEMP, blobby), txt)
     return None
 
 def ags4dd_file():
@@ -764,3 +768,29 @@ def rule_10(doc):
     return problems, errors
 
 
+def examples():
+    # TODO check dir exists
+    pth =  os.path.join(USER_TEMP, "ags4_examples.min.json")
+    data, err = ogt.utils.read_json_file(pth)
+    return data, err
+
+def examples_list():
+    # TODO check dir exists
+    pth =  os.path.join(USER_TEMP, "ags4_examples.min.json")
+    data, err = ogt.utils.read_json_file(pth)
+    return [ {"file_name": r['file_name']} for r in data['ags4_examples'] ]
+
+def example(file_name):
+
+    data, err = examples()
+    for r in data['ags4_examples']:
+        if r['file_name'] == file_name:
+            return r
+    return None
+
+"""
+def get_example_dirs():
+    if not os.path.exists(EXAMPLES_DIR):
+        return None, "dir '%s' not exist " % EXAMPLES_DIR
+    return sorted(os.listdir(EXAMPLES_DIR)), None
+"""

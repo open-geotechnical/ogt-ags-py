@@ -73,7 +73,7 @@ def pyclean():
     """Delete all `.pyc` python compiled files"""
     local(' find . | grep -E "(__pycache__|\.pyc$)" | xargs rm -rf ')
 
-def server(port=1377):
+def server(port=13777):
     """Locally runs the ogtserver"""
     print os.environ.get("PYTHONPATH")
     main = os.path.join(HERE_PATH, "ogtserver", "main.py")

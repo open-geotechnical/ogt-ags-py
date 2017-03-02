@@ -189,16 +189,7 @@ def file_size(file_path, human=True):
         return file_size_format(b)
     return b
 
-def list_examples(sub_dir):
-    # TODO check dir exists
-    pth = os.path.join( EXAMPLES_DIR, sub_dir,  "*.ags")
-    xfiles = glob.glob(pth)
-    return xfiles, None
 
-def get_example_dirs():
-    if not os.path.exists(EXAMPLES_DIR):
-        return None, "dir '%s' not exist " % EXAMPLES_DIR
-    return sorted(os.listdir(EXAMPLES_DIR)), None
 
 
 

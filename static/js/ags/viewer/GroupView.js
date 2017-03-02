@@ -26,7 +26,7 @@ Ext.define('ags.viewer.GroupView' ,{
 	get_description: function(columns, store){
 
 		if(!this._desc){
-			this._desc = Ext.create("Ext.form.field.Display", {name: "description", value: "--",
+			this._desc = Ext.create("Ext.form.field.Display", {name: "head_description", value: "--",
 														region:"north", fieldCls: "ags_group_description"});
 		}
 		return this._desc;
@@ -53,7 +53,7 @@ Ext.define('ags.viewer.GroupView' ,{
 
 		// Set titles + description
 		this.setTitle(grp.group_code);
-		this.get_description().setValue(grp.description);
+		this.get_description().setValue(grp.group_description);
 
 		// Create columns and model
 		var headings_len =  grp.headings.length;
@@ -70,9 +70,12 @@ Ext.define('ags.viewer.GroupView' ,{
 
 
 			model_fields.push(  fld );
-
+            //console.log(h)
 			// col def for grid, also hide data in `geo_data`
-			var col = {header: h.head_code + "<br>" + h.description + "&nbsp;" + "<br>" + h.data_type + "&nbsp;",
+			var ht = h.head_code + "<br>" + h.data_dict.head_description + "&nbsp;" + "<br>";
+			ht = ht +  h.data_dict.data_type + "&nbsp;&nbsp";
+			ht = ht +  h.data_dict.unit + "&nbsp;"
+			var col = {header: ht,
 						dataIndex: h.head_code,
 						sortable: true, menuDisabled: true,
 						head_code: h.head_code
@@ -91,7 +94,7 @@ Ext.define('ags.viewer.GroupView' ,{
 				if(grp.headings[cd].unit == "DT"){
 					rec[hhc] = parse_ags_date(rd[hhc].value);
 				}
-				rec[hhc] = rd[hhc].value;
+				rec[hhc] = rd[hhc]; //.value;
 			}
 			sto.add(rec);
 		}

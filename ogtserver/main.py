@@ -72,6 +72,11 @@ def about():
     c = make_page_context("/about", "About")
     return render_template('about.html', c=c)
 
+@app.route('/viewer')
+def viewer():
+    c = make_page_context("/viewer", "Viewer")
+    return render_template('viewer.html', c=c)
+
 #@app.route('/ags4/data-dict')
 @app.route('/ags4/data-dict.<ext>')
 def ags4_dd_json(ext="json"):
@@ -123,10 +128,70 @@ def ags4_group(group_code, ext="html"):
     return render_template("ags4_group.html", c=c)
 
 
+@app.route('/ags4/abbrs_list.<ext>')
+def ags4_abbrs_list(ext="html"):
+    if ext == "json":
+        return jsonify({"abbrs_list": ags4.abbrs(), "success": True})
+
+    if ext in ["yml", "yaml"]:
+        return yaml.dump(ags4.all())
+
+    c = make_page_context("/ags4/groups", "AGS4 Groups")
+
+    # TODO Make its nested based on class
+    c['ags4_classified_groups'] = ags4.classified_groups()
+    #print c['ags4_classified_groups']
+    return render_template("ags4_groups.html", c=c)
+
+
+
 @app.route('/ags4/widget')
 def ags4_widget():
     c = make_page_context("/ags4/widget", "AGS4 Widget")
     return render_template('ags4_widget.html', c=c)
+
+
+
+@app.route('/ags4/examples')
+@app.route('/ags4/examples.<ext>')
+def ags4_examples(ext="html"):
+
+    if ext == "json":
+        return jsonify({"examples": ags4.examples(), "success": True})
+
+    c = make_page_context("/ags4/examples", "AGS4 Widget")
+    return render_template('ags4_examples.html', c=c)
+
+@app.route('/ags4/examples_list.<ext>')
+def ags4_examples_list(ext="json"):
+
+    if ext == "json":
+        return jsonify({"examples_list": ags4.examples_list(), "success": True})
+
+
+@app.route('/ags4/example')
+@app.route('/ags4/example.<ext>')
+def ags4_example(ext="html"):
+
+    file_name = request.args.get('file_name')
+    if not file_name:
+        panic
+    ex = ags4.example(file_name)
+    if ex:
+        #print "EX=", ex
+        doc = ogt_doc.OGTDocument()
+        doc.source_file_path = ex['file_name']
+        err = doc.load_ags4_string(ex['contents'])
+        doc.edit_mode=True
+        doc.include_stats=True
+        doc.include_source=True
+        #if request.args.get('format') == "json":
+        #        return jsonify(doc.to_dict())
+        if ext == "json":
+            return jsonify({"document": doc.to_dict(), "success": True})
+
+    c = make_page_context("/ags4/examples", "AGS4 Widget")
+    return render_template('ags4_example.html', c=c)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_UPLOADS
@@ -157,7 +222,35 @@ def c_convert():
 
                     return jsonify(doc.to_dict())
 
+    ## convert example
+    """
+    if request.method == "GET":
+        ex_name = request.args.get('example')
+        if ex_name:
 
+            ex = ags4.example(ex_name)
+            #print "EX=", ex
+            doc = ogt_doc.OGTDocument()
+            doc.source_file_path = ex_name
+            err = doc.load_ags4_string(ex['contents'])
 
+            if request.args.get('format') == "json":
+                return jsonify(doc.to_dict())
+    """
 
     return render_template('convert.html', c=c)
+
+"""
+@app.route('/convert.json', methods=["GET", "POST"])
+def ajax_convert():
+
+    ex_name = request.args.get('example')
+    if ex_name:
+        ex = ags4.example(ex_name)
+        #print "EX=", ex
+        doc = ogt_doc.OGTDocument()
+        doc.source_file_path = ex_name
+        err = doc.load_ags4_string(ex['contents'])
+
+        return jsonify(doc.to_dict())
+"""

@@ -21,11 +21,11 @@ Ext.define('ags.abbrev.AbbrevsStore', {
 			autoLoad: true,
 			proxy: {
 				type: 'ajax',
-				url: "/ajax/ags/4/abbrevs.json",
+				url: "/ags4/abbrs.json",
 				reader: {
 					type: 'json',
-					root: "abbreviations",
-					idProperty: 'code',
+					root: "abbrs",
+					idProperty: 'head_code',
 					sstotalProperty: 'code_count'
 				}
 			}

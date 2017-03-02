@@ -62,33 +62,38 @@ Ext.define('ags.viewer.AGSViewer' ,{
 		Ext.Ajax.request({
 
 			scope: this,
-			url: '/ajax/ags/4/parse',
+			url: '/ags4/example.json',
 			method: "GET",
 			params: {
-				example: file_name
+				file_name: file_name,
+				format: "json"
 			},
 
 			success: function(response){
 
 				// decode json string
 				var data = Ext.decode(response.responseText);
+				var doc = data.document;
 
-				this.setTitle("File: " + data.document.file_name);
+				this.setTitle("File: " + doc.file_name);
 
-				var groups = data.document.groups;
+
 				var tabPanel = this.get_tab_panel();
-
+                var groups = doc.groups;
+				console.log("groups=", groups);
 				// Loops groups and add tabs for each group
-				var grp_len = groups.length; // optimize
-				for(var i = 0; i < grp_len; i++){
-
+				//var grp_len = groups.length; // optimize
+				for(var ki in doc.groups){
+                    if(!doc.groups.hasOwnProperty(ki)){
+                        continue;
+                    }
 					var tab = Ext.create("ags.viewer.GroupView", {});
-                    tab.load_group(groups[i])
+                    tab.load_group(doc.groups[ki])
 					tabPanel.add(tab)
-					if(i == 0){
-						// Make first tab active wich should always be PROJ ??
-						tabPanel.setActiveTab(tab);
-					}
+					//if(i == 0){
+					//	// Make first tab active wich should always be PROJ ??
+					//	tabPanel.setActiveTab(tab);
+					//}
 				}
 
 				// Add source tab
