@@ -4,12 +4,19 @@
 # ideally we want renderers and some dynamics
 
 import os
-
+import sys
 import yaml
+
+HERE_PATH =  os.path.abspath( os.path.dirname( __file__ ))
+PROJECT_ROOT = os.path.abspath( os.path.join(HERE_PATH, "..") )
+if sys.path.count(PROJECT_ROOT) == 0:
+	sys.path.insert(0, PROJECT_ROOT)
+
 
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, jsonify, request, flash, redirect
 #from flask.ext.api import renderers
+
 
 from ogt import ags4, ogt_doc
 
@@ -17,8 +24,7 @@ err = ags4.initialise()
 if err:
     PANIC
 
-HERE_PATH =  os.path.abspath( os.path.dirname( __file__ ))
-PROJECT_ROOT = os.path.abspath( os.path.join(HERE_PATH, "..") )
+
 
 app = Flask(__name__, static_url_path="", static_folder=os.path.join(PROJECT_ROOT, "static"))
 
