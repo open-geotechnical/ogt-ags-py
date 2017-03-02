@@ -12,6 +12,7 @@ HERE_PATH =  os.path.abspath( os.path.dirname( __file__ ))
 TEMP_LOCAL = os.path.join(HERE_PATH, "temp_workspace")
 DOCS_BUILD_DIR = os.path.join(TEMP_LOCAL, "docs_build")
 
+REMOTE_DIR = "/home/ogt/ogt-ags-py"
 
 HOST_ADDRESS = 'ogtserver.daffodil.uk.com'
 HOST_USER = "ogt"
@@ -84,3 +85,11 @@ def server(port=13777):
 def sshtest():
     run("ls -al")
     run("whoami")
+
+def upserver(restart=0):
+    local("git push origin master")
+    with cd(REMOTE_DIR):
+        run("git pull origin master")
+
+    if restart:
+        run("/usr/local/bin/supervisorctl restart ogtserver", pty=True)

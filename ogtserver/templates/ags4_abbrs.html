@@ -1,0 +1,26 @@
+
+{% extends "BASE.html" %}
+
+
+
+{% block main %}
+
+<div class="container">
+
+    {% include "ags4_tabs_inc.html" %}
+
+    <h1>AGS4 Abbreviations</h1>
+    <!-- Example row of columns -->
+    <div class="row">
+
+
+
+        {% for head_code in c.ags4_abbrs|sort %}
+        <h2>{{head_code}}</h2>
+
+
+        {% endfor %}
+     </div>
+</div>
+
+{% endblock main %}

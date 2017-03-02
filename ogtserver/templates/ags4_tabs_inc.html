@@ -1,0 +1,8 @@
+
+<div deadid="navbar" deadclass="collapse navbar-collapse">
+    <ul class="nav nav-tabs">
+        {% for n in c.tabs %}
+        <li {%if n.url == c.page %}class="active"{% endif %}><a href="/ags4/{{n.url}}">{{n.label}}</a></li>
+        {% endfor %}
+    </ul>
+</div>

@@ -43,8 +43,8 @@ ALLOWED_UPLOADS = ['ags', 'ags4']
 
 nav = [
     {"url": "/", "label": "Home"},
-    {"url": "/about", "label": "About"},
-    {"url": "/ags4/widget", "label": "AGS4 Data Dict"},
+    #{"url": "/about", "label": "About"},
+    {"url": "/ags4", "label": "AGS4 Data Dict"},
     {"url": "/viewer", "label":"Viewer"},
     {"url": "/convert", "label":"Convert"}
 ]
@@ -77,7 +77,51 @@ def viewer():
     c = make_page_context("/viewer", "Viewer")
     return render_template('viewer.html', c=c)
 
+
+@app.route('/ags4')
+def ags4_index():
+    c = make_page_context("/ags4", "AGS4 Data Dict")
+    return render_template('ags4.html', c=c)
+
+@app.route('/ags4/<page>')
+@app.route('/ags4/<page>/<xcode>')
+def ags4_widget(page, xcode=None):
+
+    tabs = [
+        {"url": "groups", "label": "Groups"},
+        {"url": "abbrs", "label": "Abbreviations"},
+        {"url": "types_units", "label": "Units &amp; Types"},
+        #{"url": "data_types", "label": "Data Types"},
+        {"url": "widget", "label": "Widget"},
+    ]
+
+    c = make_page_context("/ags4", "AGS4")
+    c['tabs'] = tabs
+    c['page'] = page
+
+    tpl = "ags4.html"
+    if page == "widget":
+        tpl = 'ags4_widget.html'
+
+    elif page == "abbrs":
+        c['ags4_abbrs'] = ags4.abbrs()
+        tpl = "ags4_abbrs.html"
+
+    elif page == "groups":
+        c['ags4_classified_groups'] = ags4.classified_groups()
+        tpl = "ags4_groups.html"
+
+    elif page == "group":
+        c['page'] = "groups"
+        c['ags4_group'] = ags4.group(xcode)
+        tpl = "ags4_group.html"
+
+
+    return render_template(tpl, c=c)
+
+
 #@app.route('/ags4/data-dict')
+"""
 @app.route('/ags4/data-dict.<ext>')
 def ags4_dd_json(ext="json"):
     if ext == "json":
@@ -87,8 +131,9 @@ def ags4_dd_json(ext="json"):
         return yaml.dump(ags4.all())
 
     return "NOT Handled : `%s`" % ext
-
-@app.route('/ags4/groups')
+"""
+"""
+@app.route('/ags4/<page>')
 @app.route('/ags4/groups.<ext>')
 def ags4_groups(ext="html"):
     if ext == "json":
@@ -103,7 +148,7 @@ def ags4_groups(ext="html"):
     c['ags4_classified_groups'] = ags4.classified_groups()
     #print c['ags4_classified_groups']
     return render_template("ags4_groups.html", c=c)
-
+"""
 
 @app.route('/ags4/groups_list.<ext>')
 def ags4_groups_list(ext="json"):
@@ -111,21 +156,16 @@ def ags4_groups_list(ext="json"):
         return jsonify({"groups_list": ags4.groups().values(), "success": True})
 
 
-@app.route('/ags4/group/<group_code>')
 @app.route('/ags4/group/<group_code>.<ext>')
-def ags4_group(group_code, ext="html"):
+def ags4_group(group_code, ext="json"):
     if ext == "json":
         return jsonify({"group": ags4.group(group_code), "success": True})
 
     if ext in ["yml", "yaml"]:
         return yaml.dump(ags4.all())
 
-    c = make_page_context("/ags4/group", "AGS4 Group")
 
-    # TODO Make its nested based on class
-    c['ags4_group'] = ags4.group(group_code)
-    print c['ags4_group']
-    return render_template("ags4_group.html", c=c)
+
 
 
 @app.route('/ags4/abbrs_list.<ext>')
@@ -144,15 +184,7 @@ def ags4_abbrs_list(ext="html"):
     return render_template("ags4_groups.html", c=c)
 
 
-@app.route('/ags4')
-def ags4_index():
-    c = make_page_context("/ags4", "AGS4 Data Dict")
-    return render_template('ags4.html', c=c)
 
-@app.route('/ags4/widget')
-def ags4_widget():
-    c = make_page_context("/ags4/widget", "AGS4 Widget")
-    return render_template('ags4_widget.html', c=c)
 
 
 

@@ -5,26 +5,39 @@
 
 {% block main %}
 
-<h1>AGS4 Group</h1>
+<div class="container">
+        {% include "ags4_tabs_inc.html" %}
+    <h1>AGS4 Group: {{c.ags4_group.group_code}}</h1>
 
 
-<h2>{{c.ags4_group.group_description}}</h2>
-<h3>{{c.ags4_group.class}}</h3>
 
-<table>
-{% for head in c.ags4_group.headings %}
+    <h2>{{c.ags4_group.group_description}}</h2>
+    <h3>{{c.ags4_group.class}}</h3>
+
+    <table class="table  table-striped table-bordered table-hover">
     <tr>
-        <td><b>{{head.head_code}}</b></td>
-        <td>{{head.head_description}}</td>
-        <td>{{head.unit}}</td>
-        <td>{{head.type}}</td>
-        <td>{{head.example}}</td>
+        <th>Head Code</th>
+        <th>Description</th>
+        <th>Suggested<br>Unit</th>
+        <th>Suggested<br>Type</th>
+        <th>Example</th>
     </tr>
-{% endfor %}
-</table>
+    <tbody>
+    {% for head in c.ags4_group.headings %}
+
+        <tr>
+            <td><b>{{head.head_code}}</b></td>
+            <td>{{head.head_description}}</td>
+            <td>{{head.unit}}</td>
+            <td>{{head.type}}</td>
+            <td>{{head.example}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
 
         NOTES:
         TODO
-
+</div>
 
 {% endblock main %}

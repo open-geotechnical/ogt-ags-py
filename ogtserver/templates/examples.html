@@ -1,0 +1,52 @@
+
+{% extends "base.html" %}
+
+{% block main %}
+
+
+
+<link rel="stylesheet" type="text/css" href="/js/{{EXT_VER}}/resources/css/ext-all.css">
+
+{# <link rel="stylesheet" type="text/css" href="/css/resources/css/ext-all-gray.css"> #}
+<script type="text/javascript" charset="utf-8" src="/js/{{EXT_VER}}/ext-all.js"></script>
+
+{# <link rel="stylesheet" href="/css/ags2go.1.css" /> #}
+
+<script type="text/javascript" charset="utf-8" src="/js/ags/main.js"></script>
+
+
+<script type="text/javascript" charset="utf-8" src="/js/ags/abbrev/AbbrevItemsStore.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/ags/abbrev/AbbrevsStore.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/ags/group/GroupsStore.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/ags/group/HeadingsStore.js"></script>
+
+<script type="text/javascript" charset="utf-8" src="/js/ags/stores_models.js"></script>
+
+<script type="text/javascript" charset="utf-8" src="/js/ags/abbrev/AbbrevsGrid.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/ags/abbrev/AbbrevView.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/ags/group/GroupsGrid.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/ags/group/HeadingsGrid.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/ags/group/GroupView.js"></script>
+
+
+<script type="text/javascript" charset="utf-8" src="/js/ags/MainViewport.js"></script>
+
+
+
+
+
+<div id="widget_div" style="clear: both;"></div>
+
+<script>
+
+var AGS_VERSION = 4;
+
+Ext.onReady(function(){
+
+VP = Ext.create("Ags.MainViewport", {});
+
+});
+
+</script>
+
+{% endblock main %}
