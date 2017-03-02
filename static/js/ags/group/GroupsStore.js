@@ -8,6 +8,7 @@ Ext.define('ags.group.GroupsStore', {
 		Ext.apply(this, {
 			model: 'ags.model.Group',
 			storeId: "groups",
+			groupField: 'class',
 			sssorters: [ {
 				property: 'dated',
 				direction: 'DESC'

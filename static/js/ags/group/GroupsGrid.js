@@ -8,15 +8,25 @@ Ext.define('ags.group.GroupsGrid' ,{
 	initComponent: function(){
 		 Ext.apply(this, {
 			title : 'Groups Index',
+			header: false,
 			store: Ext.getStore("groups"),
 			height: HEIGHT,
-
+            features: [
+                Ext.create('Ext.grid.feature.Grouping', {
+                    groupHeaderTpl: '{name}',
+                    hideGroupedHeader: true,
+                    startCollapsed: false,
+                })
+            ],
 			columns: [
 				{header: 'Group', dataIndex: 'group_code', flex: 1, menuDisabled: true, sortable: true, renderer: R.bold},
 				{header: 'Description', dataIndex: 'group_description', flex: 3, menuDisabled: true, sortable: true},
 				{header: 'Class',  dataIndex: 'class',  flex: 2, menuDisabled: true, sortable: true}
 
 			],
+			//tbar: [
+			//    {xtype: "button", text: "by Class", enableToggle: true }
+			//],
 
 			dockedItems: [{
                     xtype: 'pagingtoolbar',
