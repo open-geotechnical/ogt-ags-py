@@ -67,11 +67,11 @@ class OGTDocument:
         self.edit_mode = False
         """Option to extend output"""
 
-        self.inc_stats = False
-        """Include stats"""
+        self.include_stats = False
+        """Stats such as groups, row count etc"""
 
         self.include_source = False
-        """Include source code on out"""
+        """Includes 'source'  and 'source_cells' in output """
 
         #self.include_lines
 
@@ -168,8 +168,7 @@ class OGTDocument:
         return self.group("TYPE")
 
     def write(self, ext="json", beside=False, file_path=None,
-              include_source=False, edit_mode=False, minify=False,
-              zip=False, overwrite=False, include_stats=False):
+              zip=False, overwrite=False):
         """Write out the data to file in the selected format
 
         :param ext: The file format, see :data:`~ogt.__init__.FORMATS`

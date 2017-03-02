@@ -32,6 +32,7 @@ p_convert.add_argument("-m", "--minify", dest="minify", action="store_true", hel
 p_convert.add_argument("-o", "--overwrite", dest="overwrite", action="store_true", help="overwrite output file if it exists")
 
 p_convert.add_argument("--stats", dest="inc_stats", action="store_true", help="include stats in output (only json/yaml)")
+p_convert.add_argument("--source", dest="inc_source", action="store_true", help="include source text and cells")
 
 p_convert.add_argument("-w", "--write_file", dest="write_file",  help="output file to write")
 
@@ -125,9 +126,12 @@ if __name__ == "__main__":
             print err
 
         else:
-
-            mess, err = doc.write(ext=args.format, minify=args.minify, edit_mode=args.editor,
-                                beside=args.beside, file_path=args.write_file, include_stats=args.inc_stats,
+            doc.minify = args.minify
+            doc.edit_mode = args.editor
+            doc.include_stats = args.inc_stats,
+            doc.include_source = args.inc_source
+            mess, err = doc.write(ext=args.format,
+                                beside=args.beside, file_path=args.write_file,
                                 zip=args.zip, overwrite=args.overwrite)
             if err:
                 print err

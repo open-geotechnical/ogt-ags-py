@@ -144,6 +144,10 @@ def ags4_abbrs_list(ext="html"):
     return render_template("ags4_groups.html", c=c)
 
 
+@app.route('/ags4')
+def ags4_index():
+    c = make_page_context("/ags4", "AGS4 Data Dict")
+    return render_template('ags4.html', c=c)
 
 @app.route('/ags4/widget')
 def ags4_widget():

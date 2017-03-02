@@ -1,0 +1,35 @@
+
+{% extends "BASE.html" %}
+
+{% set st = " style='width: 100px;' " %}
+
+{% block main %}
+<h1>Unofficial  AGS4 Data Dictionary</h1>
+
+<div class="container">
+
+    <!-- Example row of columns -->
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Browse HTML Pages</h2>
+           <ul></ul>
+            <p><a class="btn btn-success" href="/ags4/groups" role="button" style="width: 120px;">Groups &raquo;</a></p>
+            <p><a class="btn btn-success" href="/ags4/abbrs" role="button"  style="width: 120px;">Abbreviations &raquo;</a></p>
+            <p><a class="btn btn-success" href="/ags4/units" role="button"  style="width: 120px;">Units &raquo;</a></p>
+            <p><a class="btn btn-success" href="/ags4/data_types" role="button"  style="width: 120px;">Data Types &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>JSON API</h2>
+            <p><a href="/ags4/groups.json">/ags4/groups.json</a></p>
+
+        </div>
+
+        <div class="col-md-4">
+            <h2>Widget</h2>
+            <p>Browse using responsive widget</p>
+            <p><a class="btn btn-info" href="/ags4/widget" role="button">Go &raquo;&nbsp;&nbsp;&nbsp;&nbsp;</a></p>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}
