@@ -39,7 +39,7 @@ Ext.define('ags.viewer.RawDataView' ,{
 		this.down("[g_name=raw_text]").setValue(doc.source);
 
 		// no of lines is the array length.. and some opitz
-		var glines = doc.source_lines;
+		var glines = doc.source_cells;
 		var lenny = glines.length;
 
 		// no of cols to create cos we have to arrange
@@ -49,7 +49,7 @@ Ext.define('ags.viewer.RawDataView' ,{
 		//Snag.. we need to walk through all groups and find max line length of line
 		// so  iterate first, find max col and create model
 		for(var i = 0; i < lenny; i++) {
-			var recs = glines[i].records;
+			var recs = glines[i]; //.records;
 			if( recs != null && recs.length > cols_length ) {
 				cols_length = recs.length;
 			}
@@ -65,7 +65,7 @@ Ext.define('ags.viewer.RawDataView' ,{
 		var model = this.make_model(model_fields);
 		var sto = Ext.create("Ext.data.Store", {model: model});
 		for(var di = 0; di < lenny; di++){
-			var rd = glines[di].records;
+			var rd = glines[di]; //.records;
 
 			var	rec = {};
 			if(rd != null ){

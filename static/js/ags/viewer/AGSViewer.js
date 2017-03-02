@@ -80,7 +80,7 @@ Ext.define('ags.viewer.AGSViewer' ,{
 
 				var tabPanel = this.get_tab_panel();
                 var groups = doc.groups;
-				console.log("groups=", groups);
+				//console.log("groups=", groups);
 				// Loops groups and add tabs for each group
 				//var grp_len = groups.length; // optimize
 				for(var ki in doc.groups){

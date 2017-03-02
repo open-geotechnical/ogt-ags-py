@@ -265,10 +265,10 @@ class OGTDocument:
         blob = None
         err = None
         if ext in ["js", "json"]:
-            blob, err = self.to_json(include_source=include_source, edit_mode=edit_mode, minify=minify, include_stats=include_stats)
+            blob, err = self.to_json()
 
         elif ext == "geojson":
-            blob, err = self.to_geojson(minify=minify)
+            blob, err = self.to_geojson()
 
         elif ext == "yaml":
             blob, err = self.to_yaml(include_source=include_source, edit_mode=edit_mode, include_stats=include_stats)
@@ -341,7 +341,7 @@ class OGTDocument:
         # include source raw source
         if self.include_source:
             dic['source'] = self.source
-            dic['source_lines'] = self.lines
+            dic['source_cells'] = self.csv_rows
 
         # include statistics
         if self.include_stats:

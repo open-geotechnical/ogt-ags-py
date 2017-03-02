@@ -57,7 +57,8 @@ Ext.define('ags.examples.ExamplesDialog' ,{
 				}),
 				listeners: {
 				 	scope: this,
-					selectionchange: this.selection_changed
+					selectionchange: this.selection_changed,
+					itemdblclick: this.select_file
 				}
 			});
 		}
