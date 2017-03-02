@@ -20,6 +20,8 @@ Ext.define('ags.group.GroupsGrid' ,{
             ],
 			columns: [
 				{header: 'Group', dataIndex: 'group_code', flex: 1, menuDisabled: true, sortable: true, renderer: R.bold},
+				{header: 'Parent', dataIndex: 'parent', flex: 1, menuDisabled: true, sortable: true, renderer: R.bold},
+				{header: 'Child', dataIndex: 'child', flex: 1, menuDisabled: true, sortable: true, renderer: R.bold},
 				{header: 'Description', dataIndex: 'group_description', flex: 3, menuDisabled: true, sortable: true},
 				{header: 'Class',  dataIndex: 'class',  flex: 2, menuDisabled: true, sortable: true}
 

@@ -24,7 +24,9 @@ Ext.define('ags.model.Group', {
     fields: [
 		'group_code',
 		'group_description',
-		'class'
+		'class',
+		'parent',
+		'child'
 	]
 });
 

@@ -150,6 +150,15 @@ def ags4_groups(ext="html"):
     return render_template("ags4_groups.html", c=c)
 """
 
+@app.route('/ags4/groups.<ext>')
+def ags4_groups(ext="json"):
+    if ext == "json":
+        return jsonify({"groups": ags4.groups(), "success": True})
+
+    if ext in ["yml", "yaml"]:
+        return yaml.dump(ags4.all())
+
+
 @app.route('/ags4/groups_list.<ext>')
 def ags4_groups_list(ext="json"):
     if ext == "json":

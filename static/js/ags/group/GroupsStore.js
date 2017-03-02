@@ -9,12 +9,12 @@ Ext.define('ags.group.GroupsStore', {
 			model: 'ags.model.Group',
 			storeId: "groups",
 			groupField: 'class',
-			sssorters: [ {
-				property: 'dated',
+			sorters: [ {
+				property: 'group_code',
 				direction: 'DESC'
 			}],
-			deadsortInfo: {
-				property: 'code',
+			sortInfo: {
+				property: 'group_code',
 				direction: 'DESC'
 			},
 			//groupField: "group",
