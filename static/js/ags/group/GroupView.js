@@ -13,7 +13,9 @@ Ext.define('ags.group.GroupView' ,{
 			height: HEIGHT,
   			layout: "border",
 			items: [
-				Ext.create("ags.group.HeadingsGrid", {flex: 1, region: "center"})
+				Ext.create("ags.group.HeadingsGrid", {flex: 3, region: "center"}),
+				Ext.create("ags.group.PreviewForm", {flex: 1, region: "east"})
+
 			]
 		});
 		this.callParent();

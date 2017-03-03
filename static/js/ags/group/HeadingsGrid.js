@@ -7,7 +7,7 @@ Ext.define('ags.group.HeadingsGrid' ,{
 
 	initComponent: function(){
 		 Ext.apply(this, {
-			ddtitle : 'Hedings Index',
+			title : 'Headings',
 			store: Ext.getStore("headings"),
 			height: 100,
 
