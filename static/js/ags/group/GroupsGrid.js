@@ -26,9 +26,9 @@ Ext.define('ags.group.GroupsGrid' ,{
 				{header: 'Class',  dataIndex: 'class',  flex: 2, menuDisabled: true, sortable: true}
 
 			],
-			//tbar: [
-			//    {xtype: "button", text: "by Class", enableToggle: true }
-			//],
+			tbar: [
+			    {xtype: "button", text: "Group by Class", enableToggle: true, pressed: true }
+			],
 
 			dockedItems: [{
                     xtype: 'pagingtoolbar',
@@ -41,13 +41,11 @@ Ext.define('ags.group.GroupsGrid' ,{
 				select: function(obj, rec, opts){
 					//console.log("yes", rec, rec.get("group_code"));
 					var sto = Ext.getStore("headings");
-					//console.log("detch", rec);
-					//var sto = Ext.getStore("abbrev_items");
 
-					//var proxy = Ext.getStore("abbrev_items").getProxy()
 					//console.log("proxy", proxy);
 					sto.getProxy().url = "/ags4/group/" + rec.get("group_code") + ".json";
 					sto.load()
+
 				}
 			}
 		});

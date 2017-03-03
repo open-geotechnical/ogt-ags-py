@@ -14,8 +14,12 @@ Ext.define('ags.group.GroupView' ,{
   			layout: "border",
 			items: [
 				Ext.create("ags.group.HeadingsGrid", {flex: 3, region: "center"}),
-				Ext.create("ags.group.PreviewForm", {flex: 1, region: "east"})
-
+				{xtype: "tabpanel", flex: 1, region: "east",
+				    items: [
+				        Ext.create("ags.group.NotesWidget", {}),
+				        Ext.create("ags.group.PreviewForm", {flex: 1, region: "east"})
+                    ]
+                }
 			]
 		});
 		this.callParent();

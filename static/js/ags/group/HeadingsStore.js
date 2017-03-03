@@ -31,6 +31,5 @@ Ext.define('ags.group.HeadingsStore', {
 			}
 		});
 		this.callParent();
-
 	}
 });
