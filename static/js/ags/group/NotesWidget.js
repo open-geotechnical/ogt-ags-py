@@ -1,6 +1,6 @@
 
 Ext.define('ags.group.NotesWidget' ,{
-    extend: 'Ext.panel.Panel',
+    extend: 'Ext.grid.Panel',
 	requires: [
 
 	],
@@ -10,12 +10,12 @@ Ext.define('ags.group.NotesWidget' ,{
 
 		 Ext.apply(this, {
 			title : 'Notes',
-			xxheight: HEIGHT,
-  			xxlayout: "border",
-			items: [
-				{xtype:"textarea"}
+			store: Ext.getStore("notes"),
+			height: 100,
 
+			columns: [
 
+				{header: 'Note', dataIndex: 'note', flex: 1, menuDisabled: true, sortable: true}
 			]
 		});
 		this.callParent();

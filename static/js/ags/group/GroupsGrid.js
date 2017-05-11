@@ -16,6 +16,7 @@ Ext.define('ags.group.GroupsGrid' ,{
                     groupHeaderTpl: '{name}',
                     hideGroupedHeader: true,
                     startCollapsed: false,
+                    id: "ags4-class-grouping"
                 })
             ],
 			columns: [
@@ -27,7 +28,11 @@ Ext.define('ags.group.GroupsGrid' ,{
 
 			],
 			tbar: [
-			    {xtype: "button", text: "Group by Class", enableToggle: true, pressed: true }
+			    {xtype: "button", text: "Group by Class", enableToggle: true, pressed: true,
+			        handler: function(){
+			            Ext.getById("ags4-class-grouping").disable();
+                    }
+			     }
 			],
 
 			dockedItems: [{
@@ -46,6 +51,9 @@ Ext.define('ags.group.GroupsGrid' ,{
 					sto.getProxy().url = "/ags4/group/" + rec.get("group_code") + ".json";
 					sto.load()
 
+				},
+				itemdblclick: function(obj, rec, opts){
+                    console.log("YIPEE", rec, rec.get("group_code"));
 				}
 			}
 		});

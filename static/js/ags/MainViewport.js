@@ -22,5 +22,5 @@ Ext.define('ags.MainViewport', {
 					Ext.create("ags.abbrev.AbbrevView", {columnWidth: 0.5})
 				]
 			}
-        ]
+   ]
 });
