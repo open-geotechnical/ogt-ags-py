@@ -1,13 +1,25 @@
 ogt-ags-py
 ============================
 
-Experimental library and tools for validating and converting AGS dataformat files, written in Python
+Circa 2017 this is WIP on a Python librar/toolkit for interpolation with AGS dataformat files.
+
+The code has three fundamental goals:
+- Converting from AGS format to json+yaml (odf_xlsx is WIP)
+- Converting json/yaml into ags format
+- Validating and ags "file", whatever the format
+
+At present there is:
+- a library base
+- a command line
+- validation is WIP
+
+For developers the:
 
 - Docs at https://open-geotechnical.github.io/ogt-ags-py/
 - Code at https://github.com/open-geotechnical/ogt-ags-py
 
-Command line
-===========================
+### Command line
+
 ```bash
 # convert ags file to json
 ./ogt-cli.py convert -b -o -f json ./my_project.ags
