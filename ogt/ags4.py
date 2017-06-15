@@ -778,7 +778,9 @@ def examples_list():
     # TODO check dir exists
     pth =  os.path.join(USER_TEMP, "ags4_examples.min.json")
     data, err = ogt.utils.read_json_file(pth)
-    return [ {"file_name": r['file_name']} for r in data['ags4_examples'] ]
+    if err:
+	    return None, err
+    return [ {"file_name": r['file_name']} for r in data['ags4_examples'] ], None
 
 def example(file_name):
 

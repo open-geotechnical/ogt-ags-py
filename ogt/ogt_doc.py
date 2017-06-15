@@ -16,6 +16,25 @@ import ogt.ags4
 import ogt.ogt_group
 import ogt.utils
 
+class OGTDocumentOptions:
+
+    def __init__(self):
+
+        self.minify = False
+        """Option whether to minify output Json only"""
+
+        self.edit_mode = False
+        """Option to extend output"""
+
+        self.include_stats = False
+        """Stats such as groups, row count etc"""
+
+        self.include_source = False
+        """Includes 'source'  and 'source_cells' in output """
+
+        #self.include_source = False
+        """Includes 'source'  and 'source_cells' in output """
+
 
 class OGTDocument:
     """Class :class:`~ogt.ogt_doc.OGTDocument` represents an ags file and
@@ -61,19 +80,9 @@ class OGTDocument:
         self.error_rows = {}
         """A `list` of rows with errors"""
 
-        self.minify = False
-        """Option whether to minify output Json only"""
+        self.opts = OGTDocumentOptions()
 
-        self.edit_mode = False
-        """Option to extend output"""
 
-        self.include_stats = False
-        """Stats such as groups, row count etc"""
-
-        self.include_source = False
-        """Includes 'source'  and 'source_cells' in output """
-
-        #self.include_lines
 
     def hash(self):
         """Calculate the `sha1` hash
@@ -335,15 +344,15 @@ class OGTDocument:
 
         # loop groups and add struct based on edit_mode
         for k, g in self.groups.iteritems():
-            dic['groups'][k] = g.to_dict(edit_mode=self.edit_mode)
+            dic['groups'][k] = g.to_dict()
 
         # include source raw source
-        if self.include_source:
+        if self.opts.include_source:
             dic['source'] = self.source
             dic['source_cells'] = self.csv_rows
 
         # include statistics
-        if self.include_stats:
+        if self.opts.include_stats:
             dic['stats'] = self.stats()
         return dic
 

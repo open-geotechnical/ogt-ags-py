@@ -11,7 +11,7 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 
 from  . import xwidgets
 from .img import Ico
-from ogt import utils
+from ogt import ags4
 
 
 class OGTSourceViewWidget( QtGui.QWidget ):
@@ -233,27 +233,29 @@ class ExamplesWidget( QtGui.QWidget ):
         for i in range(0, self.tabBar.count()):
             self.tabBar.removeTab(i)
 
-        dirs, err = utils.get_example_dirs()
+        dirs, err = ags4.examples_list()
         if err:
             # todo warn
             return
 
 
         for d in dirs:
-            nidx = self.tabBar.addTab(Ico.icon(Ico.Folder), d)
+            print "=", d
+            nidx = self.tabBar.addTab(Ico.icon(Ico.Folder), d['file_name'])
             self.tabBar.setTabData(nidx, d)
         self.tabBar.blockSignals(False)
 
         self.on_tab_changed(0)
 
-    def list_files(self, sub_dir):
+    def list_files(self, sub_dir=None):
 
-        files_list, err = utils.list_examples( sub_dir )
+        files_list, err = ags4.examples_list()
         if err:
             pass #TODO
         self.tree.clear()
 
-        for file_name in files_list:
+        for fd in files_list:
+            file_name = fd["file_name"]
             item = QtGui.QTreeWidgetItem()
             item.setText(C_EG.file_path, file_name)
             item.setText(C_EG.file_name, os.path.basename(file_name))

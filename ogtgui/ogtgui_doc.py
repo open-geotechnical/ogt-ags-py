@@ -74,6 +74,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
         self.file_path = None
 
         doc = ags4.AGS4Document()
+        doc.opts.edit_mode = True
         err = doc.load_from_file(file_path)
         print "err=", err
 
@@ -84,13 +85,13 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
         self.doc = doc
 
-        data = doc.to_dict(edit_mode=True)
+        data = doc.to_dict()
         for gkey in data['groups']:
             self.load_group( data['groups'].get(gkey) )
 
 
     def load_group(self, group_dic):
-
+        print group_dic
         widget = ogtgui_group.OGTGroupWidget(self)
         self.tabBar.addTab(Ico.icon(Ico.Group), group_dic['group_code'])
 

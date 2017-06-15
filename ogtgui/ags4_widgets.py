@@ -658,8 +658,8 @@ class AGS4_HeadingDetailWidget( QtGui.QWidget ):
 
         for c in [CA.head_code]:
             pass #self.tree.setColumnHidden(c, True)
-        self.tree.setColumnWidth(CA.item_code, 100)
-        self.tree.setColumnWidth(CA.item_description, 50)
+        self.tree.setColumnWidth(CA.code, 100)
+        self.tree.setColumnWidth(CA.description, 50)
         self.tree.setColumnWidth(CA.head_code, 40)
 
 
