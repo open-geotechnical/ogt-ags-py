@@ -104,7 +104,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         """
         self.ogtDoc, err = ogt_doc.create_doc_from_ags4_file(file_path)
         proj = self.ogtDoc.proj_dict()
-        print "proj=", proj
+        print "proj=", proj, self.ogtDoc.source
         self.lblHeader.setText(proj['PROJ_NAME'])
 
         self.ogtDocWidget.load_document(self.ogtDoc)

@@ -16,6 +16,7 @@ import ogt.ags4
 import ogt.ogt_group
 import ogt.utils
 
+
 class OGTDocumentOptions:
 
     def __init__(self):
@@ -23,8 +24,8 @@ class OGTDocumentOptions:
         self.minify = False
         """Option whether to minify output Json only"""
 
-        self.edit_mode = False
-        """Option to extend output"""
+        self.xmode = True
+        """Option to `extend` output and not just the data"""
 
         self.include_stats = False
         """Stats such as groups, row count etc"""
@@ -35,6 +36,8 @@ class OGTDocumentOptions:
         #self.include_source = False
         """Includes 'source'  and 'source_cells' in output """
 
+    def __repr__(self):
+        return "<OGTDocOpts xmode=%s, mini=%s>" % (self.xmode, self.minify)
 
 class OGTDocument:
     """Class :class:`~ogt.ogt_doc.OGTDocument` represents an ags file and
@@ -81,6 +84,7 @@ class OGTDocument:
         """A `list` of rows with errors"""
 
         self.opts = OGTDocumentOptions()
+        """Set default options :class:`~ogt.ogt_doc.OGTDocumentOptions` """
 
 
 

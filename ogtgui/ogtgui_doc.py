@@ -91,7 +91,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
 
     def load_group(self, group_dic):
-        print group_dic
+        print "############", group_dic
         widget = ogtgui_group.OGTGroupWidget(self)
         self.tabBar.addTab(Ico.icon(Ico.Group), group_dic['group_code'])
 

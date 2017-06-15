@@ -2,8 +2,14 @@
 
 import ogt.ags4
 
+GROUPS_FIRST_CODES  = ["PROJ", "TRAN", "LOCA", "HDPH", "GEOL", "SAMP"]
+"""The groups we want to appear first"""
+
+GROUPS_LAST_CODES = ["ABBR", "DICT", "FILE", "TYPE", "UNIT"]
+"""The groups we want to appear last"""
+
 def groups_sort(unsorted_groups):
-    """Returns a prefered order for the groups.
+    """Returns a preferred order for the group keys
 
     .. note::
 
@@ -13,33 +19,41 @@ def groups_sort(unsorted_groups):
 
         So this return a list with
 
-        - at start PROJ, TRAN, LOCA, HDPH, GEOL, SAMP
-        - at end ABBR. DICT, FILE, TYPE, UNIT
+        - at the start list
+        - at end list
         - and everything else in the middle sorted alphabetically
+        - BUT ??
+        - one idea might be to push insitu stuff to front
+        - and lab stuff next
+        - and main reporting stuff to end
+        - although it might be preferable the opposite away around
 
-    :return: An `list` of group codes
+
+    :return: An `list` of group codes in preffered order
     """
 
-    start = ["PROJ", "TRAN", "LOCA", "HDPH", "GEOL", "SAMP"]
-    end = ["ABBR", "DICT", "FILE", "TYPE", "UNIT"]
-
+    # make a newlist/copy of the groups in doc
     grps = unsorted_groups[:]
 
+    ## the start groups
     ret_start = []
-    for gc in start:
+    for gc in GROUPS_FIRST_CODES:
         if gc in grps:
+            # exists so add to start, and remove from list
             ret_start.append(gc)
             grps.remove(gc)
 
+    # the end groups
     ret_end = []
-    for gc in end:
+    for gc in GROUPS_LAST_CODES:
         if gc in grps:
+             # exists so add to end, and remove from list
             ret_end.append(gc)
             grps.remove(gc)
 
-    ret = ret_start + sorted(grps) + ret_end
-    #print ret
-    return ret
+    return_list = ret_start + sorted(grps) + ret_end
+    #print return_list
+    return return_list
 
 
 class OGTGroup:
@@ -124,7 +138,7 @@ class OGTGroup:
         return self._data_dict
 
 
-    def to_dict(self, edit_mode=False):
+    def to_dict(self):
         """Return a dictionary  of the group data in two formats
 
         :param edit_mode: see :ref:`edit_mode`
@@ -132,7 +146,8 @@ class OGTGroup:
         :rtype: dict
         :return: A dictionary with the data
         """
-        if edit_mode:
+        print self.docParent.opts, self
+        if self.docParent.opts.xmode:
 
             # shortcut to data dict
             grp_dd = self.data_dict()
@@ -184,9 +199,11 @@ class OGTGroup:
             lst.append( self.types[ki] )
 
         return lst
-"""
-class OGTHeading:
 
+
+
+class OGTHeadingPLACEHOLDER:
+    """TODO .. think at one point we need to abstract heading said pedro"""
     def __init__(self, head_code=None, index=None):
 
         self.head_code = head_code
@@ -194,4 +211,4 @@ class OGTHeading:
 
         self.unit = None
         self.type = None
-"""
+

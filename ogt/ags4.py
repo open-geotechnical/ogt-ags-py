@@ -64,7 +64,11 @@ def initialise():
     return None
 
 class AGS4_DESCRIPTOR:
-    """Constants defining the data descriptors (See :ref:`ags4_rule_3`)"""
+    """Constants defining the data descriptors (See :ref:`ags4_rule_3`)
+
+       The data descriptor is in the first column of every AGS row
+       If the first column is not one of above.. then ohh dear.. fail
+    """
     group = "GROUP"
     heading = "HEADING"
     unit = "UNIT"
@@ -73,9 +77,15 @@ class AGS4_DESCRIPTOR:
 
     @staticmethod
     def group_header():
-        """List of header defined in :ref:`ags4_rule_2a`
+        """The list of headers as required and defined in :ref:`ags4_rule_2a`
 
-        :return: A list of descriptions in order
+        - GROUP = first .. obviously = tab on spreadsheet or db table
+        - HEADING = second.. the columns, = cols on spreasheet or db fields
+        - the data type and unit
+        - then the almighty DATA ! ;-)
+        - as this is the "group_header(), doth not return the DATA
+
+        :return: A list of `descriptors` in order
         """
         return [
             AGS4_DESCRIPTOR.group,
