@@ -11,7 +11,7 @@ import ogt.ags4
 from . import EXAMPLES_DIR, HAVE_YAML, USER_TEMP
 
 def to_yaml(data):
-    """Serializes python data to a :ref:`yaml` string
+    """Serializes python data to a :ref:`yaml` text string ascii atmo
 
     :type data: dict or list
     :param data: the python data to be encoded
