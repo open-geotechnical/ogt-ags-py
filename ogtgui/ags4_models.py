@@ -13,7 +13,7 @@ import app_globals as G
 
 from . import xobjects
 
-class AGS_TYPE:
+class AGS4_TYPE:
     abbrev = "ABBR"
     abbrev_item = "ABBR_ITEM"
     group = "GROUP"
@@ -21,7 +21,7 @@ class AGS_TYPE:
     note = "NOTE"
 
 
-class AGS_COLORS:
+class AGS4_COLORS:
     group = "#286225"
     abbrev = "#496FA3"
 
@@ -29,35 +29,44 @@ class AGS_COLORS:
 SHOW_NONE = "#__NONE__#"
 
 def type_ico(ags_type):
-
+    """Returns an icon for the data type , see ,,TODO"""
     v = ags_type.upper()
 
-
-    if v in ["DT"]: # Date time
+    # Date time
+    if v in ["DT"]:
         return Ico.TypeDate
 
-    if v.endswith("DP"): # n decimal places
+    # decimal places
+    if v.endswith("DP"):
         return  Ico.TypeDecimal
 
-    if v == "ID": # UID
+    # UID
+    # TODO: (is this realy UID in doucment ?? aslks pete)
+    if v == "ID":
         return  Ico.TypeID
 
-    if v in ["PA", "PU", "PT"]: # Picklists
+    # Picklists
+    if v in ["PA", "PU", "PT"]:
         return  Ico.TypePicklist
 
-    if v.endswith("SCI"):  # n + Scientific
+    # Scientific stuff
+    if v.endswith("SCI"):
         return  Ico.TypeSci
 
-    if v == "YN": # Boolean yes/no
+    # Boolean yes/no, false, true, not false
+    if v == "YN":
         return  Ico.TypeCheckBox
 
-    if v in ["X"]: # text
+    # text and text in general
+    if v in ["X"]:
         return  Ico.TypeText
 
+    # oopps
     return Ico.TypeUnknown
 
 def type_icon(ags_type):
     return type_ico(ags_type)
+
 ##===================================================================
 ## Main
 ##===================================================================

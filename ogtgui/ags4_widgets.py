@@ -11,7 +11,7 @@ import app_globals as G
 #from ogt import utils
 from .img import Ico
 from . import xwidgets
-from ags4_models import CG, CH,CA, SHOW_NONE, AGS_COLORS
+from ags4_models import CG, CH,CA, SHOW_NONE, AGS4_COLORS
 
 
 class AGS4_DataDictBrowser( QtGui.QWidget ):

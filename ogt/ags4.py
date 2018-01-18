@@ -356,12 +356,7 @@ def run_tests(rules):
 
         report, err = validate_ags4_file(ags_file)
         print report, err
-        """
-        if err:
-            dic['errors'] = err
-        else:
-            dic['report'] = report
-        """
+
         summary.append(report)
 
     s = summary_to_string(summary)
