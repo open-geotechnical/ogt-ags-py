@@ -155,7 +155,7 @@ class MainWindow( QtGui.QMainWindow ):
 
 
     def on_after(self):
-        self.examplesWidget.load()
+        #self.examplesWidget.load()
 
         #self.on_ags4_browse()
 
@@ -238,8 +238,8 @@ class MainWindow( QtGui.QMainWindow ):
                 return
 
         # create new instance
-        browser = ags4_widgets.AGS4_DataDictBrowser()
-        self.load_widget(browser, "AGS4 Data Dict", ico=Ico.Ags4)
+        browseWidget = ags4_widgets.AGS4_DataDictBrowser()
+        self.load_widget(browseWidget, "AGS4 Data Dict", ico=Ico.Ags4)
         self.set_action_checked(self.actionAgs4Browse, True)
 
 

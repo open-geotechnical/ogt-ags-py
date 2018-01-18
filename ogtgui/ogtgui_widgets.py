@@ -3,11 +3,10 @@
 @author: Peter Morgan <pete@daffodil.uk.com>
 """
 
-import collections
 import os
+import collections
 
 from Qt import QtGui, QtCore, Qt, pyqtSignal
-
 
 from  . import xwidgets
 from .img import Ico
@@ -233,15 +232,17 @@ class ExamplesWidget( QtGui.QWidget ):
         for i in range(0, self.tabBar.count()):
             self.tabBar.removeTab(i)
 
-        dirs, err = utils.get_example_dirs()
-        if err:
-            # todo warn
-            return
+        ## TODO - examples from open-geptechnical
+        #dirs, err = utils.get_example_dirs()
+        #if err:
+        #    # todo warn
+        #    return
 
-
+        """
         for d in dirs:
             nidx = self.tabBar.addTab(Ico.icon(Ico.Folder), d)
             self.tabBar.setTabData(nidx, d)
+        """
         self.tabBar.blockSignals(False)
 
         self.on_tab_changed(0)
