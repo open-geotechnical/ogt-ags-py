@@ -270,3 +270,4 @@ class IconLabel(QtGui.QLabel):
         #img_file_path = G.settings.image_path( "/missc/arrow_left_down.gif" )
         icon = Ico.icon(ico)
         self.setPixmap( icon.pixmap(QtCore.QSize( 16, 16 )) )
+        self.setFixedWidth(20)

@@ -126,7 +126,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
         self.treeClass.setFixedHeight(250)
 
-        self.treeClass.selectionModel().selectionChanged.connect(self.on_class_selection)
+        self.treeClass.selectionModel().selectionChanged.connect(self.on_class_tree_selected)
 
 
 
@@ -149,7 +149,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.tree.setColumnWidth(CG.description, 250)
 
         self.tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.tree.selectionModel().selectionChanged.connect(self.on_tree_selected)
+        self.tree.selectionModel().selectionChanged.connect(self.on_groups_tree_selected)
 
         self.tree.sortByColumn(CG.code)
 
@@ -193,9 +193,10 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
 
     #=========================================
-    def on_tree_selected(self, sel, desel):
+    def on_groups_tree_selected(self, sel=None, desel=None):
 
         if not self.tree.selectionModel().hasSelection():
+             self.agsGroupViewWidget.load_group( None )
              self.sigGroupSelected.emit( None )
              return
 
@@ -211,8 +212,6 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.sigGroupSelected.emit( group_code )
 
 
-
-
     def on_filter_col(self, idx):
         self.update_filter()
         self.txtCode.setFocus()
@@ -221,14 +220,13 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.update_filter()
 
     def update_filter(self):
-        #print "update_filter", self.tabWidget.currentIndex(), self
         self.treeClass.blockSignals(True)
         self.treeClass.clearSelection()
         self.treeClass.blockSignals(False)
 
         cidx = self.comboSearchFor.itemData(self.comboSearchFor.currentIndex()).toInt()[0]
         self.proxy.setFilterKeyColumn(cidx)
-        self.proxy.setFilterFixedString(self.txtCode.text())
+        self.proxy.setFilterFixedString(self.txtFilter.text())
 
 
 
@@ -238,8 +236,10 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
 
 
-    def on_class_selection(self, selected, deselected):
+    def on_class_tree_selected(self, selected, deselected):
         if not self.treeClass.selectionModel().hasSelection():
+            self.txtFilter.setFocus()
+            #self.on_group_tree_selected()
             return
 
         self.proxy.setFilterKeyColumn(CG.cls)
@@ -249,13 +249,10 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
             self.proxy.setFilterFixedString("")
         else:
             self.proxy.setFilterFixedString(item.text())
+        self.txtFilter.setFocus()
 
-    def deadon_tree_context_menu(self, point):
 
-        if not self.tree.selectionModel().hasSelection():
-            return#
-
-    def init(self):
+    def init_load(self):
         pass
 
     def on_loaded(self):
@@ -342,14 +339,13 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
     def load_group(self, group_code):
 
         if group_code == None:
-            self.agsHeadingsTable.filter_headings()
+            self.agsHeadingsTable.filter_by_group(None)
+            self.lblGroupCode.setText("")
+            self.lblDescription.setText("")
             return
 
 
         g = G.ags.get_group(group_code)
-        #print group_code, g
-
-
 
         self.lblGroupCode.setText(g['group_code'])
         self.lblDescription.setText(g['group_description'])
@@ -362,7 +358,7 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
                 s = len(g['notes'])
             self.tabWidget.setTabText(1, "Notes - %s" % s)
 
-        self.agsHeadingsTable.filter_headings(g['group_code'])
+        self.agsHeadingsTable.filter_by_group(g['group_code'])
         self.agsGroupNotesTable.load_notes(g['group_code'])
 
 
@@ -381,7 +377,7 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = True
-
+        self.group_code = None
         self.cache = None
 
         self.proxy = QtGui.QSortFilterProxyModel()
@@ -391,7 +387,7 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.proxy.setFilterFixedString(SHOW_NONE)
 
 
-        self.group_code = None
+
 
 
         self.mainLayout = QtGui.QVBoxLayout()
@@ -411,8 +407,9 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.tree.setModel(self.proxy)
 
 
-        for c in [CH.example, CH.group_code,  CH.sort]:
-            pass #self.tree.setColumnHidden(c, True)
+        for c in [CH.class_, CH.group_code, CH.group_descr]:
+           self.tree.setColumnHidden(c, True)
+        self.tree.setColumnWidth(CH.sort, 20)
         self.tree.setColumnWidth(CH.head_code, 100)
         self.tree.setColumnWidth(CH.unit, 50)
         self.tree.setColumnWidth(CH.status, 40)
@@ -431,11 +428,9 @@ class AGS4HeadingsTable( QtGui.QWidget ):
 
 
 
-    def filter_headings(self, gc=None):
+    def filter_by_group(self, gc=None):
 
         self.group_code = SHOW_NONE if gc == None else gc
-
-
         self.proxy.setFilterFixedString(self.group_code)
 
     #=========================================
@@ -618,12 +613,12 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
 
         self.icoLabel = xwidgets.IconLabel(self, ico=Ico.AgsGroup)
         self.icoLabel.setStyleSheet("background-color: white; color: #444444;")
-        self.toolbar.addWidget(self.icoLabel)
+        self.toolbar.addWidget(self.icoLabel, 0)
 
         self.lblAbbrCode = QtGui.QLabel(" ")
         self.lblAbbrCode.setStyleSheet("background-color: white; color: %s; font-weight: bold; font-family: monospace; padding: 3px;" % AGS4_COLORS.group)
-        self.toolbar.addWidget(self.lblAbbrCode, 1)
-        self.lblAbbrCode.setFixedWidth(50)
+        self.toolbar.addWidget(self.lblAbbrCode, 20)
+        #self.lblAbbrCode.setFixedWidth(50)
 
 
         self.splitter = QtGui.QSplitter()
@@ -641,7 +636,7 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
 
 
         for c in [CA.head_code]:
-            pass #self.tree.setColumnHidden(c, True)
+            self.tree.setColumnHidden(c, True)
         self.tree.setColumnWidth(CA.code, 100)
         self.tree.setColumnWidth(CA.description, 50)
         self.tree.setColumnWidth(CA.head_code, 40)
@@ -652,9 +647,15 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
         # TODO fix sort to ags
         self.tree.setSortingEnabled(True)
 
-
+        self.load_heading(None)
 
 
     def load_heading(self, head_code):
 
         self.proxy.setFilterFixedString(SHOW_NONE if head_code == None else head_code)
+
+        # now check rowCount() to see if records
+        # FIXME we need to check for PA, P? instead
+        dis = self.proxy.rowCount() == 0
+        self.lblAbbrCode.setText("" if dis else head_code)
+        self.setDisabled(dis)

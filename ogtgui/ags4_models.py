@@ -106,20 +106,14 @@ class AgsObject(QtCore.QObject):
         self.load()
 
     def load(self):
-        print "load()", self
-        all = ogt.ags4.all()
-        print "all=", all.keys()
 
+        all = ogt.ags4.all()
         self.modelAbbrItems.load_data(all['abbrs'])
 
         groups = ogt.ags4.groups()
-        #print groups.keys()
-
         self.modelGroups.load_data(groups)
 
         self.modelNotes.init_words()
-
-
 
         self.sigLoaded.emit()
 
@@ -167,6 +161,11 @@ class AgsObject(QtCore.QObject):
 class NotesModel():
 
     def __init__(self):
+
+        self.d = {}
+        self.words = {}
+
+    def remove_rows(self):
         self.d = {}
         self.words = {}
 
@@ -228,8 +227,11 @@ class GroupsModel(xobjects.XStandardItemModel):
 
     def load_data(self, groups):
 
-        classes = []
+        self.remove_rows()
+        G.ags.modelHeadings.remove_rows()
+        G.ags.modelNotes.remove_rows()
 
+        classes = []
 
         for group_code in groups.keys():
             rec = groups[group_code]
@@ -342,14 +344,15 @@ class deadAbbrevsModel(xobjects.XStandardItemModel):
 ##===================================================================
 class CH:
     """Columns NO's for the ;class:`~ogtgui.ags_models.HeadingsModel`"""
-    head_code = 0
-    status = 1
-    unit = 2
-    data_type = 3
+    sort = 0
+    head_code = 1
+    status = 2
+    unit = 3
+    data_type = 4
 
-    description = 4
-    example = 5
-    sort = 6
+    description = 5
+    example = 6
+
     group_code = 7
     group_descr = 8
     class_ = 9
@@ -367,7 +370,7 @@ class HeadingsModel(xobjects.XStandardItemModel):
         #hi.setTextAlignment(C.unit, QtCore.Qt.AlignHCenter)
 
         self.set_header(CH.example, "Example")
-        self.set_header(CH.sort, "Srt")
+        self.set_header(CH.sort, "Srt", sort="int")
         self.set_header(CH.group_code, "Group")
         self.set_header(CH.group_descr, "Group Description")
         self.set_header(CH.class_, "Class")
@@ -438,35 +441,21 @@ class AbbrevItemsModel(xobjects.XStandardItemModel):
 
 
     def load_data(self, data):
-        #print self, data.keys()
+        self.remove_rows()
         for head_code, recs in data.iteritems():
-            #print head_code, recs
             self.append_abbrv_items(head_code, data[head_code]['abbrs'])
 
     def append_abbrv_items(self, head_code, recs):
 
-
         for rec in recs:
-            #items = self.get_item_row(rec['item_id'])
-            #if items == None:
-            #print rec
             items = self.make_blank_row()
-            #items[CI.item_id].set(rec['item_id'])
-
             items[CA.code].set(rec['code'], ico=Ico.AgsAbbrevItem, bold=True, font="monospace")
             items[CA.description].set(rec['description'])
             items[CA.head_code].set(head_code)
             self.appendRow(items)
 
     def has_abbrev(self, head_code):
-            return len(  self.findItems(head_code, Qt.MatchExactly, CA.head_code) ) > 0
-
-    def deadget_item_row(self, item_id):
-        items = self.findItems(str(item_id), Qt.MatchExactly, CA.item_id)
-        if len(items) == 0:
-            return None
-        #ridx = items[0].index().row()
-        return self.get_items_from_item(items[0])
+        return len(  self.findItems(head_code, Qt.MatchExactly, CA.head_code) ) > 0
 
     def get_picklist(self, abbrev_code):
         lst = []
@@ -506,8 +495,11 @@ class ClassesModel(xobjects.XStandardItemModel):
         return items
 
     def load_classes(self, classes):
+        rootItem = self.item(0, 0) # the 'All'
+        ## remove existing nodes
+        while rootItem.hasChildren():
+            rootItem.removeRow(0)
 
-        rootItem = self.item(0, 0)
         for r in classes:
             citems = self.make_blank_row()
             citems[0].set(r)
@@ -515,7 +507,8 @@ class ClassesModel(xobjects.XStandardItemModel):
 
         self.sigLoaded.emit()
 
-
+    def remove_rows(self):
+        print catch
 ##===================================================================
 ## Classes
 ##===================================================================
