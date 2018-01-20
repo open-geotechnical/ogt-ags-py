@@ -70,7 +70,7 @@ class MainWindow( QtGui.QMainWindow ):
 
         #=======
         self.menuViews = self.menuBar().addMenu("View")
-        self.actionAgs4Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS4 data dict", self.on_ags4_browse)
+        self.actionAgs4Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS4 data dict", self.on_browse_ags4)
         self.actionAgs4Browse.setCheckable(True)
 
         self.actionAgs3Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS 3: data dict", self.on_ags3_browse)
@@ -100,7 +100,7 @@ class MainWindow( QtGui.QMainWindow ):
 
         self.toolBar.addSeparator()
 
-        self.toolBar.addAction(self.actionQuit)
+        #self.toolBar.addAction(self.actionQuit)
 
         self.toolBar.addSeparator()
 
@@ -111,12 +111,12 @@ class MainWindow( QtGui.QMainWindow ):
         self.lblBanner.setAlignment(Qt.AlignRight)
         self.lblBanner.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)
 
-        sty = "font-style:italic; font-weight: bold;  color: #187300; margin: 0; font-size: 20pt; font-family: arial;"
+        sty = "font-style:italic; font-weight: bold;  color: white; margin: 0; font-size: 16pt; font-family: arial;"
         sty += "padding: 5px;"
         sty += "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, "
         sty += "stop: 0 #eeeeee "
-        sty += ", stop: 0.2 #F7FB93 "
-        sty += "stop: 1 #FCFFBB"
+        sty += ", stop: 0.3 #F7FB93 "
+        sty += "stop: 1 #B1751B"
         sty += ");"
         self.lblBanner.setStyleSheet(sty)
         self.toolBar.addWidget(self.lblBanner)
@@ -161,7 +161,7 @@ class MainWindow( QtGui.QMainWindow ):
 
         #G.Ags.load()
         if G.args.dev:
-            self.on_ags4_browse()
+            self.on_browse_ags4()
 
 
 
@@ -181,7 +181,7 @@ class MainWindow( QtGui.QMainWindow ):
         self.tabBar.setCurrentIndex(self.tabBar.count() - 1)
         self.stackWidget.setCurrentIndex(self.stackWidget.count() - 1)
 
-        widget.init()
+        widget.init_load()
 
     def on_www_request_finished(self, xreply):
         #print xreply
@@ -224,13 +224,13 @@ class MainWindow( QtGui.QMainWindow ):
 
         widget = self.stackWidget.widget(idx)
 
-        if isinstance(widget, ags4_widgets.AGS4_DataDictBrowser):
+        if isinstance(widget, ags4_widgets.AGS4DataDictBrowser):
             self.set_action_checked(self.actionAgs4Browse, False)
 
         self.tabBar.removeTab(idx)
         self.stackWidget.removeWidget( widget )
 
-    def on_ags4_browse(self):
+    def on_browse_ags4(self):
         """Opens or switches to the :ref:`ags4_data_dict`"""
         for idx in range(0, self.stackWidget.count()):
             if isinstance(self.stackWidget.widget(idx), ags4_widgets.AGS4DataDictBrowser):

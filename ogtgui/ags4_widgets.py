@@ -46,24 +46,25 @@ class AGS4DataDictBrowser( QtGui.QWidget ):
         #self.tabWidget.addTab(self.agsUnitsWidget, dIco.icon(dIco.AgsUnits), "Units")
 
 
-    def init(self):
+    def init_load(self):
 
         # load data dict
         G.ags.init_load()
-
-
         self.tabWidget.setCurrentIndex(0)
+
+        self.agsGroupsWidget.set_focus()
 
 
 class AGS4GroupsBrowser( QtGui.QWidget ):
     """The left panel with the classes, search and groups view"""
 
-    sigCodeSelected = pyqtSignal(object)
+    sigGroupSelected = pyqtSignal(object)
 
     def __init__( self, parent=None):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
+        self.setObjectName("AGS4GroupsBrowser")
 
         self.proxy = QtGui.QSortFilterProxyModel()
         self.proxy.setSourceModel(G.ags.modelGroups)
@@ -75,7 +76,8 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.setLayout(self.mainLayout)
 
-        self.splitter = QtGui.QSplitter()
+        self.splitter = QtGui.QSplitter(self)
+        self.splitter.setObjectName(self.objectName() + "groups_splitter")
         self.mainLayout.addWidget(self.splitter)
 
         ##############################################################################
@@ -97,19 +99,19 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.comboSearchFor = QtGui.QComboBox()
         grpFilter.addWidget(self.comboSearchFor)
 
-        self.comboSearchFor.addItem("Code", 0)
-        self.comboSearchFor.addItem("Description", 1)
-        self.comboSearchFor.addItem("Code + Description", 2)
+        self.comboSearchFor.addItem("Code", CG.code)
+        self.comboSearchFor.addItem("Description", CG.description)
+        self.comboSearchFor.addItem("Code + Description", CG.search)
 
         # clear button
         self.buttClear = xwidgets.ClearButton(self, callback=self.on_clear_filter)
         grpFilter.addWidget(self.buttClear)
 
         ## filter text
-        self.txtCode = QtGui.QLineEdit()
-        self.txtCode.setMaximumWidth(100)
-        grpFilter.addWidget(self.txtCode, )
-        self.txtCode.textChanged.connect(self.on_txt_changed)
+        self.txtFilter = QtGui.QLineEdit()
+        self.txtFilter.setMaximumWidth(100)
+        grpFilter.addWidget(self.txtFilter, )
+        self.txtFilter.textChanged.connect(self.on_txt_changed)
 
         ##================================
         ## Classification Tree
@@ -140,14 +142,11 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.tree.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
         self.tree.header().setStretchLastSection(True)
-        self.tree.setColumnHidden(CG.search, True)
-        self.tree.setColumnHidden(CG.x_id, True)
-        #self.tree.setColumnHidden(C.abbrev_id, True)
+        for c in [CG.search, CG.x_id]:
+            self.tree.setColumnHidden(c, True)
 
         self.tree.setColumnWidth(CG.code, 120)
         self.tree.setColumnWidth(CG.description, 250)
-        #self.tree.setColumnWidth(CG.cls, 150)
-
 
         self.tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tree.selectionModel().selectionChanged.connect(self.on_tree_selected)
@@ -160,7 +159,10 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
         self.splitter.setStretchFactor(0, 2)
         self.splitter.setStretchFactor(1, 5)
-        #self.statusBar = StatusBar(self, False)
+        G.settings.restore_splitter(self.splitter)
+        self.splitter.splitterMoved.connect(self.on_splitter_moved)
+
+        #self.statusBar = QtGui.QStatusBar()
         #self.mainLayout.addWidget(self.statusBar, 0)
 
 
@@ -178,7 +180,11 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         G.ags.sigLoaded.connect(self.on_loaded)
         self.agsGroupViewWidget.sigHeadCodeSelected.connect(self.agsHeadingDetailWidget.load_heading)
 
+    def on_splitter_moved(self, i, pos):
+        G.settings.save_splitter(self.splitter)
 
+    def set_focus(self):
+        self.txtFilter.setFocus()
 
 
     def init(self):
@@ -190,7 +196,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
     def on_tree_selected(self, sel, desel):
 
         if not self.tree.selectionModel().hasSelection():
-             self.sigCodeSelected.emit( None )
+             self.sigGroupSelected.emit( None )
              return
 
         selidx = sel.indexes()[0]
@@ -202,7 +208,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
         group_code = str(item.text())
         self.agsGroupViewWidget.load_group(group_code)
-        self.sigCodeSelected.emit( group_code )
+        self.sigGroupSelected.emit( group_code )
 
 
 
@@ -220,7 +226,8 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.treeClass.clearSelection()
         self.treeClass.blockSignals(False)
 
-        self.proxy.setFilterKeyColumn(self.buttGrp.checkedId())
+        cidx = self.comboSearchFor.itemData(self.comboSearchFor.currentIndex()).toInt()[0]
+        self.proxy.setFilterKeyColumn(cidx)
         self.proxy.setFilterFixedString(self.txtCode.text())
 
 

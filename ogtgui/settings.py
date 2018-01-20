@@ -65,3 +65,16 @@ class XSettings( QtCore.QObject ):
         if len(name) == 0:
             return
         window.restoreGeometry( self.settings.value( "window/%s/geometry" % name ).toByteArray() )
+
+
+    def save_splitter(self, splitter):
+        wname = str(splitter.objectName())
+        if not wname:
+            print "Splitter has no name", splitter
+        self.settings.setValue("splitter/%s" % wname, splitter.saveState())
+
+    def restore_splitter(self, splitter):
+        wname = str(splitter.objectName())
+        if not wname :
+            print "Splitter has no name"
+        splitter.restoreState(self.settings.value("splitter/%s" % wname).toByteArray())
