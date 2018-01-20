@@ -6,9 +6,9 @@
 import os
 from shutil import copyfile
 
-from ..Qt import QtGui, QtCore
+from Qt import QtGui, QtCore
 
-from .. import ICONS_PATH
+from ogtgui import ICONS_PATH
 
 
 class Ico:

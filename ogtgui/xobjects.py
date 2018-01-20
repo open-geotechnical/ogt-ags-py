@@ -5,7 +5,7 @@
 
 from Qt import Qt, QtGui, QtCore
 
-from . import xwidgets
+import xwidgets
 
 
 DATA_ROLE = Qt.UserRole + 20

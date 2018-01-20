@@ -1,4 +1,6 @@
 
+
+
 version = "0.1-alpha"
 
 ##==============================================
@@ -7,14 +9,14 @@ version = "0.1-alpha"
 args = None
 """Command args from :ref:`open-geotchnical-desktop.pyw` """
 
-mainWindow = None
+mainWin = None
 """Pointer to the mainWindow"""
 
 settings = None
-"""Pointer to settings"""
+"""Global settings instance"""
 
 server = None
 """Pointer to www client"""
 
-Ags = None
+ags = None
 """Pointer to an :class:`ogtgui.ags_models.AgsObject` instance"""

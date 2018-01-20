@@ -9,12 +9,12 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 import app_globals as G
 
 #from ogt import utils
-from .img import Ico
-from . import xwidgets
+from img import Ico
+import xwidgets
 from ags4_models import CG, CH,CA, SHOW_NONE, AGS4_COLORS
 
 
-class AGS4_DataDictBrowser( QtGui.QWidget ):
+class AGS4DataDictBrowser( QtGui.QWidget ):
 
     def __init__( self, parent=None, mode=None ):
         QtGui.QWidget.__init__( self, parent )
@@ -34,7 +34,7 @@ class AGS4_DataDictBrowser( QtGui.QWidget ):
 
 
         ##=============================================================
-        self.agsGroupsWidget = AGS4_GroupsBrowser(self)
+        self.agsGroupsWidget = AGS4GroupsBrowser(self)
         self.tabWidget.addTab(self.agsGroupsWidget, Ico.icon(Ico.AgsGroups), "Groups")
 
         ##=============================================================
@@ -48,23 +48,25 @@ class AGS4_DataDictBrowser( QtGui.QWidget ):
 
     def init(self):
 
-        #self.fetch()
-        #G.Ags.festch()
+        # load data dict
+        G.ags.init_load()
+
 
         self.tabWidget.setCurrentIndex(0)
 
 
-class AGS4_GroupsBrowser( QtGui.QWidget ):
+class AGS4GroupsBrowser( QtGui.QWidget ):
+    """The left panel with the classes, search and groups view"""
 
     sigCodeSelected = pyqtSignal(object)
 
     def __init__( self, parent=None):
         QtGui.QWidget.__init__( self, parent )
 
-        self.debug = True
+        self.debug = False
 
         self.proxy = QtGui.QSortFilterProxyModel()
-        self.proxy.setSourceModel(G.Ags.modelGroups)
+        self.proxy.setSourceModel(G.ags.modelGroups)
         self.proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
 
         ##===============================================
@@ -72,8 +74,6 @@ class AGS4_GroupsBrowser( QtGui.QWidget ):
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.setLayout(self.mainLayout)
-
-
 
         self.splitter = QtGui.QSplitter()
         self.mainLayout.addWidget(self.splitter)
@@ -85,12 +85,39 @@ class AGS4_GroupsBrowser( QtGui.QWidget ):
         self.splitter.addWidget(leftWidget)
 
         ##================================
-        ## Classification
-        topLayout = QtGui.QHBoxLayout()
+        ## Filter
+        grpFilter = xwidgets.GroupHBox("Filter by")
+        mmm = 5
+        grpFilter.setContentsMargins(mmm, mmm, mmm, mmm)
+        # grpFilter.grid.setSpacing(5)
+        # grpFilter.setFixedWidth(150)
+        leftLayout.addWidget(grpFilter)
+
+        # filter combo
+        self.comboSearchFor = QtGui.QComboBox()
+        grpFilter.addWidget(self.comboSearchFor)
+
+        self.comboSearchFor.addItem("Code", 0)
+        self.comboSearchFor.addItem("Description", 1)
+        self.comboSearchFor.addItem("Code + Description", 2)
+
+        # clear button
+        self.buttClear = xwidgets.ClearButton(self, callback=self.on_clear_filter)
+        grpFilter.addWidget(self.buttClear)
+
+        ## filter text
+        self.txtCode = QtGui.QLineEdit()
+        self.txtCode.setMaximumWidth(100)
+        grpFilter.addWidget(self.txtCode, )
+        self.txtCode.textChanged.connect(self.on_txt_changed)
+
+        ##================================
+        ## Classification Tree
+        topLayout = QtGui.QVBoxLayout()
         leftLayout.addLayout(topLayout, 0)
         self.treeClass = QtGui.QTreeView()
         topLayout.addWidget(self.treeClass, 3)
-        self.treeClass.setModel(G.Ags.modelClasses)
+        self.treeClass.setModel(G.ags.modelClasses)
         self.treeClass.setRootIsDecorated(False)
 
         self.treeClass.setExpandsOnDoubleClick(False)
@@ -100,57 +127,7 @@ class AGS4_GroupsBrowser( QtGui.QWidget ):
         self.treeClass.selectionModel().selectionChanged.connect(self.on_class_selection)
 
 
-        ##================================
-        ## Filter Widget
-        rLay = QtGui.QVBoxLayout()
-        topLayout.addLayout(rLay)
 
-        grpFilter = xwidgets.GroupGridBox("Filter by")
-        #mmm = 20
-        #grpFilter.setContentsMargins(mmm,mmm,mmm,mmm)
-        grpFilter.grid.setSpacing(5)
-        grpFilter.setFixedWidth(150)
-        rLay.addWidget(grpFilter, 1)
-
-        ## Buttons
-        self.buttGrp = QtGui.QButtonGroup()
-        self.buttGrp.setExclusive(True)
-        self.connect(self.buttGrp, QtCore.SIGNAL("buttonClicked(int)"), self.on_filter_col)
-
-        row = 0
-        self.buttFilterCode = QtGui.QRadioButton()
-        grpFilter.grid.addWidget(self.buttFilterCode, row , 1)
-        self.buttFilterCode.setText("Code")
-        self.buttGrp.addButton(self.buttFilterCode, CG.code)
-
-        row += 1
-        self.buttFilterDesc = QtGui.QRadioButton()
-        grpFilter.grid.addWidget(self.buttFilterDesc, row , 1)
-        self.buttFilterDesc.setText("Description")
-        self.buttGrp.addButton(self.buttFilterDesc, CG.description)
-
-
-        row += 1
-        self.buttFilterAll = QtGui.QRadioButton()
-        grpFilter.grid.addWidget(self.buttFilterAll, row , 1)
-        self.buttFilterAll.setText("Both")
-        self.buttFilterAll.setChecked(True)
-        self.buttGrp.addButton(self.buttFilterAll, CG.search)
-
-
-
-        row += 1
-        self.buttClear = xwidgets.ClearButton(self, callback=self.on_clear_filter)
-        grpFilter.grid.addWidget(self.buttClear, row , 0)
-
-        self.txtCode = QtGui.QLineEdit()
-        self.txtCode.setMaximumWidth(100)
-        grpFilter.grid.addWidget(self.txtCode, row, 1)
-        self.txtCode.textChanged.connect(self.on_txt_changed)
-
-        grpFilter.grid.setColumnStretch(0, 0)
-        grpFilter.grid.setColumnStretch(1, 10)
-        rLay.addStretch(1)
 
         ##===============================================
         self.tree = QtGui.QTreeView()
@@ -178,7 +155,7 @@ class AGS4_GroupsBrowser( QtGui.QWidget ):
         self.tree.sortByColumn(CG.code)
 
 
-        self.agsGroupViewWidget = AGS4_GroupViewWidget(self)
+        self.agsGroupViewWidget = AGS4GroupViewWidget(self)
         self.splitter.addWidget(self.agsGroupViewWidget)
 
         self.splitter.setStretchFactor(0, 2)
@@ -194,18 +171,18 @@ class AGS4_GroupsBrowser( QtGui.QWidget ):
         self.splitter.addWidget(rightWidget)
 
 
-        self.agsHeadingDetailWidget = AGS4_HeadingDetailWidget()
+        self.agsHeadingDetailWidget = AGS4HeadingDetailWidget()
         rightLayout.addWidget(self.agsHeadingDetailWidget)
 
         #self.init_setup()
-        G.Ags.sigLoaded.connect(self.on_loaded)
+        G.ags.sigLoaded.connect(self.on_loaded)
         self.agsGroupViewWidget.sigHeadCodeSelected.connect(self.agsHeadingDetailWidget.load_heading)
 
 
 
 
     def init(self):
-        pass
+        print "init", self
 
 
 
@@ -283,7 +260,7 @@ class AGS4_GroupsBrowser( QtGui.QWidget ):
         self.tree.resizeColumnToContents(CG.code)
 
 
-class AGS4_GroupViewWidget( QtGui.QWidget ):
+class AGS4GroupViewWidget( QtGui.QWidget ):
     """The GroupView contains the vertically the Group Label at top, headings and notes"""
 
     sigHeadCodeSelected = pyqtSignal(object)
@@ -310,7 +287,7 @@ class AGS4_GroupViewWidget( QtGui.QWidget ):
         self.toolbar.addWidget(self.icoLabel)
 
         self.lblGroupCode = QtGui.QLabel(" ")
-        self.lblGroupCode.setStyleSheet("background-color: white; color: %s; font-weight: bold; font-family: monospace; padding: 3px;" % AGS_COLORS.group)
+        self.lblGroupCode.setStyleSheet("background-color: white; color: %s; font-weight: bold; font-family: monospace; padding: 3px;" % AGS4_COLORS.group)
         self.toolbar.addWidget(self.lblGroupCode, 1)
         self.lblGroupCode.setFixedWidth(50)
 
@@ -328,7 +305,7 @@ class AGS4_GroupViewWidget( QtGui.QWidget ):
 
 
 
-        self.agsHeadingsTable = AGS4_HeadingsTable(self)
+        self.agsHeadingsTable = AGS4HeadingsTable(self)
         self.mainLayout.addWidget(self.agsHeadingsTable, 10)
 
         #self.tabWidget.addTab(self.agsHeadingsTable, dIco.icon(dIco.AgsField), "Headings")
@@ -336,7 +313,7 @@ class AGS4_GroupViewWidget( QtGui.QWidget ):
         #self.mainLayout.addWidget(self.lblNotes, 0)
 
 
-        self.agsGroupNotesTable = AGS4_GroupNotesTable(self)
+        self.agsGroupNotesTable = AGS4GroupNotesTable(self)
         self.agsGroupNotesTable.setFixedHeight(200)
         self.mainLayout.addWidget(self.agsGroupNotesTable)
         #self.tabWidget.addTab(self.agsGroupNotesTable, dIco.icon(dIco.AgsNotes), "Notes")
@@ -362,7 +339,7 @@ class AGS4_GroupViewWidget( QtGui.QWidget ):
             return
 
 
-        g = G.Ags.get_group(group_code)
+        g = G.ags.get_group(group_code)
         #print group_code, g
 
 
@@ -383,7 +360,7 @@ class AGS4_GroupViewWidget( QtGui.QWidget ):
 
 
 
-class AGS4_HeadingsTable( QtGui.QWidget ):
+class AGS4HeadingsTable( QtGui.QWidget ):
 
     sigHeadCodeSelected = pyqtSignal(object)
     """A row has been selected or delelected
@@ -401,7 +378,7 @@ class AGS4_HeadingsTable( QtGui.QWidget ):
         self.cache = None
 
         self.proxy = QtGui.QSortFilterProxyModel()
-        self.proxy.setSourceModel(G.Ags.modelHeadings)
+        self.proxy.setSourceModel(G.ags.modelHeadings)
         self.proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.proxy.setFilterKeyColumn(CH.group_code)
         self.proxy.setFilterFixedString(SHOW_NONE)
@@ -496,7 +473,7 @@ class CN:
     so = 2
 
 
-class AGS4_GroupNotesTable( QtGui.QWidget ):
+class AGS4GroupNotesTable( QtGui.QWidget ):
 
     sigLoaded = pyqtSignal(int, object)
 
@@ -554,11 +531,11 @@ class AGS4_GroupNotesTable( QtGui.QWidget ):
         :param group_code: The four character group code
 
         """
-        lookup = G.Ags.get_words()
+        lookup = G.ags.get_words()
 
 
         self.clear()
-        notes = G.Ags.get_notes(group_code)
+        notes = G.ags.get_notes(group_code)
         #print notes
 
         if notes == None:
@@ -608,7 +585,7 @@ class AGS4_GroupNotesTable( QtGui.QWidget ):
 
 
 
-class AGS4_HeadingDetailWidget( QtGui.QWidget ):
+class AGS4HeadingDetailWidget( QtGui.QWidget ):
     """Shows details about a heading, including example, etc"""
 
     def __init__( self, parent=None):
@@ -617,7 +594,7 @@ class AGS4_HeadingDetailWidget( QtGui.QWidget ):
         self.debug = True
 
         self.proxy = QtGui.QSortFilterProxyModel()
-        self.proxy.setSourceModel(G.Ags.modelAbbrItems)
+        self.proxy.setSourceModel(G.ags.modelAbbrItems)
         self.proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.proxy.setFilterKeyColumn(CA.head_code)
         self.proxy.setFilterFixedString(SHOW_NONE)
@@ -637,7 +614,7 @@ class AGS4_HeadingDetailWidget( QtGui.QWidget ):
         self.toolbar.addWidget(self.icoLabel)
 
         self.lblAbbrCode = QtGui.QLabel(" ")
-        self.lblAbbrCode.setStyleSheet("background-color: white; color: %s; font-weight: bold; font-family: monospace; padding: 3px;" % AGS_COLORS.group)
+        self.lblAbbrCode.setStyleSheet("background-color: white; color: %s; font-weight: bold; font-family: monospace; padding: 3px;" % AGS4_COLORS.group)
         self.toolbar.addWidget(self.lblAbbrCode, 1)
         self.lblAbbrCode.setFixedWidth(50)
 

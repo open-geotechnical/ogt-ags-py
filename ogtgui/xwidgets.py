@@ -7,7 +7,7 @@
 
 from Qt import Qt, QtCore, QtGui,  pyqtSignal
 
-from .img import Ico
+from img import Ico
 
 DEFAULT_SPACING = 0
 DEFAULT_MARGIN = 0
@@ -106,6 +106,8 @@ class GroupHBox(QtGui.QGroupBox):
         self.layout = QtGui.QHBoxLayout()
         self.setLayout(self.layout)
 
+    def setContentsMargins(self, a,b,c,d):
+        self.layout.setContentsMargins(a,b,c,d)
 
     def addWidget(self, widget, stretch=0):
         self.layout.addWidget(widget, stretch)
@@ -124,12 +126,12 @@ class GroupVBox(QtGui.QGroupBox):
     def __init__(self, parent=None, bold=False):
         QtGui.QGroupBox.__init__(self, parent)
 
-        if bold:
-            self.setStyleSheet(STY)
-
         self.layout = QtGui.QVBoxLayout()
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
+
+    def setContentsMargins(self, a,b,c,d):
+        self.layout.setContentsMargins(a,b,c,d)
 
     def addLabel(self, txt):
         lbl = QtGui.QLabel()

@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 ####################################################
 # Note this file is for variables only, no imports
@@ -45,16 +46,18 @@ HERE_PATH =  os.path.abspath( os.path.dirname( __file__))
 PROJECT_ROOT_PATH = os.path.abspath( os.path.join(HERE_PATH, ".."))
 """Root dir of this project"""
 
-TEMP_WORKSPACE = os.path.join(PROJECT_ROOT_PATH, "temp_workspace")
+TEMP_DIR = tempfile.gettempdir()
+#TEMP_WORKSPACE = os.path.join(PROJECT_ROOT_PATH, "temp_workspace")
+TEMP_WORKSPACE = os.path.join(TEMP_DIR, "temp_workspace")
 """Path to temporary directory"""
 
-EXAMPLES_DIR = os.path.join(PROJECT_ROOT_PATH, "example_files")
+EXAMPLES_DIR = os.path.join(TEMP_DIR, "example_files")
 """Path to examples folder"""
 
 USER_HOME = os.path.expanduser("~")
 """Path to users home dir"""
 
-USER_TEMP = os.path.join(USER_HOME, "ogt-cache")
+USER_TEMP = os.path.join(USER_HOME, "ogt-workspace")
 """Path to open-getechnical cache directory"""
 
 
@@ -65,14 +68,13 @@ FORMATS = ["json", "js", "geojson", "yaml", "xlsx", "ags4"]
 
 
 
-
-
 HAVE_YAML = False
 """`True` if :ref:`yaml` lib is installed"""
 try:
     import yaml
     HAVE_YAML = True
 except ImportError:
+    #print("yaml inavailable as lib not installed")
     pass
 
 HAVE_EXCEL = False

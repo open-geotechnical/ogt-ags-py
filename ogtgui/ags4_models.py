@@ -4,20 +4,20 @@
 """
 from Qt import QtGui, QtCore, Qt, pyqtSignal
 
-from .img  import Ico
+from img  import Ico
 
 
 import ogt.ags4
 
 import app_globals as G
 
-from . import xobjects
+import xobjects
 
 class AGS4_TYPE:
     abbrev = "ABBR"
     abbrev_item = "ABBR_ITEM"
     group = "GROUP"
-    heading = "HEAD"
+    heading = "HEADING"
     note = "NOTE"
 
 
@@ -26,7 +26,8 @@ class AGS4_COLORS:
     abbrev = "#496FA3"
 
 
-SHOW_NONE = "#__NONE__#"
+SHOW_NONE = "##__NONE__##"
+"""Used to filter for nothing"""
 
 def type_ico(ags_type):
     """Returns an icon for the data type , see ,,TODO"""
@@ -95,20 +96,24 @@ class AgsObject(QtCore.QObject):
         #self.connect(self.modelAbbrevs, QtCore.SIGNAL("classes"), self.modelAbbrevClasses.load_classes)
 
 
-    def load(self):
+    def init_load(self):
+        err = ogt.ags4.initialise()
+        if err:
+            ogt.ags4.update()
+            ogt.ags4.initialise()
+        print "init_load", err, self
 
-        all, err = ogt.ags4.all()
-        print err
+        self.load()
+
+    def load(self):
+        print "load()", self
+        all = ogt.ags4.all()
         print "all=", all.keys()
 
         self.modelAbbrItems.load_data(all['abbrs'])
 
-        groups, err = ogt.ags4.groups()
+        groups = ogt.ags4.groups()
         #print groups.keys()
-
-
-
-
 
         self.modelGroups.load_data(groups)
 
@@ -184,8 +189,8 @@ class NotesModel():
         self.words = {}
         print "TODO words", self
         #self.add_words( G.Ags.modelAbbrevs.get_words() )
-        self.add_words( G.Ags.modelGroups.get_words() )
-        self.add_words( G.Ags.modelHeadings.get_words() )
+        self.add_words( G.ags.modelGroups.get_words() )
+        self.add_words( G.ags.modelHeadings.get_words() )
         #print self.words
 
     def get_words(self):
@@ -239,8 +244,8 @@ class GroupsModel(xobjects.XStandardItemModel):
             if not rec['class'] in classes:
                 classes.append(rec['class'])
 
-            G.Ags.modelHeadings.append_headings(rec)
-            G.Ags.modelNotes.append_notes(group_code, rec['notes'])
+            G.ags.modelHeadings.append_headings(rec)
+            G.ags.modelNotes.append_notes(group_code, rec['notes'])
 
 
         self.sigClasses.emit(classes)
@@ -257,7 +262,7 @@ class GroupsModel(xobjects.XStandardItemModel):
 
         lst = []
         for ridx in range(0, self.rowCount()):
-            lst.append( dict(type=AGS_TYPE.group, description=self.item(ridx, CG.description).s(),
+            lst.append( dict(type=AGS4_TYPE.group, description=self.item(ridx, CG.description).s(),
                             code=self.item(ridx, CG.code).s()))
         return lst
 
@@ -371,14 +376,15 @@ class HeadingsModel(xobjects.XStandardItemModel):
 
 
         for rec in grp['headings']:
-
-            ico = type_ico(rec['suggested_type'])
+            #print rec.keys()
+            # print rec
+            ico = type_ico(rec['data_type'])
 
             items = self.make_blank_row()
             items[CH.head_code].set(rec['head_code'], ico=ico, bold=True, font="monospace")
 
-            items[CH.data_type].set(rec['suggested_type'])
-            items[CH.unit].set( rec['suggested_unit'])
+            items[CH.data_type].set(rec['data_type'])
+            items[CH.unit].set( rec['unit'])
             items[CH.description].set( rec['head_description'])
             items[CH.sort].set(rec['sort_order'])
             items[CH.example].set(rec['example'])
@@ -394,7 +400,7 @@ class HeadingsModel(xobjects.XStandardItemModel):
 
         lst = []
         for ridx in range(0, self.rowCount()):
-            lst.append( dict(type=AGS_TYPE.heading, description=self.item(ridx, CH.description).s(),
+            lst.append( dict(type=AGS4_TYPE.heading, description=self.item(ridx, CH.description).s(),
                             code=self.item(ridx, CH.head_code).s()))
         return lst
 
@@ -432,9 +438,9 @@ class AbbrevItemsModel(xobjects.XStandardItemModel):
 
 
     def load_data(self, data):
-        print self, data.keys()
+        #print self, data.keys()
         for head_code, recs in data.iteritems():
-            print head_code, recs
+            #print head_code, recs
             self.append_abbrv_items(head_code, data[head_code]['abbrs'])
 
     def append_abbrv_items(self, head_code, recs):

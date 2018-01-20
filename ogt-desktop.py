@@ -6,7 +6,6 @@ import sys
 import argparse
 from PyQt4 import QtGui
 
-
 import ogtgui.main_window
 
 

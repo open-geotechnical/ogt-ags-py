@@ -10,13 +10,13 @@ from Qt import Qt, QtGui, QtCore
 
 import app_globals as G
 
-from . import ags4_widgets
-from . import ags4_models
-from . import www_client
-from . import settings
-from . import ogtgui_widgets
-from . import ogtgui_project
-from .img import Ico
+import ags4_widgets
+import ags4_models
+import www_client
+import settings
+import ogtgui_widgets
+import ogtgui_project
+from img import Ico
 
 
 class MainWindow( QtGui.QMainWindow ):
@@ -47,7 +47,7 @@ class MainWindow( QtGui.QMainWindow ):
         self.server.response.connect( self.on_www_request_finished )
         G.server = self.server
 
-        G.Ags = ags4_models.AgsObject()
+        G.ags = ags4_models.AgsObject()
 
 
         ##===============================================
@@ -156,10 +156,12 @@ class MainWindow( QtGui.QMainWindow ):
 
     def on_after(self):
         #self.examplesWidget.load()
-
+        print "on_after", self, G.args.dev
         #self.on_ags4_browse()
 
         #G.Ags.load()
+        if G.args.dev:
+            self.on_ags4_browse()
 
 
 
@@ -231,14 +233,14 @@ class MainWindow( QtGui.QMainWindow ):
     def on_ags4_browse(self):
         """Opens or switches to the :ref:`ags4_data_dict`"""
         for idx in range(0, self.stackWidget.count()):
-            if isinstance(self.stackWidget.widget(idx), ags4_widgets.AGS4_DataDictBrowser):
+            if isinstance(self.stackWidget.widget(idx), ags4_widgets.AGS4DataDictBrowser):
                 self.stackWidget.setCurrentIndex(idx)
                 self.tabBar.setCurrentIndex(idx)
                 self.set_action_checked(self.actionAgs4Browse, True)
                 return
 
         # create new instance
-        browseWidget = ags4_widgets.AGS4_DataDictBrowser()
+        browseWidget = ags4_widgets.AGS4DataDictBrowser()
         self.load_widget(browseWidget, "AGS4 Data Dict", ico=Ico.Ags4)
         self.set_action_checked(self.actionAgs4Browse, True)
 
