@@ -4,7 +4,6 @@
 """
 
 import os
-from shutil import copyfile
 
 from Qt import QtGui, QtCore
 
@@ -34,16 +33,18 @@ class Ico:
         @rtype: QIcon or pixmap
         """
         if file_name == None:
-            icon = QtGui.QIcon()
+            qicon = QtGui.QIcon()
         else:
-              icon = QtGui.QIcon( os.path.join(ICONS_PATH, file_name) )
+            qicon = QtGui.QIcon( os.path.join(ICONS_PATH, file_name) )
+
         if pixmap:
-            return icon.pixmap( QtCore.QSize( 16, 16 ) )
+            return qicon.pixmap( QtCore.QSize( 16, 16 ) )
+
         if size:
             pass #icon2 = QtGui.QIcon( icon.pixmap( QtCore.QSize(size, size) ) )
             #return icon2
-        return icon
 
+        return qicon
 
 
     Ags3 = "ags3.svg.png"
@@ -94,3 +95,5 @@ class Ico:
     TypeStandard = "ui-.png"
     TypeText = "ui-text-field.png"
     TypeUnknown = "ui-text-field-hidden.png"
+
+

@@ -790,10 +790,12 @@ def examples_list():
 def example(file_name):
 
     data, err = examples()
+    if err:
+        return None, err
     for r in data['ags4_examples']:
         if r['file_name'] == file_name:
-            return r
-    return None
+            return r, None
+    return None, "Example `%s` not found " % file_name
 
 """
 def get_example_dirs():

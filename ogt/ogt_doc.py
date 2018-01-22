@@ -732,7 +732,20 @@ def create_doc_from_ags4_file(ags_file_path):
     err = doc.load_ags4_file(ags_file_path)
     return doc, err
 
+def create_doc_from_ags4_string(ags4_string):
+    """Convenience function to create and load an OGTDocument from an ags string
 
+    .. code-block:: python
+
+        doc, err = ogt_doc.create_doc_from_ags4_string(ags4_string)
+        if err:
+            print err
+        else:
+            print doc.group("PROJ")
+    """
+    doc = OGTDocument()
+    err = doc.load_ags4_string(ags4_string)
+    return doc, err
 
 def create_doc_from_json_file( json_file_path):
     """Creates a document from a :ref:`json` formatted file

@@ -186,25 +186,23 @@ class OGTScheduleWidget( QtGui.QWidget ):
 class C_EG:
     """Columns for examples"""
     file_name = 0
-    file_path = 1
 
 class ExamplesWidget( QtGui.QWidget ):
 
-    sigLoadFile = pyqtSignal(object)
+    sigFileSelected = pyqtSignal(object)
 
     def __init__( self, parent):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
 
+        self.setMinimumWidth(300)
+
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.setLayout(self.mainLayout)
 
-        self.tabBar = QtGui.QTabBar()
-        self.mainLayout.addWidget(self.tabBar, 0)
-        self.tabBar.currentChanged.connect(self.on_tab_changed)
 
         #=============================
         ## Set up tree
@@ -216,41 +214,16 @@ class ExamplesWidget( QtGui.QWidget ):
         self.tree.header().hide()
 
         hi = self.tree.headerItem()
-        hi.setText(C_EG.file_path, "full path")
         hi.setText(C_EG.file_name, "Example")
 
-        self.tree.setColumnHidden(C_EG.file_path, True)
 
-        self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
+        self.tree.itemClicked.connect(self.on_tree_item_clicked)
 
-
-
-    def load(self):
-
-        ## nuke any tabs existing
-        self.tabBar.blockSignals(True)
-        for i in range(0, self.tabBar.count()):
-            self.tabBar.removeTab(i)
+        self.load_files_list()
 
 
-        dirs, err = ags4.examples_list()
-        if err:
-            # todo warn
-            vrash
-            return
 
-
-        """
-        for d in dirs:
-            print "=", d
-            nidx = self.tabBar.addTab(Ico.icon(Ico.Folder), d['file_name'])
-            self.tabBar.setTabData(nidx, d)
-        """
-        self.tabBar.blockSignals(False)
-
-        self.on_tab_changed(0)
-
-    def list_files(self, sub_dir=None):
+    def load_files_list(self, sub_dir=None):
 
         files_list, err = ags4.examples_list()
         if err:
@@ -260,8 +233,7 @@ class ExamplesWidget( QtGui.QWidget ):
         for fd in files_list:
             file_name = fd["file_name"]
             item = QtGui.QTreeWidgetItem()
-            item.setText(C_EG.file_path, file_name)
-            item.setText(C_EG.file_name, os.path.basename(file_name))
+            item.setText(C_EG.file_name, file_name)
             item.setIcon(C_EG.file_name, Ico.icon(Ico.Ags4))
             f = item.font(C_EG.file_name)
             f.setBold(True)
@@ -270,13 +242,9 @@ class ExamplesWidget( QtGui.QWidget ):
 
 
 
-    def on_tree_double_clicked(self, item, col):
+    def on_tree_item_clicked(self, item, col):
 
-        file_path = str(item.text(C_EG.file_path))
-        self.sigLoadFile.emit(file_path)
+        file_name = str(item.text(C_EG.file_name))
+        self.sigFileSelected.emit(file_name)
+        self.hide()
 
-
-    def on_tab_changed(self, idx):
-
-        sub_dir = str(self.tabBar.tabData(idx).toString())
-        self.list_files(sub_dir)

@@ -71,7 +71,7 @@ def type_icon(ags_type):
 ##===================================================================
 ## Main
 ##===================================================================
-class AgsObject(QtCore.QObject):
+class Ags4Object(QtCore.QObject):
 
     sigLoaded = pyqtSignal()
 
@@ -268,79 +268,9 @@ class GroupsModel(xobjects.XStandardItemModel):
                             code=self.item(ridx, CG.code).s()))
         return lst
 
-##===================================================================
-## Abbrecs
-##===================================================================
-class deadAbbrevsModel(xobjects.XStandardItemModel):
-
-
-
-    def __init__( self, parent=None):
-        super(xobjects.XStandardItemModel, self).__init__(parent)
-
-        #header_labels = ['Code', "Description", "Group", "abbrev_id"]
-        self.set_header(CG.code, "Code")
-        self.set_header(CG.description, "Description")
-        self.set_header(CG.cls, "Group")
-        self.set_header(CG.search, "Search")
-        self.set_header(CG.x_id, "ID")
-
-    def load_data(self, data):
-
-        for head_code in data.keys():
-
-            #self.removeRows(0, self.rowCount())
-            #classes = []
-            for rec in data[head_code]['abbreviations']:
-                print rec
-                #rec = data['abbrevs'][ki]
-                code = rec['abbr_code']
-                items = self.get_abbrev_row(code)
-                if items == None:
-                    items = self.make_blank_row()
-                    items[CG.code].set(code, bold=True, ico=Ico.AgsAbbrev)
-                    self.appendRow(items)
-                items[CG.description].set(rec['abbr_desc'])
-                items[CG.search].set(code + rec['abbr_desc'])
-                #items[CG.cls].set(rec['grp'])
-                #items[CG.x_id].set(rec['abbrev_id'])
-
-
-                #if not rec['grp'] in classes:
-                #    classes.append(rec['grp'])
-
-                #G.Ags.modelAbbrevItems.append_abbrev_items(ki, rec['items'])
-
-            #self.emit(QtCore.SIGNAL("classes"), classes)
-
-    def get_abbrev_row(self, code):
-        items = self.findItems(code, Qt.MatchExactly, CG.code)
-        if len(items) == 0:
-            return None
-        #ridx = items[0].index().row()
-        return self.get_items_from_item(items[0])
-
-    def get_abbrev(self, code):
-        items = self.findItems(code, Qt.MatchExactly, CG.code)
-        if len(items) == 0:
-            return None
-        #print "GET+", code, items
-        ridx = items[0].index().row()
-        return dict(	abbrev_code=self.item(ridx, CG.code).s(),
-                        description=self.item(ridx, CG.description).s(),
-                        cls=self.item(ridx, CG.cls).s())
-
-
-    def get_words(self):
-
-        lst = []
-        for ridx in range(0, self.rowCount()):
-            lst.append( dict(type=AGS_TYPE.abbrev, description=self.item(ridx, CG.description).s(),
-                            code=self.item(ridx, CG.code).s()))
-        return lst
 
 ##===================================================================
-## headings
+## Headings
 ##===================================================================
 class CH:
     """Columns NO's for the ;class:`~ogtgui.ags_models.HeadingsModel`"""
@@ -364,13 +294,13 @@ class HeadingsModel(xobjects.XStandardItemModel):
 
         self.set_header(CH.head_code, "Heading")
         self.set_header(CH.description, "Description")
-        self.set_header(CH.data_type, "Type")
-        self.set_header(CH.unit, "Unit")
+        self.set_header(CH.data_type, "Type", align=Qt.AlignCenter)
+        self.set_header(CH.unit, "Unit", align=Qt.AlignCenter)
         self.set_header(CH.status, "Stat")
         #hi.setTextAlignment(C.unit, QtCore.Qt.AlignHCenter)
 
         self.set_header(CH.example, "Example")
-        self.set_header(CH.sort, "Srt", sort="int")
+        self.set_header(CH.sort, "Srt", sort="int", align=Qt.AlignCenter)
         self.set_header(CH.group_code, "Group")
         self.set_header(CH.group_descr, "Group Description")
         self.set_header(CH.class_, "Class")

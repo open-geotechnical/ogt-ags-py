@@ -5,6 +5,7 @@
 import os
 import sys
 
+from ogt import ags4
 
 from Qt import Qt, QtGui, QtCore
 
@@ -47,7 +48,7 @@ class MainWindow( QtGui.QMainWindow ):
         self.server.response.connect( self.on_www_request_finished )
         G.server = self.server
 
-        G.ags = ags4_models.AgsObject()
+        G.ags = ags4_models.Ags4Object()
 
 
         ##===============================================
@@ -59,8 +60,7 @@ class MainWindow( QtGui.QMainWindow ):
 
 
         ##=================================================
-        ## Le Menu's
-        ## Warning.. meniw = woman in welsh.. Joke is.. do u want the menu ? no. food first and then afters
+        ## Menus
 
         #=======
         ## File
@@ -69,6 +69,7 @@ class MainWindow( QtGui.QMainWindow ):
 
 
         #=======
+        ## View
         self.menuViews = self.menuBar().addMenu("View")
         self.actionAgs4Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS4 data dict", self.on_browse_ags4)
         self.actionAgs4Browse.setCheckable(True)
@@ -85,7 +86,7 @@ class MainWindow( QtGui.QMainWindow ):
         self.examplesWidget = ogtgui_widgets.ExamplesWidget(self)
         self.examplesWidget.setMinimumHeight(600)
         self.widgetActionExamples.setDefaultWidget(self.examplesWidget)
-        self.examplesWidget.sigLoadFile.connect(self.load_ags4_file)
+        self.examplesWidget.sigFileSelected.connect(self.load_ags4_example)
 
         self.actionExamples = self.menuExamples.addAction(self.widgetActionExamples)
 
@@ -203,6 +204,19 @@ class MainWindow( QtGui.QMainWindow ):
         chk = self.buttExamples.isChecked()
         self.dockExamples.setVisible(chk)
 
+    def load_ags4_example(self, file_name):
+
+        data, err = ags4.example(file_name)
+        if err:
+            pass
+
+        proj = ogtgui_project.OGTProjectWidget()
+        proj.load_ags4_string(data['contents'])
+
+        self.load_widget(proj, os.path.basename(file_name), ico=Ico.Project)
+        #self.menuExamples.close()
+
+
     def load_ags4_file(self, file_path):
 
         print "load_ags4_file", file_path, self
@@ -210,7 +224,7 @@ class MainWindow( QtGui.QMainWindow ):
         proj.load_ags4_file(file_path)
 
         self.load_widget(proj, os.path.basename(file_path), ico=Ico.Project)
-        self.menuExamples.close()
+        #self.menuExamples.close()
 
     def on_tab_changed(self, idx):
         self.stackWidget.setCurrentIndex(idx)
