@@ -7,7 +7,7 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 
 import app_globals as G
 
-import ogt.ags4
+from ogt import ogt_doc
 from . import ogtgui_group
 from .img import Ico
 
@@ -68,18 +68,18 @@ class OGTDocumentWidget( QtGui.QWidget ):
     #
     #         widget = self.load_group(dic)
 
-    """
+
     def load_ags4_file(self, file_path):
 
         self.file_path = None
 
-        doc = ags4.AGS4Document()
-        doc.opts.edit_mode = True
-        err = doc.load_from_file(file_path)
+        doc = ogt_doc.OGTDocument()
+        #doc.opts.edit_mode = True
+        err = doc.load_ags4_file(file_path)
         print "err=", err
 
         self.load_document(doc)
-    """
+
 
     def load_document(self, doc):
 

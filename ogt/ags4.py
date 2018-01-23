@@ -31,6 +31,8 @@ class AGS4_DataDict:
 
         self._data_types_lookup_cache = None
 
+        self.initialise()
+
     def update(self):
         """Downloads data dict file from online
 

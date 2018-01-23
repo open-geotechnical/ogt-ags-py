@@ -664,10 +664,10 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
 
 class PickListComboDelegate(QtGui.QItemDelegate):
     """A combobox for a table that whos the abrreviations picklist"""
-    def __init__(self, parent, head_code):
+    def __init__(self, parent, heading):
         QtGui.QItemDelegate.__init__(self, parent)
 
-        self.head_code = head_code
+        self.head_code = heading['head_code']
 
     def createEditor(self, parent, option, index):
 
