@@ -13,6 +13,22 @@ from .img import Ico
 from ogt import ags4
 
 
+def bg_color(descr):
+    if descr == ags4.AGS4_DESCRIPTOR.group:
+        return "#D4C557"
+
+    if descr == ags4.AGS4_DESCRIPTOR.heading:
+        return "#FCF66D"
+
+    if descr in [ags4.AGS4_DESCRIPTOR.unit, ags4.AGS4_DESCRIPTOR.type]:
+        return "#FFE8B9"
+
+    if descr == ags4.AGS4_DESCRIPTOR.data:
+        return "#DFD1FF"
+
+    return "#ffffff"
+
+
 class OGTSourceViewWidget( QtGui.QWidget ):
     """The SourceViewWidget info which in row 0 """
 
@@ -44,20 +60,24 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
         self.sourceView.setText(doco.source)
 
-        print doco.csv_rows
-        self.tableWidget.setRowCount(len(doco.csv_rows))
+        print doco.cells()
+        self.tableWidget.setRowCount(len(doco.cells()))
 
-        for ridx, row in enumerate(doco.csv_rows):
+        for ridx, row in enumerate(doco.cells()):
 
             if self.tableWidget.columnCount() < len(row):
                 self.tableWidget.setColumnCount(len(row))
 
             for cidx, cell in enumerate(row):
+
                 item = QtGui.QTableWidgetItem()
                 item.setText( cell )
                 self.tableWidget.setItem(ridx, cidx, item)
 
-
+                ## color the rows
+                if cidx == 0:
+                    bg = bg_color(cell)
+                    item.setBackgroundColor(QtGui.QColor(bg))
 
 
 class OGTScheduleWidget( QtGui.QWidget ):
@@ -82,8 +102,6 @@ class OGTScheduleWidget( QtGui.QWidget ):
 
 
     def load_document(self, doco):
-
-
 
 
         samples = doco.group("SAMP")

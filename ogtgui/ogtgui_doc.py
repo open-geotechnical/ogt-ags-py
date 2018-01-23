@@ -68,7 +68,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
     #
     #         widget = self.load_group(dic)
 
-
+    """
     def load_ags4_file(self, file_path):
 
         self.file_path = None
@@ -79,7 +79,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
         print "err=", err
 
         self.load_document(doc)
-
+    """
 
     def load_document(self, doc):
 
@@ -92,7 +92,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
     def load_group(self, group_dic):
         #print "############", group_dic
-        widget = ogtgui_group.OGTGroupWidget(self)
+        widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
         self.tabBar.addTab(Ico.icon(Ico.Group), group_dic['group_code'])
 
         self.stackWidget.addWidget(widget)

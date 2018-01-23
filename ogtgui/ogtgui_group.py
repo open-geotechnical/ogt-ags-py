@@ -5,18 +5,22 @@
 
 from Qt import QtGui, QtCore, Qt, pyqtSignal
 
+from ogt import ags4
+
 import app_globals as G
-from .img import Ico
-from . import xwidgets
+from img import Ico
+import ags4_widgets
+import xwidgets
         
 
 
 class OGTTableHeaderWidget( QtGui.QWidget ):
     """The HEADER info which in row 0 """
 
-    def __init__( self, parent=None):
+    def __init__( self, parent=None, doc=None):
         QtGui.QWidget.__init__( self, parent )
 
+        self.doc = doc
         self.debug = False
         self.head_code = None
 
@@ -68,18 +72,27 @@ class OGTTableHeaderWidget( QtGui.QWidget ):
         self.lblHeadDescription.setText("-" if descr == None else descr)
 
         self.lblUnit.setText("-" if hrec["unit"] else hrec["unit"])
+        #typ = "<a href="""
         self.lblType.setText(hrec["type"])
+        #self.lblType.setToolTip(hrec['type'])
 
+        #print hrec['type'], self.doc.type(hrec['type'])
+        typ = ags4.data_type(hrec['type'])
+        if typ:
+            self.lblType.setToolTip(typ['description'])
+        else:
+            self.lblType.setToolTip(hrec['type'])
 
 
 
 class OGTGroupWidget( QtGui.QWidget ):
     """Shows a group with labels at top, and table underneath"""
 
-    def __init__( self, parent):
+    def __init__( self, parent, doc):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
+        self.doc = doc
 
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -110,20 +123,20 @@ class OGTGroupWidget( QtGui.QWidget ):
     def init(self):
         pass
 
-    def load_group(self, dic):
+    def load_group(self, group_dic):
 
         ## Set the labels
-        self.lblGroupCode.setText( dic['group_code'] )
+        self.lblGroupCode.setText( group_dic['group_code'] )
 
         descr = None
-        if "data_dict" in dic and isinstance(dic['data_dict'], dict):
-            descr = dic['data_dict'].get('group_description')
+        if "data_dict" in group_dic and isinstance(group_dic['data_dict'], dict):
+            descr = group_dic['data_dict'].get('group_description')
         self.lblGroupDescription.setText( "-" if descr == None else descr )
 
 
 
         # Init table, first row = 0 is headings (cos we cant embed widgets in a header on pyqt4)
-        headings = dic['headings']
+        headings = group_dic['headings']
         self.table.setRowCount(1)
         self.table.setColumnCount( len(headings) )
 
@@ -137,7 +150,7 @@ class OGTGroupWidget( QtGui.QWidget ):
             hitem.set(hrec['head_code'], bold=True)
             self.table.setHorizontalHeaderItem(cidx, hitem)
 
-            header_widget = OGTTableHeaderWidget()
+            header_widget = OGTTableHeaderWidget(doc=self.doc)
             header_widget.set_data(hrec)
 
             self.table.setCellWidget(0, cidx, header_widget )
@@ -148,7 +161,7 @@ class OGTGroupWidget( QtGui.QWidget ):
         v_labels.append("")
 
         # Load the data
-        for ridx, row in enumerate(dic['data']):
+        for ridx, row in enumerate(group_dic['data']):
 
             self.table.setRowCount( self.table.rowCount() + 1)
             v_labels.append( str(ridx + 1) )
@@ -158,6 +171,9 @@ class OGTGroupWidget( QtGui.QWidget ):
                 item = QtGui.QTableWidgetItem()
                 item.setText(row[hrec["head_code"]])
                 self.table.setItem(ridx + 1, cidx, item)
+
+                if hrec['type'] == "PA":
+                    self.table.setItemDelegateForColumn(cidx, ags4_widgets.PickListComboDelegate(self, hrec["head_code"]))
 
 
         # resize columns, with max_width

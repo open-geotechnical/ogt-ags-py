@@ -6,6 +6,8 @@
 import os
 from Qt import QtGui, QtCore, Qt, pyqtSignal
 
+from ogt import ags4
+
 import app_globals as G
 
 #from ogt import utils
@@ -659,3 +661,33 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
         dis = self.proxy.rowCount() == 0
         self.lblAbbrCode.setText("" if dis else head_code)
         self.setDisabled(dis)
+
+class PickListComboDelegate(QtGui.QItemDelegate):
+    """A combobox for a table that whos the abrreviations picklist"""
+    def __init__(self, parent, head_code):
+        QtGui.QItemDelegate.__init__(self, parent)
+
+        self.head_code = head_code
+
+    def createEditor(self, parent, option, index):
+
+        editor = QtGui.QComboBox(parent)
+        editor.addItem("--unknown--", "")
+
+        # populate combobox from abbreviations
+        for typ in ags4.picklist(self.head_code):
+            editor.addItem( "%s: %s " % (typ['code'], typ['description']), typ['code'])
+
+        return editor
+
+    def setEditorData(self, editor, index):
+        editor.blockSignals(True)
+        curr = index.model().data(index).toString()
+        idx = editor.findData(curr)
+        if idx != -1:
+            editor.setCurrentIndex(idx)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        txt = editor.itemData(editor.currentIndex()).toString()
+        model.setData(index, txt)

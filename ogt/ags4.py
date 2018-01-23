@@ -201,7 +201,21 @@ def abbrs():
     """
     return AGS4_DD.get("abbrs")
 
+def picklist(head_code):
+    return AGS4_DD.get("abbrs").get(head_code).get("abbrs")
 
+def data_types():
+    return AGS4_DD.get("data_types")
+
+_data_types_cache = None
+def data_type(abbr_code):
+    global _data_types_cache
+    if _data_types_cache == None:
+        _data_types_cache = {}
+        #typs = AGS4_DD.get("data_types")
+        for typ in AGS4_DD.get("data_types"):
+            _data_types_cache[typ['data_type']] = typ
+    return _data_types_cache[abbr_code]
 
 
 class AGS4GroupDataDict:

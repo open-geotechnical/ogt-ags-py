@@ -74,11 +74,11 @@ class OGTDocument:
         self.groups = {}
         """A `dict` of group code to :class:`~ogt.ogt_group.OGTGroup` instances"""
 
-        self.lines = []
+        self._lines = []
         """A `list` of strings with original source lines"""
 
-        self.csv_rows = []
-        """A `list` of a list of csv rows"""
+        self._csv_cells = []
+        """A `list` or `list` of each csv value"""
 
         self.error_rows = {}
         """A `list` of rows with errors"""
@@ -86,6 +86,8 @@ class OGTDocument:
         self.opts = OGTDocumentOptions()
         """Set default options :class:`~ogt.ogt_doc.OGTDocumentOptions` """
 
+    def cells(self):
+        return self._csv_cells
 
 
     def hash(self):
@@ -179,6 +181,10 @@ class OGTDocument:
             - `bool` = `True` if group found in document, else false
         """
         return self.group("TYPE")
+
+    def type(self, code):
+        print self.group("TYPE").types
+        return "rrr"
 
     def write(self, ext="json", beside=False, file_path=None,
               zip=False, overwrite=False):
@@ -619,22 +625,22 @@ class OGTDocument:
 
             if stripped == "":
                 # blank line
-                self.lines.append([])
-                self.csv_rows.append([])
+                self._lines.append([])
+                self._csv_cells.append([])
                 continue
 
             # decode the csv line
             reader = csv.reader( StringIO.StringIO(stripped) )
             row =  reader.next() # first row of reader
 
-            self.lines.append(line)
-            self.csv_rows.append(row)
+            self._lines.append(line)
+            self._csv_cells.append(row)
 
         # second
         # walk the decoded rows, and recognise the groups
         # me mark the start_index, and end index of group
         curr_grp = None
-        for lidx, row in enumerate(self.csv_rows):
+        for lidx, row in enumerate(self._csv_cells):
 
             line_no = lidx + 1
             lenny = len(row)
@@ -711,7 +717,7 @@ class OGTDocument:
                             dic[head_code] = xrow[idx]
                         grp.data.append( dic )
 
-        print self.error_rows
+        #print self.error_rows
 
         return  None
 

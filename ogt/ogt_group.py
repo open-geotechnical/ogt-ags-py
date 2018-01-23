@@ -106,7 +106,7 @@ class OGTGroup:
 
     def csv_rows(self):
         """Returns the csv rows used in this group"""
-        return self.docParent.csv_rows[self.csv_start_index:self.csv_end_index]
+        return self.docParent._csv_cells[self.csv_start_index:self.csv_end_index]
 
     def headings_sort(self):
 
@@ -146,7 +146,7 @@ class OGTGroup:
         :rtype: dict
         :return: A dictionary with the data
         """
-        print self.docParent.opts, self
+        #print self.docParent.opts, self
         if self.docParent.opts.xmode:
 
             # shortcut to data dict

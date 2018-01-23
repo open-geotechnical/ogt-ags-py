@@ -84,8 +84,8 @@ class OGTProjectWidget( QtGui.QWidget ):
 
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
-        if G.args.dev:
-            self.tabBar.setCurrentIndex(2)
+        #if G.args.dev:
+        #    self.tabBar.setCurrentIndex(2)
 
     def init_load(self):
         pass
@@ -97,12 +97,13 @@ class OGTProjectWidget( QtGui.QWidget ):
 
 
         self.ogtDoc, err = ogt_doc.create_doc_from_ags4_string(contents, file_name)
-        proj = self.ogtDoc.proj_dict()
-        self.lblHeader.setText(proj['PROJ_NAME'])
+        self.load_doc()
+        #proj = self.ogtDoc.proj_dict()
+        #self.lblHeader.setText(proj['PROJ_NAME'])
 
-        self.ogtDocWidget.load_document(self.ogtDoc)
-        self.ogtScheduleWidget.load_document(self.ogtDoc)
-        self.ogtSourceViewWidget.load_document(self.ogtDoc)
+        #self.ogtDocWidget.load_document(self.ogtDoc)
+        #self.ogtScheduleWidget.load_document(self.ogtDoc)
+        #self.ogtSourceViewWidget.load_document(self.ogtDoc)
 
     def load_ags4_file(self, file_path):
 
@@ -113,6 +114,9 @@ class OGTProjectWidget( QtGui.QWidget ):
         #print "err=", err
         """
         self.ogtDoc, err = ogt_doc.create_doc_from_ags4_file(file_path)
+        self.load_doc()
+
+    def load_doc(self):
         proj = self.ogtDoc.proj_dict()
         self.lblHeader.setText(proj['PROJ_NAME'])
 
