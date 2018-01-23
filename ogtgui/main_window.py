@@ -166,9 +166,8 @@ class MainWindow( QtGui.QMainWindow ):
 
 
 
-        fnn = "/home/ags/ags-play/example_files/pete_stuff/example_schedule.ags"
-        if os.path.exists(fnn):
-            self.load_ags4_file(fnn)
+        fnn = "AGS4-Example.ags"
+        self.load_ags4_example(fnn)
 
 
 
@@ -206,15 +205,16 @@ class MainWindow( QtGui.QMainWindow ):
 
     def load_ags4_example(self, file_name):
 
+        self.menuExamples.close()
+
         data, err = ags4.example(file_name)
         if err:
             pass
 
         proj = ogtgui_project.OGTProjectWidget()
-        proj.load_ags4_string(data['contents'])
+        proj.load_ags4_string(data['contents'], file_name)
 
-        self.load_widget(proj, os.path.basename(file_name), ico=Ico.Project)
-        #self.menuExamples.close()
+        self.load_widget(proj, file_name, ico=Ico.Project)
 
 
     def load_ags4_file(self, file_path):
@@ -224,7 +224,7 @@ class MainWindow( QtGui.QMainWindow ):
         proj.load_ags4_file(file_path)
 
         self.load_widget(proj, os.path.basename(file_path), ico=Ico.Project)
-        #self.menuExamples.close()
+
 
     def on_tab_changed(self, idx):
         self.stackWidget.setCurrentIndex(idx)

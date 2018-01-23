@@ -30,27 +30,24 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.tabWidget = QtGui.QTabWidget()
         self.mainLayout.addWidget(self.tabWidget)
 
+        # Source View
+        self.sourceView = xwidgets.LNTextEdit()
+        self.tabWidget.addTab(self.sourceView, "Raw Text")
+
         # spread view
         self.tableWidget = QtGui.QTableWidget()
         self.tabWidget.addTab(self.tableWidget, "Grid View")
 
-
-        self.txtBox = QtGui.QTextEdit()
-        self.txtBox.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        self.txtBox.setLineWrapMode(QtGui.QTextEdit.NoWrap)
-        self.txtBox.setStyleSheet("font-family: monospace")
-        self.tabWidget.addTab(self.txtBox, "Raw Text")
-
-
+        self.tabWidget.setCurrentIndex(1)
 
     def load_document(self, doco):
 
-        #print doco
-        self.txtBox.setText(doco.source)
+        self.sourceView.setText(doco.source)
 
-        self.tableWidget.setRowCount(len(doco.lines))
+        print doco.csv_rows
+        self.tableWidget.setRowCount(len(doco.csv_rows))
 
-        for ridx, row in enumerate(doco.lines):
+        for ridx, row in enumerate(doco.csv_rows):
 
             if self.tableWidget.columnCount() < len(row):
                 self.tableWidget.setColumnCount(len(row))
@@ -246,5 +243,5 @@ class ExamplesWidget( QtGui.QWidget ):
 
         file_name = str(item.text(C_EG.file_name))
         self.sigFileSelected.emit(file_name)
-        self.hide()
+
 

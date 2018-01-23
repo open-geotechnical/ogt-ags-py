@@ -37,36 +37,36 @@ class OGTDocumentWidget( QtGui.QWidget ):
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
 
-    def init(self):
+    def init_load(self):
         #self.fetch()
         pass
 
-    def fetch(self, example=None):
-        """Send request to server"""
-        url = "/ags/4/parse"
-        params = None
-
-        if example:
-            params = dict(example=example)
-
-        G.server.get(origin=self, url=url, params=params)
-
-
-
-    def load_reply(self, xreply):
-        """Got a reply from server.."""
-        #print self, xreply
-
-        if xreply.origin != self:
-            return
-
-        if not "document" in xreply.data:
-            return # SHould not happen
-
-        # loop the groups and add the tabs,...
-        for dic in xreply.data["document"]["groups"]:
-
-            widget = self.load_group(dic)
+    # def fetch(self, example=None):
+    #     """Send request to server"""
+    #     url = "/ags/4/parse"
+    #     params = None
+    #
+    #     if example:
+    #         params = dict(example=example)
+    #
+    #     G.server.get(origin=self, url=url, params=params)
+    #
+    #
+    #
+    # def load_reply(self, xreply):
+    #     """Got a reply from server.."""
+    #     #print self, xreply
+    #
+    #     if xreply.origin != self:
+    #         return
+    #
+    #     if not "document" in xreply.data:
+    #         return # SHould not happen
+    #
+    #     # loop the groups and add the tabs,...
+    #     for dic in xreply.data["document"]["groups"]:
+    #
+    #         widget = self.load_group(dic)
 
 
     def load_ags4_file(self, file_path):
@@ -91,7 +91,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
 
     def load_group(self, group_dic):
-        print "############", group_dic
+        #print "############", group_dic
         widget = ogtgui_group.OGTGroupWidget(self)
         self.tabBar.addTab(Ico.icon(Ico.Group), group_dic['group_code'])
 

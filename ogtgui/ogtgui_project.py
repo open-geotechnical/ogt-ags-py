@@ -9,10 +9,11 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 from ogt import FORMATS
 from ogt import ogt_doc
 
-from . import ogtgui_doc
-from . import ogtgui_widgets
-from .img import Ico
-from . import xwidgets
+import app_globals as G
+import ogtgui_doc
+import ogtgui_widgets
+from img import Ico
+import xwidgets
 
 class OGTProjectWidget( QtGui.QWidget ):
 
@@ -33,7 +34,7 @@ class OGTProjectWidget( QtGui.QWidget ):
 
 
         self.lblHeader = QtGui.QLabel()
-        self.lblHeader.setStyleSheet("background-color: green; color: white; font-size: 14pt; padding: 3px 5px;")
+        self.lblHeader.setStyleSheet("background-color: black; color: #dddddd; font-size: 14pt; padding: 3px 5px;")
         self.topLay.addWidget(self.lblHeader, 100)
 
         self.buttExport = QtGui.QToolButton()
@@ -62,7 +63,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.mainLayout.addWidget(self.stackWidget)
 
         ## add tables tab
-        self.tabBar.addTab(Ico.icon(Ico.Groups), "Tables")
+        self.tabBar.addTab(Ico.icon(Ico.Groups), "Groups")
         self.ogtDocWidget = ogtgui_doc.OGTDocumentWidget()
         self.stackWidget.addWidget(self.ogtDocWidget)
 
@@ -83,8 +84,8 @@ class OGTProjectWidget( QtGui.QWidget ):
 
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
-
-        #self.tabBar.setCurrentIndex(1)
+        if G.args.dev:
+            self.tabBar.setCurrentIndex(2)
 
     def init_load(self):
         pass
@@ -92,17 +93,11 @@ class OGTProjectWidget( QtGui.QWidget ):
     def on_tab_changed(self, idx):
         self.stackWidget.setCurrentIndex(idx)
 
-    def load_ags4_string(self, contents):
+    def load_ags4_string(self, contents, file_name):
 
-        #self.file_path = None
-        """
-        self.doc, err = ogt_doc.OGTDocument()
-        err = self.doc.load_from_ags4_file(file_path)
-        #print "err=", err
-        """
-        self.ogtDoc, err = ogt_doc.create_doc_from_ags4_string(contents)
+
+        self.ogtDoc, err = ogt_doc.create_doc_from_ags4_string(contents, file_name)
         proj = self.ogtDoc.proj_dict()
-        #print "proj=", proj, self.ogtDoc.source, file_path
         self.lblHeader.setText(proj['PROJ_NAME'])
 
         self.ogtDocWidget.load_document(self.ogtDoc)
@@ -119,7 +114,6 @@ class OGTProjectWidget( QtGui.QWidget ):
         """
         self.ogtDoc, err = ogt_doc.create_doc_from_ags4_file(file_path)
         proj = self.ogtDoc.proj_dict()
-        print "proj=", proj, self.ogtDoc.source, file_path
         self.lblHeader.setText(proj['PROJ_NAME'])
 
         self.ogtDocWidget.load_document(self.ogtDoc)

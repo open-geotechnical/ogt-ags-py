@@ -34,7 +34,7 @@ class OGTDocumentOptions:
         """Includes 'source'  and 'source_cells' in output """
 
         #self.include_source = False
-        """Includes 'source'  and 'source_cells' in output """
+        #"""Includes 'source'  and 'source_cells' in output """
 
     def __repr__(self):
         return "<OGTDocOpts xmode=%s, mini=%s>" % (self.xmode, self.minify)
@@ -588,7 +588,7 @@ class OGTDocument:
 
 
 
-    def load_ags4_string(self, ags4_str):
+    def load_ags4_string(self, ags4_str, file_name=None):
         """Load  document from an :term:`ags4` formatted string
 
         Hackers guide
@@ -602,8 +602,7 @@ class OGTDocument:
         :return: An `Error` message if string not loaded, else `None`
         """
 
-
-
+        self.source_file_path = file_name
 
         ## Copy source as a string into mem here
         self.source = ags4_str
@@ -732,7 +731,7 @@ def create_doc_from_ags4_file(ags_file_path):
     err = doc.load_ags4_file(ags_file_path)
     return doc, err
 
-def create_doc_from_ags4_string(ags4_string):
+def create_doc_from_ags4_string(ags4_string, file_name=None):
     """Convenience function to create and load an OGTDocument from an ags string
 
     .. code-block:: python
@@ -744,6 +743,7 @@ def create_doc_from_ags4_string(ags4_string):
             print doc.group("PROJ")
     """
     doc = OGTDocument()
+    doc.source_file_path = file_name
     err = doc.load_ags4_string(ags4_string)
     return doc, err
 
