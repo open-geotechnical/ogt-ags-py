@@ -7,7 +7,7 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 from img  import Ico
 
 
-import ogt.ags4
+from ogt import ags4
 
 import app_globals as G
 
@@ -97,7 +97,7 @@ class Ags4Object(QtCore.QObject):
 
 
     def init_load(self):
-        err = ogt.ags4.initialise()
+        err = ags4.AGS4.initialise()
         if err:
             ogt.ags4.update()
             ogt.ags4.initialise()
@@ -107,10 +107,10 @@ class Ags4Object(QtCore.QObject):
 
     def load(self):
 
-        all = ogt.ags4.all()
-        self.modelAbbrItems.load_data(all['abbrs'])
+        #all = ogt.ags4.AGS4.all()
+        self.modelAbbrItems.load_data(ags4.AGS4.abbrs())
 
-        groups = ogt.ags4.groups()
+        groups = ags4.AGS4.groups()
         self.modelGroups.load_data(groups)
 
         self.modelNotes.init_words()

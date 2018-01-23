@@ -675,7 +675,7 @@ class PickListComboDelegate(QtGui.QItemDelegate):
         editor.addItem("--unknown--", "")
 
         # populate combobox from abbreviations
-        for typ in ags4.picklist(self.head_code):
+        for typ in ags4.AGS4.picklist(self.head_code):
             editor.addItem( "%s: %s " % (typ['code'], typ['description']), typ['code'])
 
         return editor

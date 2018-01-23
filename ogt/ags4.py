@@ -10,58 +10,119 @@ import ogt.ogt_doc
 import ogt.utils
 #from ogt import utils, EXAMPLES_DIR
 
-AGS4_DD = None
-"""This dict contains all the ags4 data, loaded in utils.initialise()"""
-
-
-def update():
-    """Downloads data dict file from online
-
-    :return: An error if one occured,  else None
-    """
-    if not os.path.exists(USER_TEMP):
-        os.makedirs(USER_TEMP)
-
-
-
-    for blobby in ["ags4.min.json", "ags4_examples.min.json"]:
-        u = "https://open-geotechnical.github.io/data/%s" % blobby
-        print "Requesting: %s" % u
-        try:
-            response = urllib2.urlopen(u)
-        except Exception as e:
-            return e
-
-        txt = response.read()
-
-        ## check its ok
-        try:
-            json.loads(txt)
-        except Exception as e:
-            print e
-
-        ogt.utils.write_file(os.path.join(USER_TEMP, blobby), txt)
-    return None
-
 def ags4dd_file():
     """
     :return: str with path to the `ags4.min.json` data dict file
     """
     return os.path.join(USER_TEMP, "ags4.min.json")
 
-def initialise():
-    """Check env is sane and loads the ags data dict file"""
-    if not os.path.exists(USER_TEMP):
-        os.makedirs(USER_TEMP)
 
-    if not os.path.exists(ags4dd_file()):
-        return "Missing ags4 data dict"
 
-    ogt.ags4.AGS4_DD, err = ogt.utils.read_json_file(ags4dd_file())
-    if err:
-        return err
-    #ogt.ags4.AGS4_DD.keys()
-    return None
+class AGS4_DataDict:
+    """This dict contains all the ags4 data, loaded in initialise()"""
+
+    def __init__(self):
+
+        self._data = None
+        self._groups = None
+        self._abbrs = None
+        self._data_types = None
+        self._units = None
+
+        self._data_types_lookup_cache = None
+
+    def update(self):
+        """Downloads data dict file from online
+
+        :return: An error if one occured,  else None
+        """
+        if not os.path.exists(USER_TEMP):
+            os.makedirs(USER_TEMP)
+
+
+
+        for blobby in ["ags4.min.json", "ags4_examples.min.json"]:
+            u = "https://open-geotechnical.github.io/data/%s" % blobby
+            print "Requesting: %s" % u
+            try:
+                response = urllib2.urlopen(u)
+            except Exception as e:
+                return e
+
+            txt = response.read()
+
+            ## check its ok
+            try:
+                json.loads(txt)
+            except Exception as e:
+                print e
+
+            ogt.utils.write_file(os.path.join(USER_TEMP, blobby), txt)
+        return None
+
+
+
+    def initialise(self):
+        """Check env is sane and loads the ags data dict file"""
+        if not os.path.exists(USER_TEMP):
+            os.makedirs(USER_TEMP)
+
+        if not os.path.exists(ags4dd_file()):
+            return "Missing ags4 data dict"
+
+        self._data, err = ogt.utils.read_json_file(ags4dd_file())
+        print self._data.keys()
+        if err:
+            return err
+
+        self._abbrs = self._data['abbrs']
+        self._groups = self._data['groups']
+        self._data_types = self._data['data_types']
+        self._units = self._data['units']
+
+        return None
+
+    def groups(self):
+        return self._groups
+
+    def group(self, group_code):
+        """Return all :term:`GROUP` s in the ags4 data dict
+
+        :param group_code: The four character group code to initialize with
+        :type group_code: str
+        :rtype: dict
+        :return:  the data if successful, else `None`
+        """
+
+        return self._groups.get(group_code)
+
+    def abbrs(self):
+        return self._abbrs
+
+    def data_types(self):
+        return self._data_types
+
+    def units(self):
+        return self._units
+
+    def picklist(self, head_code):
+        return self._abbrs.get(head_code).get("abbrs")
+
+    def data_types(self):
+        return self._data_types
+
+
+
+    def data_type(self, abbr_code):
+        if self._data_types_lookup_cache == None:
+            self._data_types_lookup_cache = {}
+            #typs = AGS4_DD.get("data_types")
+            for typ in self._data_types:
+                self._data_types_lookup_cache[typ['data_type']] = typ
+        return self._data_types_lookup_cache[abbr_code]
+
+AGS4 = AGS4_DataDict()
+"""Global Instance """
 
 class AGS4_DESCRIPTOR:
     """Constants defining the data descriptors (See :ref:`ags4_rule_3`)
@@ -153,22 +214,7 @@ def doc_to_ags4_csv(doc):
 
     return out.getvalue(), None
 
-def all():
-    """Return everything in the ags4 data dict
 
-    :rtype: dict
-    :return:  the data if succesful, else `None`
-    """
-    return AGS4_DD
-
-
-def groups():
-    """Return all :term:`GROUP` s in the ags4 data dict
-
-    :rtype: dict
-    :return:  the data if succesful, else `None`
-    """
-    return AGS4_DD.get("groups")
 
 def classified_groups():
     """Returns groups nested n classification"""
@@ -180,42 +226,7 @@ def classified_groups():
         classes[cls][gcode] = grp
     return classes
 
-def group(group_code):
-    """Return all :term:`GROUP` s in the ags4 data dict
 
-    :param group_code: The four character group code to initialize with
-    :type group_code: str
-    :rtype: dict
-    :return:  the data if successful, else `None`
-    """
-    if AGS4_DD == None:
-        return None
-    return AGS4_DD.get("groups").get(group_code)
-
-
-def abbrs():
-    """Return all :term:`abbreviations` in the ags4 data dict
-
-    :rtype: dict
-    :return:  the data if succesful, else `None`
-    """
-    return AGS4_DD.get("abbrs")
-
-def picklist(head_code):
-    return AGS4_DD.get("abbrs").get(head_code).get("abbrs")
-
-def data_types():
-    return AGS4_DD.get("data_types")
-
-_data_types_cache = None
-def data_type(abbr_code):
-    global _data_types_cache
-    if _data_types_cache == None:
-        _data_types_cache = {}
-        #typs = AGS4_DD.get("data_types")
-        for typ in AGS4_DD.get("data_types"):
-            _data_types_cache[typ['data_type']] = typ
-    return _data_types_cache[abbr_code]
 
 
 class AGS4GroupDataDict:
@@ -234,7 +245,7 @@ class AGS4GroupDataDict:
 
     def load_def(self):
         """Loads the definition file"""
-        self.raw_dict = group(self.group_code)
+        self.raw_dict = AGS4.group(self.group_code)
 
 
 

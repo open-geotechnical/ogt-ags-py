@@ -77,7 +77,7 @@ class OGTTableHeaderWidget( QtGui.QWidget ):
         #self.lblType.setToolTip(hrec['type'])
 
         #print hrec['type'], self.doc.type(hrec['type'])
-        typ = ags4.data_type(hrec['type'])
+        typ = ags4.AGS4.data_type(hrec['type'])
         if typ:
             self.lblType.setToolTip(typ['description'])
         else:
