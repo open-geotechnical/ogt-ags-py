@@ -691,3 +691,40 @@ class PickListComboDelegate(QtGui.QItemDelegate):
     def setModelData(self, editor, model, index):
         txt = editor.itemData(editor.currentIndex()).toString()
         model.setData(index, txt)
+
+class NumberEditDelegate(QtGui.QItemDelegate):
+    """Number editor"""
+    def __init__(self, parent, heading):
+        QtGui.QItemDelegate.__init__(self, parent)
+
+        self.head_code = heading['head_code']
+
+        self.data_type = heading['type']
+        #self.data_type = heading['type']
+        self.dp = None
+        if self.data_type.endswith("DP"):
+            self.dp = int(self.data_type[:-2])
+
+    def createEditor(self, parent, option, index):
+
+        editor = QtGui.QLineEdit(parent)
+        if self.data_type.endswith("DP"):
+            validator = QtGui.QDoubleValidator()
+            validator.setDecimals(self.dp)
+            editor.setValidator(validator)
+
+        return editor
+
+    def setEditorData(self, editor, index):
+        editor.blockSignals(True)
+        curr = index.model().data(index).toString()
+        editor.setText(curr)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        no = float(editor.text())
+        f = "%01."
+        f += "%sf" % self.dp
+        #print f
+        txt = f % (no,)
+        model.setData(index, txt)

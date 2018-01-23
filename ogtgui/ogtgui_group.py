@@ -120,7 +120,7 @@ class OGTGroupWidget( QtGui.QWidget ):
 
 
 
-    def init(self):
+    def deadinit(self):
         pass
 
     def load_group(self, group_dic):
@@ -173,8 +173,11 @@ class OGTGroupWidget( QtGui.QWidget ):
                 self.table.setItem(ridx + 1, cidx, item)
 
                 if hrec['type'] == "PA":
-                    self.table.setItemDelegateForColumn(cidx, ags4_widgets.PickListComboDelegate(self, hrec["head_code"]))
+                    self.table.setItemDelegateForColumn(cidx, ags4_widgets.PickListComboDelegate(self, hrec))
 
+                if hrec['type'] in ["2DP"]:
+                    item.setTextAlignment(Qt.AlignRight|Qt.AlignVCenter)
+                    self.table.setItemDelegateForColumn(cidx, ags4_widgets.NumberEditDelegate(self, hrec))
 
         # resize columns, with max_width
         col_width = 200
