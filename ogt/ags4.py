@@ -258,6 +258,11 @@ class AGS4GroupDataDict:
         """
         return self.raw_dict
 
+    def group_description(self):
+	    if self.raw_dict == None:
+		    return None
+	    return self.raw_dict.get("group_description")
+
     def group(self):
         """Return the group details; description, status, suggested type etc
 
