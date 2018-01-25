@@ -20,13 +20,15 @@ from flask import Flask, render_template, jsonify, request, flash, redirect
 
 from ogt import ags4, ogt_doc
 
-err = ags4.initialise()
+err = ags4.AGS4.initialise()
 if err:
     PANIC
 
 
 
-app = Flask(__name__, static_url_path="", static_folder=os.path.join(PROJECT_ROOT, "static"))
+app = Flask(__name__,
+            static_url_path="",
+            static_folder=os.path.join(PROJECT_ROOT, "static"))
 
 #print "################RENDERS=", app.config['DEFAULT_RENDERERS']
 
