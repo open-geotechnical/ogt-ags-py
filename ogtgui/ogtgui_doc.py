@@ -86,7 +86,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
 		self.doc = doc
 		print "doc=", doc
 		#data = doc.to_dict()
-		for gkey in self.doc.groups():
+		for gkey in self.doc.groups:
 			self.load_group( self.doc.group(gkey) )
 
 

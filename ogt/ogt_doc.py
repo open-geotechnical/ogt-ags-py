@@ -71,13 +71,13 @@ class OGTDocument:
 		self.source = ""
 		"""The original source files contents as string"""
 
-		self._groups = {}
+		self.groups = {}
 		"""A `dict` of group code to :class:`~ogt.ogt_group.OGTGroup` instances"""
 
-		self._lines = []
+		self.lines = []
 		"""A `list` of strings with original source lines"""
 
-		self._csv_cells = []
+		self.csv_rows = []
 		"""A `list` or `list` of each csv value"""
 
 		self.error_rows = {}
@@ -86,7 +86,7 @@ class OGTDocument:
 		self.opts = OGTDocumentOptions()
 		"""Set default options :class:`~ogt.ogt_doc.OGTDocumentOptions` """
 
-	def cells(self):
+	def deadcells(self):
 		return self._csv_cells
 
 
@@ -125,14 +125,14 @@ class OGTDocument:
 		:type grp: ~ogt.ogt_group.OGTGroup
 		:return: An `Error` message is group exists, else `None`
 		"""
-		if grp.group_code in  self._groups:
+		if grp.group_code in  self.groups:
 			return "Error: Group already exists in doc"
 		grp.docParent = self
 		#self.groups_sort.append(grp.group_code)
-		self._groups[grp.group_code] = grp
+		self.groups[grp.group_code] = grp
 		return None
 
-	def groups(self):
+	def deadgroups(self):
 		return self._groups
 
 	def group(self, group_code):
@@ -142,7 +142,7 @@ class OGTDocument:
 		:return: An instance of :class:`~ogt.ogt_group.OGTGroup` if exists, else `None`
 		"""
 
-		return self._groups.get(group_code)
+		return self.groups.get(group_code)
 
 
 	def proj(self):
@@ -161,7 +161,7 @@ class OGTDocument:
 		if not grpOb:
 			return None
 		#print grpOb.data[0]
-		if len(grpOb.data()) > 0: # should always be project
+		if len(grpOb.data) > 0: # should always be project
 			return grpOb.data_row(0)
 		return None
 
@@ -632,22 +632,22 @@ class OGTDocument:
 
 			if stripped == "":
 				# append blank lines
-				self._lines.append([])
-				self._csv_cells.append([])
+				self.lines.append([])
+				self.csv_rows.append([])
 				continue
 
 			# decode csv line
 			reader = csv.reader( StringIO.StringIO(stripped) )
 			row = reader.next() # first row of reader
 
-			self._lines.append(line)
-			self._csv_cells.append(row)
+			self.lines.append(line)
+			self.csv_rows.append(row)
 
 		# second
 		# walk the decoded rows, and recognise the groups
 		# me mark the start_index, and end index of group
 		curr_grp = None
-		for lidx, row in enumerate(self._csv_cells):
+		for lidx, row in enumerate(self.csv_rows):
 
 			line_no = lidx + 1
 			lenny = len(row)
@@ -684,7 +684,7 @@ class OGTDocument:
 					#   curr_grp.csv_rows.append(row)
 		# thirdly
 		# - we parse each group's csv rows into the parts
-		for group_code, grp in self._groups.items():
+		for group_code, grp in self.groups.items():
 			#print group_code, "<<<<<<<<<"
 			#print grp.csv_rows()
 
@@ -698,21 +698,21 @@ class OGTDocument:
 				elif typ == ogt.ags4.AGS4_DESCRIPTOR.heading:
 					grp.headings_source_sort = xrow
 					for idx, head_code in enumerate(grp.headings_source_sort):
-						grp._headings[head_code] = xrow[idx]
+						grp.headings[head_code] = xrow[idx]
 
 				elif typ == ogt.ags4.AGS4_DESCRIPTOR.unit:
 					if grp.headings_source_sort == None:
 						self.error_rows[line_no] = row
 					else:
 						for idx, head_code in enumerate(grp.headings_source_sort):
-							grp._units[head_code] = xrow[idx]
+							grp.units[head_code] = xrow[idx]
 
 				elif typ == ogt.ags4.AGS4_DESCRIPTOR.type:
 					if grp.headings_source_sort == None:
-						self._error_rows[line_no] = row
+						self.error_rows[line_no] = row
 					else:
 						for idx, head_code in enumerate(grp.headings_source_sort):
-							grp._data_types[head_code] = xrow[idx]
+							grp.data_types[head_code] = xrow[idx]
 
 				elif typ == ogt.ags4.AGS4_DESCRIPTOR.data:
 
@@ -722,7 +722,7 @@ class OGTDocument:
 						dic = {}
 						for idx, head_code in enumerate(grp.headings_source_sort):
 							dic[head_code] = xrow[idx]
-						grp._data.append( dic )
+						grp.data.append( dic )
 
 		#print self.error_rows
 

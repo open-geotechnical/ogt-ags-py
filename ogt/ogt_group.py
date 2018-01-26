@@ -71,23 +71,23 @@ class OGTGroup:
 		self.group_code = group_code
 		"""The four character group code"""
 
-		self._headings = {}
+		self.headings = {}
 		"""A `dict` of headings"""
 
-		self._headings_sort = None
+		self.headings_sort = []
 		"""A list of head_codes in recommended sort order"""
 
 		self.headings_source_sort = []
 		"""The list of head_code with the sort order in original file"""
 
 
-		self._units = {}
+		self.units = {}
 		"""A `dict` of `head_code:unit`  """
 
-		self._data_types = {}
+		self.data_types = {}
 		"""A `dict` of `head_code:type` """
 
-		self._data = []
+		self.data = []
 		"""A `list` of `dict`s with `head_code:value`  """
 
 		#self.csv_rows = []
@@ -127,17 +127,17 @@ class OGTGroup:
 		return self._headings_sort
 
 	def headings_count(self):
-		return len(self._headings)
+		return len(self.headings.keys())
 
 	def csv_rows(self):
 		"""Returns the csv rows used in this group"""
-		return self.docParent._csv_cells[self.csv_start_index:self.csv_end_index]
+		return self.docParent.csv_rows[self.csv_start_index:self.csv_end_index]
 
-	def data(self):
-		return self._data
+	def deaddata(self):
+		return self.data
 
 	def data_row(self, ridx):
-		return self._data[ridx]
+		return self.data[ridx]
 
 	def data_dict(self):
 		"""Returns the data dictionary for this group, if it exists

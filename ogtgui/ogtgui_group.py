@@ -155,7 +155,8 @@ class OGTGroupWidget( QtGui.QWidget ):
 
 		## Populate header
 		HEADER_HEIGHT = 80
-		for cidx, hrec in enumerate(self.ogtGroup.headings()):
+		print self.ogtGroup.headings
+		for cidx, hrec in enumerate(self.ogtGroup.headings.items()):
 			print cidx, hrec
 			hitem = xwidgets.XTableWidgetItem()
 			hitem.set(hrec['head_code'], bold=True)
