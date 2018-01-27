@@ -142,7 +142,7 @@ class AGS4_DataDict:
 
         if des in AGS4.descriptors():
             return None
-        return "Descriptor `%s` not found"
+        return "Invalid descriptor `%s` not found"
 
 
 AGS4 = AGS4_DataDict()
