@@ -113,7 +113,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
     def on_goto(self, code):
         grp_code = code.split("_")[0]
         for idx in range(0, self.stackWidget.count()):
-            if self.stackWidget.widget(idx).group_code == grp_code:
+            if self.stackWidget.widget(idx).ogtGroup.group_code == grp_code:
                 self.tabBar.setCurrentIndex(idx)
                 #self.stackWidget.widget(idx).select_heading(code)
                 return

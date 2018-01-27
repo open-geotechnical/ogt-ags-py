@@ -105,7 +105,7 @@ class OGTGroupWidget( QtGui.QWidget ):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
-        self.doc = doc
+        #self.doc = doc
         self.ogtGroup = None
 
         self.mainLayout = QtGui.QVBoxLayout()
@@ -114,16 +114,21 @@ class OGTGroupWidget( QtGui.QWidget ):
         self.setLayout(self.mainLayout)
 
         ## titles
+        m = 3
         topLay = QtGui.QHBoxLayout()
         topLay.setSpacing(0)
-        topLay.setContentsMargins(0,0,0,0)
+        topLay.setContentsMargins(m,m,m,m)
         self.mainLayout.addLayout(topLay, 0)
 
         sty = "background-color: #333333; color: #dddddd; padding: 2px;"
 
-        self.lblGroupCode = QtGui.QLabel()
-        self.lblGroupCode.setStyleSheet(sty + "font-weight: bold; font-size: 14pt; font-family: monospace;")
-        topLay.addWidget(self.lblGroupCode, 0)
+        self.buttGroupCode = QtGui.QToolButton()
+        self.buttGroupCode.setText("-")
+        self.buttGroupCode.setIcon(Ico.icon(Ico.Ags4))
+        self.buttGroupCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.buttGroupCode.setStyleSheet( "font-weight: bold;")
+        topLay.addWidget(self.buttGroupCode, 0)
+        self.buttGroupCode.clicked.connect(self.on_butt_group_code)
 
         self.lblGroupDescription = QtGui.QLabel()
         self.lblGroupDescription.setStyleSheet(sty + "")
@@ -137,7 +142,7 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         self.ogtGroup = ogtGroup
         ## Set the labels
-        self.lblGroupCode.setText( self.ogtGroup.group_code  )
+        self.buttGroupCode.setText( self.ogtGroup.group_code  )
 
         descr = None
         if ogtGroup.data_dict():
@@ -221,3 +226,5 @@ class OGTGroupWidget( QtGui.QWidget ):
         print "on_goto", code, self
         self.sigGoto.emit(code)
 
+    def on_butt_group_code(self):
+        d = None
