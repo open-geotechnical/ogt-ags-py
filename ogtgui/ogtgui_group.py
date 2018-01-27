@@ -146,7 +146,7 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         descr = None
         if ogtGroup.data_dict():
-            descr = self.ogtGroup.data_dict().group_description()
+            descr = self.ogtGroup.group_description
         self.lblGroupDescription.setText( "-" if descr == None else descr )
 
 

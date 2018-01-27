@@ -104,6 +104,9 @@ class OGTGroup:
             return self.data_dict().group_description
         return None
 
+    def has_heading(self, head_code):
+        return head_code in self.headings
+
     def headings_sort(self):
 
         if self._headings_sort == None:

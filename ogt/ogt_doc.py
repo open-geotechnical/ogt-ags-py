@@ -428,6 +428,36 @@ class OGTDocument:
                                            include_stats=include_stats,
                                            edit_mode=edit_mode) )
 
+    def get_points(self):
+
+        grpLoca = self.group("LOCA")
+        print "get CLOCA", grpLoca
+        lst = []
+
+        ## WSG84
+        if grpLoca.has_heading("LOCAL_LAT") and grpLoca.has_heading("LOCAL_LON"):
+            for rec in grpLoca.data:
+                lat_s = rec.get("LOCA_LAT")
+                lon_s = rec.get("LOCA_LON")
+                ## addd Point
+                print "YES=", lat_s, lon_s
+
+
+
+        ## BNG British National grid
+        elif grpLoca.has_heading("LOCA_NATE") and grpLoca.has_heading("LOCA_NATN"):
+            for rec in grpLoca.data:
+                #print rec
+                east = float(rec.get("LOCA_NATE"))
+                north = float(rec.get("LOCA_NATN"))
+                #print east, north, rec.get("LOCA_NATE"), rec.get("LOCA_NATN")
+                if east and north:
+                    lat, lon = bng_to_latlon.OSGB36toWGS84(east, north)
+                    lst.append(dict(lat=lat, lon=lon, east=east, north=north))
+                    #features.append(make_feature(rec, lat, lon))
+
+        return lst
+
 
     def to_geojson(self, minify=False):
 

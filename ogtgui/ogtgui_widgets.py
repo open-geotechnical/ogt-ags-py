@@ -68,16 +68,17 @@ class OGTSourceViewWidget( QtGui.QWidget ):
             if self.tableWidget.columnCount() < len(row):
                 self.tableWidget.setColumnCount(len(row))
 
+            bg = None
             for cidx, cell in enumerate(row):
-
+                if cidx == 0:
+                    bg = bg_color(cell)
                 item = QtGui.QTableWidgetItem()
                 item.setText( cell )
                 self.tableWidget.setItem(ridx, cidx, item)
 
-                ## color the rows
-                if cidx == 0:
-                    bg = bg_color(cell)
-                    item.setBackgroundColor(QtGui.QColor(bg))
+                ## color the row
+                item.setBackgroundColor(QtGui.QColor(bg))
+
 
 
 class OGTScheduleWidget( QtGui.QWidget ):

@@ -46,6 +46,7 @@ class Ico:
 
         return qicon
 
+    Add = "add.png"
 
     Ags3 = "ags3.svg.png"
     Ags4 = "ags4.svg.png"
@@ -80,6 +81,8 @@ class Ico:
 
 
     Project = "blue-document-list.png"
+
+    Map = "map.png"
 
     Quit = 'control_eject.png'
 

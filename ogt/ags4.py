@@ -280,6 +280,7 @@ class AGS4GroupDataDict:
         """
         return self.raw_dict
 
+    @property
     def group_description(self):
         if self.raw_dict == None:
             return None
