@@ -671,20 +671,26 @@ class OGTDocument:
 		# walk the parsed cvs rows
 		for lidx, row in enumerate(self.csv_rows):
 
-			line_no = lidx + 1
+			#line_no = lidx + 1
 			lenny = len(row)
 
-			#print lidx, lenny, row
 			if lenny == 0:
 				## ags can allow no spaces between groups
-				# blank row so ignore, eg mightbe a space in data or alike ?
-				#print "blank"
+				# blank row so ignore, eg mightbe a space between data or alike ?
+				continue
+
+
+			if lenny == 1:
+				# so we only got a first column, to check its valid
+				err = ags4.rule_3()
+				self.add_error("Row has no data", rule=4, lidx=lidx)
 				continue
 
 			if lenny < 2:
 				# min of two items, so add to errors
 				#self.error_rows[lidx] = row
 				self.add_error("Row has no data", rule=4, lidx=lidx)
+				continue
 
 			else:
 				# first item is data descriptor
@@ -710,36 +716,40 @@ class OGTDocument:
 		# thirdly
 		# - we parse each group's csv rows into the parts
 		for group_code, grp in self.groups.iteritems():
-			print group_code, grp
+			print group_code, grp, grp.csv_rows()
 			#print grp.csv_rows()
 
 			for idx, row in enumerate(grp.csv_rows()):
-				typ = row[0]
+				print idx, row
+				if len(row) == 0:
+					continue
+				descriptor = row[0]
+				err = ags4.AGS4.validate_descriptor(descriptor)
 				xrow = row[1:] # row without data descriptor
 
-				if typ == ogt.ags4.AGS4.group:
+				if descriptor == ags4.AGS4.GROUP:
 					pass
 
-				elif typ == ogt.ags4.AGS4.HEADING:
+				elif descriptor == ags4.AGS4.HEADING:
 					grp.headings_source_sort = xrow
 					for idx, head_code in enumerate(grp.headings_source_sort):
 						grp.headings[head_code] = xrow[idx]
 
-				elif typ == ogt.ags4.AGS4.UNIT:
+				elif descriptor == ags4.AGS4.UNIT:
 					if grp.headings_source_sort == None:
 						self.error_rows[line_no] = row
 					else:
 						for idx, head_code in enumerate(grp.headings_source_sort):
 							grp.units[head_code] = xrow[idx]
 
-				elif typ == ogt.ags4.AGS4.TYPE:
+				elif descriptor == ags4.AGS4.TYPE:
 					if grp.headings_source_sort == None:
 						self.error_rows[line_no] = row
 					else:
 						for idx, head_code in enumerate(grp.headings_source_sort):
 							grp.data_types[head_code] = xrow[idx]
 
-				elif typ == ogt.ags4.AGS4.DATA:
+				elif descriptor == ags4.AGS4.DATA:
 
 					if grp.headings_source_sort == None:
 						self.error_rows[line_no] = row
