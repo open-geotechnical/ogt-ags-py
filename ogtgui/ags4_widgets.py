@@ -699,7 +699,7 @@ class NumberEditDelegate(QtGui.QItemDelegate):
 
         self.head_code = heading['head_code']
 
-        self.data_type = heading['type']
+        self.data_type = heading['data_type']
         #self.data_type = heading['type']
         self.dp = None
         if self.data_type.endswith("DP"):

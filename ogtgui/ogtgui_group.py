@@ -83,15 +83,15 @@ class OGTHeaderWidget( QtGui.QWidget ):
 
         self.lblUnit.setText("-" if hrec["unit"] else hrec["unit"])
         #typ = "<a href="""
-        self.lblType.setText(hrec["type"])
+        self.lblType.setText(hrec["data_type"])
         #self.lblType.setToolTip(hrec['type'])
 
         #print hrec['type'], self.doc.type(hrec['type'])
-        typ = ags4.AGS4.data_type(hrec['type'])
+        typ = ags4.AGS4.data_type(hrec['data_type'])
         if typ:
             self.lblType.setToolTip(typ['description'])
         else:
-            self.lblType.setToolTip(hrec['type'])
+            self.lblType.setToolTip(hrec['data_type'])
 
     def on_goto(self):
         self.sigGoto.emit(self.head_code)
@@ -156,7 +156,7 @@ class OGTGroupWidget( QtGui.QWidget ):
         ## Populate header
         HEADER_HEIGHT = 80
         print self.ogtGroup.headings
-        for hcode, hrec in self.ogtGroup.headings_list():
+        for cidx, hrec in enumerate(self.ogtGroup.headings_list()):
             print cidx, hrec
             hitem = xwidgets.XTableWidgetItem()
             hitem.set(hrec['head_code'], bold=True)
@@ -172,37 +172,37 @@ class OGTGroupWidget( QtGui.QWidget ):
         v_labels.append("")
 
         # Load the data
-        for ridx, row in enumerate(self.data()):
+        for ridx, row in enumerate(self.ogtGroup.data):
 
             self.table.setRowCount( self.table.rowCount() + 1)
             v_labels.append( str(ridx + 1) )
 
-            for cidx, hrec in enumerate(headings):
+            for cidx, hrec in enumerate(self.ogtGroup.headings_list()):
                 #print hrec, row
                 item = QtGui.QTableWidgetItem()
                 item.setText(row[hrec["head_code"]])
                 self.table.setItem(ridx + 1, cidx, item)
 
-                if hrec['type'] == "PA":
+                if hrec['data_type'] == "PA":
                     # Combo dropdown
                     self.table.setItemDelegateForColumn(cidx, ags4_widgets.PickListComboDelegate(self, hrec))
                     item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
 
-                if hrec['type'] in ["2DP"]:
+                if hrec['data_type'] in ["2DP"]:
                     # Number editor
                     item.setTextAlignment(Qt.AlignRight|Qt.AlignVCenter)
                     self.table.setItemDelegateForColumn(cidx, ags4_widgets.NumberEditDelegate(self, hrec))
 
 
-                if hrec['type'] == "ID":
+                if hrec['data_type'] == "ID":
                     #print hrec
-                    if self.group_code  == hrec['head_code'].split("_")[0]:
+                    if self.ogtGroup.group_code  == hrec['head_code'].split("_")[0]:
                         # in same group as heading, so highlight the ID
                         item.setBackgroundColor(QtGui.QColor("#FFF96C"))
                     else:
                         # Dropdown for ID
-                        data = self.doc.column_data(hrec['head_code'])
-                        self.table.setItemDelegateForColumn(cidx, ags4_widgets.IDComboDelegate(self, hrec, options=data))
+                        optts = self.doc.column_data(hrec['head_code'])
+                        self.table.setItemDelegateForColumn(cidx, ags4_widgets.IDComboDelegate(self, hrec, options=optts))
                         self.table.cellWidget(0, cidx).set_link(True)
                         item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
 

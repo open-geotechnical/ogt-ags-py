@@ -97,12 +97,6 @@ class OGTGroup:
 
         self._data_dict = None
 
-    def deadheadings(self):
-        """Return a list of heading dicts"""
-        print self._headings
-        return self._headings.items()
-
-
 
     def headings_sort(self):
 
@@ -125,7 +119,8 @@ class OGTGroup:
         """Return a list of heading dicts"""
         lst = []
         for hcode in self.headings_source_sort:
-            lst.append(self.headings[hcode])
+            #dic = dict(head_code = hcode, unit=self.units[hcode], data_type=self.data_types[hcode])
+            lst.append( dict(head_code = hcode, unit=self.units[hcode], data_type=self.data_types[hcode]) )
         return lst
 
     def headings_count(self):
@@ -140,6 +135,10 @@ class OGTGroup:
 
     def data_row(self, ridx):
         return self.data[ridx]
+
+    def data_rows(self):
+        return self.data
+
 
     def data_dict(self):
         """Returns the data dictionary for this group, if it exists
