@@ -281,9 +281,9 @@ class AGS4GroupDataDict:
         return self.raw_dict
 
     def group_description(self):
-	    if self.raw_dict == None:
-		    return None
-	    return self.raw_dict.get("group_description")
+        if self.raw_dict == None:
+            return None
+        return self.raw_dict.get("group_description")
 
     def group(self):
         """Return the group details; description, status, suggested type etc
@@ -842,7 +842,7 @@ def examples_list():
     pth =  os.path.join(USER_TEMP, "ags4_examples.min.json")
     data, err = ogt.utils.read_json_file(pth)
     if err:
-	    return None, err
+        return None, err
     return [ {"file_name": r['file_name']} for r in data['ags4_examples'] ], None
 
 def example(file_name):

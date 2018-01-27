@@ -13,7 +13,7 @@ if HAVE_GEOJSON:
 
 from . import FORMATS
 import ags4
-import ogt.ogt_group
+import ogt_group
 import ogt.utils
 
 
@@ -703,7 +703,7 @@ class OGTDocument:
 
 
                     ## we got a new group
-                    loop_grp = ogt.ogt_group.OGTGroup(row[1])
+                    loop_grp = ogt_group.OGTGroup(row[1])
                     loop_grp.csv_start_index = lidx
                     self.append_group(loop_grp)
 
@@ -734,18 +734,19 @@ class OGTDocument:
                     pass
 
                 elif descriptor == ags4.AGS4.HEADING:
-
                     grp.headings_source_sort = xrow
                     for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.headings[head_code] = xrow[cidx]
+                        ogr = ogt_group.OGTHeading(ogtGroup=grp)
+                        ogr.set_head_code(xrow[cidx], ridx, cidx)
+                        grp.headings[head_code] = ogr
 
                 elif descriptor == ags4.AGS4.UNIT:
                     for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.units[head_code] = xrow[cidx]
+                        grp.headings[head_code].set_unit(xrow[cidx], ridx, cidx)
 
                 elif descriptor == ags4.AGS4.TYPE:
                     for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.data_types[head_code] = xrow[cidx]
+                        grp.headings[head_code].set_type(xrow[cidx], ridx, cidx)
 
                 elif descriptor == ags4.AGS4.DATA:
                     dic = {}
