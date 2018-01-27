@@ -223,7 +223,7 @@ class OGTGroupWidget( QtGui.QWidget ):
         self.table.setVerticalHeaderLabels(v_labels)
 
     def on_goto(self, code):
-        print "on_goto", code, self
+        #print "on_goto", code, self
         self.sigGoto.emit(code)
 
     def on_butt_group_code(self):

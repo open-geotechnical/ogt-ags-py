@@ -707,7 +707,7 @@ class OGTDocument:
                     loop_grp.csv_start_index = lidx
                     self.append_group(loop_grp)
 
-        print "===GROUPS===", sorted(self.groups.keys())
+        #print "===GROUPS===", sorted(self.groups.keys())
 
         # thirdly
         # - we parse each group's csv rows into the parts
@@ -717,14 +717,14 @@ class OGTDocument:
 
             for ridx, row in enumerate(grp.csv_rows()):
 
-                print "~", ridx, row
+                #print "~", ridx, row
                 if len(row) == 0:
                     # empty row
                     continue
 
                 descriptor = row[0]
                 err = ags4.AGS4.validate_descriptor(descriptor)
-                print "err=", descriptor, err
+                #print "err=", descriptor, err
                 if err != None:
                     # todo add to errors
                     pass

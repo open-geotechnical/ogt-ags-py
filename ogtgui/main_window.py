@@ -65,6 +65,14 @@ class MainWindow( QtGui.QMainWindow ):
         #=======
         ## File
         self.menuFile = self.menuBar().addMenu("File")
+
+        self.actionOpen = self.menuFile.addAction("Open Ags File", self.on_open_ags_file)
+        self.actionRecent = self.menuFile.addAction("Recent")
+        self.actionRecent.setMenu(QtGui.QMenu())
+        self.actionRecent.menu().triggered.connect(self.on_open_recent)
+
+        self.menuFile.addSeparator()
+
         self.actionQuit = self.menuFile.addAction(Ico.icon(Ico.Quit), "Quit", self.on_quit)
 
 
@@ -150,6 +158,7 @@ class MainWindow( QtGui.QMainWindow ):
         self.setMinimumWidth(800)
         self.setMinimumHeight(800)
         G.settings.restore_window( self )
+        self.load_recent()
 
         ## run some stuff a few moments after window shown
         QtCore.QTimer.singleShot(200, self.on_after)
@@ -166,9 +175,10 @@ class MainWindow( QtGui.QMainWindow ):
 
 
 
-        fnn = "AGS4-Example.ags"
-        self.load_ags4_example(fnn)
-
+        #fnn = "AGS4-Example.ags"
+        #self.load_ags4_example(fnn)
+        fn =  "/home/ogt/AGS4-example-wrd.ags"
+        self.load_ags4_file(fn)
 
 
 
@@ -219,12 +229,44 @@ class MainWindow( QtGui.QMainWindow ):
 
     def load_ags4_file(self, file_path):
 
-        print "load_ags4_file", file_path, self
+        # first check its not open
+        for idx in range(0, self.stackWidget.count()):
+            #print self.stackWidget.widget(idx)
+            if isinstance(self.stackWidget.widget(idx), ogtgui_project.OGTProjectWidget ):
+                if self.stackWidget.widget(idx).ogtDoc.source_file_path == file_path:
+                    self.tabBar.setCurrentIndex(idx)
+                    return
+
+
+        self.add_history(file_path)
+        #print "load_ags4_file", file_path, self
         proj = ogtgui_project.OGTProjectWidget()
         proj.load_ags4_file(file_path)
 
         self.load_widget(proj, os.path.basename(file_path), ico=Ico.Project)
 
+    def add_history(self, file_path):
+        history = G.settings.get_list("history")
+
+        if file_path in history:
+            # remove if in history, so insert at top
+            history.remove(file_path)
+        history.insert(0, file_path)
+        if len(history) > 20:
+            history = history[0:20]
+        G.settings.save_list("history", history)
+        self.load_recent()
+
+    def load_recent(self):
+        files = G.settings.get_list("history")
+        menu = self.actionRecent.menu()
+        menu.clear()
+        for f in files:
+            menu.addAction(f)
+
+    def on_open_recent(self, act):
+        fn =  str(act.text())
+        self.load_ags4_file(fn)
 
     def on_tab_changed(self, idx):
         self.stackWidget.setCurrentIndex(idx)
@@ -267,3 +309,14 @@ class MainWindow( QtGui.QMainWindow ):
 
         """
         print "TODO", "on_ags3_browse", self
+
+    def on_open_ags_file(self):
+
+        dial = QtGui.QFileDialog(self, "Select AGS File")
+        dial.setFileMode(QtGui.QFileDialog.ExistingFile)
+        #dial.setFilter(QtCore.QDir.Files)
+        dial.setNameFilters(["Ags Files (*.ags *.ags4)"])
+
+        if dial.exec_():
+            fn = str(dial.selectedFiles()[0])
+            self.load_ags4_file(fn)

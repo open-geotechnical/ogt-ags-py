@@ -3,8 +3,9 @@
 @author: Peter Morgan <pete@daffodil.uk.com>
 """
 
-import os
-import sys
+#import os
+#import sys
+import json
 
 from Qt import Qt, QtCore
 
@@ -29,7 +30,7 @@ class XSettings( QtCore.QObject ):
     def __init__( self, parent=None ):
         QtCore.QObject.__init__( self, parent )
 
-        self.settings = QtCore.QSettings("AGS", "ags-desktop-pyqt")
+        self.qsettings = QtCore.QSettings("AGS", "ags-desktop-pyqt")
 
         self.servers = {}
 
@@ -40,14 +41,14 @@ class XSettings( QtCore.QObject ):
                                     'url': 'http://localhost:13777'})
 
     def set_current_server( self, ki ):
-        self.settings.setValue( self.CURR_SERVER_KI, ki )
-        self.settings.sync()
+        self.qsettings.setValue( self.CURR_SERVER_KI, ki )
+        self.qsettings.sync()
         if ki in self.servers:
             self._current_server = self.servers[ki]
         return self._current_server
 
     def current_server( self ):
-        ki = str( self.settings.value( self.CURR_SERVER_KI ) )
+        ki = str( self.qsettings.value( self.CURR_SERVER_KI ) )
         if ki in self.servers:
             return self.server[ki]
         return self.servers["dev"]
@@ -58,13 +59,13 @@ class XSettings( QtCore.QObject ):
         name = window.objectName()
         if len(name) == 0:
             return
-        self.settings.setValue( "window/%s/geometry" % name, QtCore.QVariant( window.saveGeometry() ) )
+        self.qsettings.setValue( "window/%s/geometry" % name, QtCore.QVariant( window.saveGeometry() ) )
 
     def restore_window( self, window ):
         name = str(window.objectName())
         if len(name) == 0:
             return
-        window.restoreGeometry( self.settings.value( "window/%s/geometry" % name ).toByteArray() )
+        window.restoreGeometry( self.qsettings.value( "window/%s/geometry" % name ).toByteArray() )
 
 
     def save_splitter(self, splitter):
@@ -77,4 +78,14 @@ class XSettings( QtCore.QObject ):
         wname = str(splitter.objectName())
         if not wname :
             print "Splitter has no name"
-        splitter.restoreState(self.settings.value("splitter/%s" % wname).toByteArray())
+        splitter.restoreState(self.qsettings.value("splitter/%s" % wname).toByteArray())
+
+    def save_list(self, key, lst):
+        self.qsettings.setValue(key, json.dumps(lst))
+        self.qsettings.sync()
+
+    def get_list(self, key):
+        s = str(self.qsettings.value(key).toString())
+        if s == None or s == "":
+            return []
+        return json.loads(s)

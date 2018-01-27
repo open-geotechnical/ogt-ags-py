@@ -91,7 +91,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
 
     def load_group(self, ogtGrp):
-        print "load_group", ogtGrp, self
+        #print "load_group", ogtGrp, self
         widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
         idx = self.tabBar.addTab( ogtGrp.group_code)
         if ogtGrp.data_dict():
