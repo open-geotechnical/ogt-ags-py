@@ -81,17 +81,17 @@ class OGTDocumentWidget( QtGui.QWidget ):
         self.load_document(doc)
 
 
-    def load_document(self, doc):
+    def load_document(self, ogtdoc):
 
-        self.doc = doc
-        print "doc=", doc
+        self.ogtDoc = ogtdoc
+        #print "doc=", doc
         #data = doc.to_dict()
-        for gkey in self.doc.groups:
-            self.load_group( self.doc.group(gkey) )
+        for gkey in self.ogtDoc.groups_sort():
+            self.load_group( self.ogtDoc.group(gkey) )
 
 
     def load_group(self, ogtGrp):
-        print "load_group", ogtGrp, self
+        #print "load_group", ogtGrp, self
         widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
         idx = self.tabBar.addTab( ogtGrp.group_code)
         if ogtGrp.data_dict():

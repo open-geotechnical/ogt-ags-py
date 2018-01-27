@@ -19,10 +19,10 @@ class OGTHeaderWidget( QtGui.QWidget ):
 
     sigGoto = pyqtSignal(str)
 
-    def __init__( self, parent=None, doc=None):
+    def __init__( self, parent=None, ogtDoc=None):
         QtGui.QWidget.__init__( self, parent )
 
-        self.doc = doc
+        self.ogtDoc = ogtDoc
         self.debug = False
         self.head_code = None
 
@@ -162,7 +162,7 @@ class OGTGroupWidget( QtGui.QWidget ):
             hitem.set(hrec['head_code'], bold=True)
             self.table.setHorizontalHeaderItem(cidx, hitem)
 
-            header_widget = OGTHeaderWidget(doc=self.doc)
+            header_widget = OGTHeaderWidget(ogtDoc=self.ogtGroup.parentDoc)
             header_widget.set_data(hrec)
 
             self.table.setCellWidget(0, cidx, header_widget )
@@ -201,7 +201,7 @@ class OGTGroupWidget( QtGui.QWidget ):
                         item.setBackgroundColor(QtGui.QColor("#FFF96C"))
                     else:
                         # Dropdown for ID
-                        optts = self.doc.column_data(hrec['head_code'])
+                        optts = self.ogtGroup.parentDoc.column_data(hrec['head_code'])
                         self.table.setItemDelegateForColumn(cidx, ags4_widgets.IDComboDelegate(self, hrec, options=optts))
                         self.table.cellWidget(0, cidx).set_link(True)
                         item.setBackgroundColor(QtGui.QColor("#FFFDBF"))

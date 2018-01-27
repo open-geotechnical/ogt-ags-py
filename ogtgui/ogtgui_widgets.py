@@ -14,16 +14,16 @@ from ogt import ags4
 
 
 def bg_color(descr):
-    if descr == ags4.AGS4_DESCRIPTOR.group:
+    if descr == ags4.AGS4.GROUP:
         return "#D4C557"
 
-    if descr == ags4.AGS4_DESCRIPTOR.heading:
+    if descr == ags4.AGS4.HEADING:
         return "#FCF66D"
 
-    if descr in [ags4.AGS4_DESCRIPTOR.unit, ags4.AGS4_DESCRIPTOR.type]:
+    if descr in [ags4.AGS4.UNIT, ags4.AGS4.TYPE]:
         return "#FFE8B9"
 
-    if descr == ags4.AGS4_DESCRIPTOR.data:
+    if descr == ags4.AGS4.DATA:
         return "#DFD1FF"
 
     return "#ffffff"
@@ -60,10 +60,10 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
         self.sourceView.setText(doco.source)
 
-        print doco.cells()
-        self.tableWidget.setRowCount(len(doco.cells()))
+        #print doco.cells()
+        self.tableWidget.setRowCount(len(doco.csv_rows))
 
-        for ridx, row in enumerate(doco.cells()):
+        for ridx, row in enumerate(doco.csv_rows):
 
             if self.tableWidget.columnCount() < len(row):
                 self.tableWidget.setColumnCount(len(row))
