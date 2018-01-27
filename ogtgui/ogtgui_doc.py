@@ -8,8 +8,8 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 import app_globals as G
 
 from ogt import ogt_doc
-from . import ogtgui_group
-from .img import Ico
+import ogtgui_group
+from img import Ico
 
 class OGTDocumentWidget( QtGui.QWidget ):
 
@@ -76,29 +76,30 @@ class OGTDocumentWidget( QtGui.QWidget ):
         doc = ogt_doc.OGTDocument()
         #doc.opts.edit_mode = True
         err = doc.load_ags4_file(file_path)
-        print "err=", err
+
 
         self.load_document(doc)
 
 
-    def load_document(self, doc):
+    def load_document(self, ogtdoc):
 
-        self.doc = doc
+        self.ogtDoc = ogtdoc
+        #print "doc=", doc
+        #data = doc.to_dict()
+        for gkey in self.ogtDoc.groups_sort():
+            self.load_group( self.ogtDoc.group(gkey) )
 
-        data = doc.to_dict()
-        for gkey in data['groups']:
-            self.load_group( data['groups'].get(gkey) )
 
-
-    def load_group(self, group_dic):
-        #print "############", group_dic
+    def load_group(self, ogtGrp):
+        #print "load_group", ogtGrp, self
         widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
-        self.tabBar.addTab(Ico.icon(Ico.Group), group_dic['group_code'])
+        idx = self.tabBar.addTab( ogtGrp.group_code)
+        if ogtGrp.data_dict():
+            self.tabBar.setTabToolTip(idx, ogtGrp.data_dict().group_description())
 
         self.stackWidget.addWidget(widget)
-        widget.load_group(group_dic)
-
-        #self.tabBar.setCurrentIndex(self.tabBar.count() - 1)
+        widget.load_group(ogtGrp)
+        widget.sigGoto.connect(self.on_goto)
 
         return widget
 
@@ -109,3 +110,10 @@ class OGTDocumentWidget( QtGui.QWidget ):
         self.stackWidget.setCurrentIndex(idx)
 
 
+    def on_goto(self, code):
+        grp_code = code.split("_")[0]
+        for idx in range(0, self.stackWidget.count()):
+            if self.stackWidget.widget(idx).group_code == grp_code:
+                self.tabBar.setCurrentIndex(idx)
+                #self.stackWidget.widget(idx).select_heading(code)
+                return

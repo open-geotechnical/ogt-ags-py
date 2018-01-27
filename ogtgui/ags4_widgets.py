@@ -693,13 +693,13 @@ class PickListComboDelegate(QtGui.QItemDelegate):
         model.setData(index, txt)
 
 class NumberEditDelegate(QtGui.QItemDelegate):
-    """Number editor"""
+    """Number editor to n decimal places"""
     def __init__(self, parent, heading):
         QtGui.QItemDelegate.__init__(self, parent)
 
         self.head_code = heading['head_code']
 
-        self.data_type = heading['type']
+        self.data_type = heading['data_type']
         #self.data_type = heading['type']
         self.dp = None
         if self.data_type.endswith("DP"):
@@ -727,4 +727,35 @@ class NumberEditDelegate(QtGui.QItemDelegate):
         f += "%sf" % self.dp
         #print f
         txt = f % (no,)
+        model.setData(index, txt)
+
+class IDComboDelegate(QtGui.QItemDelegate):
+    """A combobox for the ID"""
+    def __init__(self, parent, heading, options):
+        QtGui.QItemDelegate.__init__(self, parent)
+
+        self.head_code = heading['head_code']
+        self.options = options
+
+    def createEditor(self, parent, option, index):
+
+        editor = QtGui.QComboBox(parent)
+        editor.addItem("--unknown--", "")
+
+        # populate combobox from abbreviations
+        for v in self.options:
+            editor.addItem( "%s" % v, "%s" % v)
+
+        return editor
+
+    def setEditorData(self, editor, index):
+        editor.blockSignals(True)
+        curr = index.model().data(index).toString()
+        idx = editor.findData(curr)
+        if idx != -1:
+            editor.setCurrentIndex(idx)
+        editor.blockSignals(False)
+
+    def setModelData(self, editor, model, index):
+        txt = editor.itemData(editor.currentIndex()).toString()
         model.setData(index, txt)

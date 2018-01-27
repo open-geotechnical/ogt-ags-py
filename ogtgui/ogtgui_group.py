@@ -11,16 +11,18 @@ import app_globals as G
 from img import Ico
 import ags4_widgets
 import xwidgets
-        
 
 
-class OGTTableHeaderWidget( QtGui.QWidget ):
+
+class OGTHeaderWidget( QtGui.QWidget ):
     """The HEADER info which in row 0 """
 
-    def __init__( self, parent=None, doc=None):
+    sigGoto = pyqtSignal(str)
+
+    def __init__( self, parent=None, ogtDoc=None):
         QtGui.QWidget.__init__( self, parent )
 
-        self.doc = doc
+        self.ogtDoc = ogtDoc
         self.debug = False
         self.head_code = None
 
@@ -38,7 +40,7 @@ class OGTTableHeaderWidget( QtGui.QWidget ):
         self.lblHeadDescription.setFixedHeight(60)
         self.lblHeadDescription.setWordWrap(True)
         self.lblHeadDescription.setAlignment(Qt.AlignTop|Qt.AlignLeft)
-        self.mainLayout.addWidget(self.lblHeadDescription, row, 0, 1, 2)
+        self.mainLayout.addWidget(self.lblHeadDescription, row, 0, 1, 3)
 
 
         # unit
@@ -47,7 +49,7 @@ class OGTTableHeaderWidget( QtGui.QWidget ):
         self.mainLayout.addWidget(lbl, row, 0)
 
         self.lblUnit = xwidgets.label("-", bold=True, style=sty + "color: #000099;")
-        self.mainLayout.addWidget(self.lblUnit, row, 1)
+        self.mainLayout.addWidget(self.lblUnit, row, 1, 1, 2)
 
         # Type
         row += 1
@@ -57,10 +59,18 @@ class OGTTableHeaderWidget( QtGui.QWidget ):
         self.lblType = xwidgets.label("-", bold=True, style=sty + "color: #000099;" )
         self.mainLayout.addWidget(self.lblType, row, 1)
 
+        self.buttLink = QtGui.QToolButton()
+        #self.buttLink.setAutoRaise(True)
+        self.buttLink.setText("Goto")
+        self.mainLayout.addWidget(self.buttLink, row, 2)
+        self.buttLink.setVisible(False)
+        self.buttLink.clicked.connect(self.on_goto)
 
         self.mainLayout.setColumnStretch(0, 1)
         self.mainLayout.setColumnStretch(1, 5)
 
+    def set_link(self, state):
+        self.buttLink.setVisible(state)
 
     def set_data(self, hrec):
 
@@ -73,26 +83,30 @@ class OGTTableHeaderWidget( QtGui.QWidget ):
 
         self.lblUnit.setText("-" if hrec["unit"] else hrec["unit"])
         #typ = "<a href="""
-        self.lblType.setText(hrec["type"])
+        self.lblType.setText(hrec["data_type"])
         #self.lblType.setToolTip(hrec['type'])
 
         #print hrec['type'], self.doc.type(hrec['type'])
-        typ = ags4.AGS4.data_type(hrec['type'])
+        typ = ags4.AGS4.data_type(hrec['data_type'])
         if typ:
             self.lblType.setToolTip(typ['description'])
         else:
-            self.lblType.setToolTip(hrec['type'])
+            self.lblType.setToolTip(hrec['data_type'])
 
-
+    def on_goto(self):
+        self.sigGoto.emit(self.head_code)
 
 class OGTGroupWidget( QtGui.QWidget ):
     """Shows a group with labels at top, and table underneath"""
+
+    sigGoto = pyqtSignal(str)
 
     def __init__( self, parent, doc):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
         self.doc = doc
+        self.ogtGroup = None
 
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -119,65 +133,79 @@ class OGTGroupWidget( QtGui.QWidget ):
         self.mainLayout.addWidget(self.table, 200)
 
 
+    def load_group(self, ogtGroup):
 
-    def deadinit(self):
-        pass
-
-    def load_group(self, group_dic):
-
+        self.ogtGroup = ogtGroup
         ## Set the labels
-        self.lblGroupCode.setText( group_dic['group_code'] )
+        self.lblGroupCode.setText( self.ogtGroup.group_code  )
 
         descr = None
-        if "data_dict" in group_dic and isinstance(group_dic['data_dict'], dict):
-            descr = group_dic['data_dict'].get('group_description')
+        if ogtGroup.data_dict():
+            descr = self.ogtGroup.data_dict().group_description()
         self.lblGroupDescription.setText( "-" if descr == None else descr )
 
 
 
         # Init table, first row = 0 is headings (cos we cant embed widgets in a header on pyqt4)
-        headings = group_dic['headings']
+        #headings = self.ogtGroup.headings()
         self.table.setRowCount(1)
-        self.table.setColumnCount( len(headings) )
+        self.table.setColumnCount( self.ogtGroup.headings_count() )
 
         v_labels = QtCore.QStringList() # vertical labels
 
         ## Populate header
         HEADER_HEIGHT = 80
-        for cidx, hrec in enumerate(headings):
-
+        print self.ogtGroup.headings
+        for cidx, hrec in enumerate(self.ogtGroup.headings_list()):
+            print cidx, hrec
             hitem = xwidgets.XTableWidgetItem()
             hitem.set(hrec['head_code'], bold=True)
             self.table.setHorizontalHeaderItem(cidx, hitem)
 
-            header_widget = OGTTableHeaderWidget(doc=self.doc)
+            header_widget = OGTHeaderWidget(ogtDoc=self.ogtGroup.parentDoc)
             header_widget.set_data(hrec)
 
             self.table.setCellWidget(0, cidx, header_widget )
+            header_widget.sigGoto.connect(self.on_goto)
 
-            ## quick hack for size
-            #header_widget.setFixedHeight(HEADER_HEIGHT)
         self.table.setRowHeight(0, HEADER_HEIGHT)
         v_labels.append("")
 
         # Load the data
-        for ridx, row in enumerate(group_dic['data']):
+        for ridx, row in enumerate(self.ogtGroup.data):
 
             self.table.setRowCount( self.table.rowCount() + 1)
             v_labels.append( str(ridx + 1) )
 
-            for cidx, hrec in enumerate(headings):
+            for cidx, hrec in enumerate(self.ogtGroup.headings_list()):
                 #print hrec, row
                 item = QtGui.QTableWidgetItem()
                 item.setText(row[hrec["head_code"]])
                 self.table.setItem(ridx + 1, cidx, item)
 
-                if hrec['type'] == "PA":
+                if hrec['data_type'] == "PA":
+                    # Combo dropdown
                     self.table.setItemDelegateForColumn(cidx, ags4_widgets.PickListComboDelegate(self, hrec))
+                    item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
 
-                if hrec['type'] in ["2DP"]:
+                if hrec['data_type'] in ["2DP"]:
+                    # Number editor
                     item.setTextAlignment(Qt.AlignRight|Qt.AlignVCenter)
                     self.table.setItemDelegateForColumn(cidx, ags4_widgets.NumberEditDelegate(self, hrec))
+
+
+                if hrec['data_type'] == "ID":
+                    #print hrec
+                    if self.ogtGroup.group_code  == hrec['head_code'].split("_")[0]:
+                        # in same group as heading, so highlight the ID
+                        item.setBackgroundColor(QtGui.QColor("#FFF96C"))
+                    else:
+                        # Dropdown for ID
+                        optts = self.ogtGroup.parentDoc.column_data(hrec['head_code'])
+                        self.table.setItemDelegateForColumn(cidx, ags4_widgets.IDComboDelegate(self, hrec, options=optts))
+                        self.table.cellWidget(0, cidx).set_link(True)
+                        item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
+
 
         # resize columns, with max_width
         col_width = 200
@@ -188,3 +216,8 @@ class OGTGroupWidget( QtGui.QWidget ):
                 self.table.setColumnWidth(cidx, col_width)
 
         self.table.setVerticalHeaderLabels(v_labels)
+
+    def on_goto(self, code):
+        print "on_goto", code, self
+        self.sigGoto.emit(code)
+

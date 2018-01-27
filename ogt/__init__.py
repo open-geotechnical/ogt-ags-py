@@ -93,3 +93,10 @@ try:
 except ImportError as e:
     pass
 
+class OgtError:
+
+    def __init__(self, message):
+
+        self.message = message
+        self.lidx = None
+

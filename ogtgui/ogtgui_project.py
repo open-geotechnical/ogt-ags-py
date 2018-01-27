@@ -97,7 +97,7 @@ class OGTProjectWidget( QtGui.QWidget ):
 
 
         self.ogtDoc, err = ogt_doc.create_doc_from_ags4_string(contents, file_name)
-        self.load_doc()
+        self.load_document()
         #proj = self.ogtDoc.proj_dict()
         #self.lblHeader.setText(proj['PROJ_NAME'])
 
@@ -114,9 +114,9 @@ class OGTProjectWidget( QtGui.QWidget ):
         #print "err=", err
         """
         self.ogtDoc, err = ogt_doc.create_doc_from_ags4_file(file_path)
-        self.load_doc()
+        self.load_document()
 
-    def load_doc(self):
+    def load_document(self):
         proj = self.ogtDoc.proj_dict()
         self.lblHeader.setText(proj['PROJ_NAME'])
 

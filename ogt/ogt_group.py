@@ -52,7 +52,7 @@ def groups_sort(unsorted_groups):
             grps.remove(gc)
 
     return_list = ret_start + sorted(grps) + ret_end
-    #print return_list
+    # print return_list
     return return_list
 
 
@@ -65,7 +65,7 @@ class OGTGroup:
         :param group_code: The four character group code to initialize with
         :type group_code: str
         """
-        self.docParent = None
+        self.parentDoc = None
         """Pointer to parent :class:`~ogt.ogt_doc.OGTDocument` instance"""
 
         self.group_code = group_code
@@ -74,39 +74,29 @@ class OGTGroup:
         self.headings = {}
         """A `dict` of headings"""
 
-        self._headings_sort = None
+        self.headings_sort = []
         """A list of head_codes in recommended sort order"""
 
         self.headings_source_sort = []
         """The list of head_code with the sort order in original file"""
 
-
         self.units = {}
         """A `dict` of `head_code:unit`  """
 
-        self.types = {}
+        self.data_types = {}
         """A `dict` of `head_code:type` """
 
         self.data = []
         """A `list` of `dict`s with `head_code:value`  """
 
-        #self.csv_rows = []
-        #"""A `list` of csv rows  """
-
         self.csv_start_index = None
-        """The line no this groups start at"""
+        """The line index this groups start at"""
 
         self.csv_end_index = None
-        """The line no this groups start at"""
-
-
+        """The line index this groups ends at"""
 
         self._data_dict = None
 
-
-    def csv_rows(self):
-        """Returns the csv rows used in this group"""
-        return self.docParent._csv_cells[self.csv_start_index:self.csv_end_index]
 
     def headings_sort(self):
 
@@ -124,6 +114,30 @@ class OGTGroup:
                         self._headings_sort.append(head_code)
 
         return self._headings_sort
+
+    def headings_list(self):
+        """Return a list of heading dicts"""
+        lst = []
+        for hcode in self.headings_source_sort:
+            #dic = dict(head_code = hcode, unit=self.units[hcode], data_type=self.data_types[hcode])
+            lst.append( dict(head_code = hcode, unit=self.units[hcode], data_type=self.data_types[hcode]) )
+        return lst
+
+    def headings_count(self):
+        return len(self.headings.keys())
+
+    def csv_rows(self):
+        """Returns the csv rows used in this group, return data from parentDocument """
+        return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
+
+    def deaddata(self):
+        return self.data
+
+    def data_row(self, ridx):
+        return self.data[ridx]
+
+    def data_rows(self):
+        return self.data
 
 
     def data_dict(self):
@@ -180,7 +194,6 @@ class OGTGroup:
 
     def data_column(self, head_code):
         if head_code in self.headings:
-
             return [rec[head_code] for rec in self.data]
         return None
 
@@ -201,9 +214,8 @@ class OGTGroup:
         return lst
 
 
-
+"""
 class OGTHeadingPLACEHOLDER:
-    """TODO .. think at one point we need to abstract heading said pedro"""
     def __init__(self, head_code=None, index=None):
 
         self.head_code = head_code
@@ -211,4 +223,4 @@ class OGTHeadingPLACEHOLDER:
 
         self.unit = None
         self.type = None
-
+"""

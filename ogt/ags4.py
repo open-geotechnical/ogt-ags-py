@@ -21,6 +21,13 @@ def ags4dd_file():
 class AGS4_DataDict:
     """This dict contains all the ags4 data, loaded in initialise()"""
 
+    GROUP = "GROUP"
+    HEADING = "HEADING"
+    UNIT = "UNIT"
+    TYPE = "TYPE"
+    DATA = "DATA"
+
+
     def __init__(self):
 
         self._data = None
@@ -123,10 +130,25 @@ class AGS4_DataDict:
                 self._data_types_lookup_cache[typ['data_type']] = typ
         return self._data_types_lookup_cache[abbr_code]
 
+    @staticmethod
+    def descriptors():
+        """Returns a list of descriptors  in correct order rule_3"""
+        return [
+            AGS4_DataDict.GROUP, AGS4_DataDict.HEADING, AGS4_DataDict.UNIT, AGS4_DataDict.TYPE, AGS4_DataDict.DATA
+        ]
+
+    @staticmethod
+    def validate_descriptor(des):
+
+        if des in AGS4.descriptors():
+            return None
+        return "Invalid descriptor `%s` not found"
+
+
 AGS4 = AGS4_DataDict()
 """Global Instance """
 
-class AGS4_DESCRIPTOR:
+class DEADAGS4_DESCRIPTOR:
     """Constants defining the data descriptors (See :ref:`ags4_rule_3`)
 
        The data descriptor is in the first column of every AGS row
@@ -257,6 +279,11 @@ class AGS4GroupDataDict:
         :return: A dictionary of the definition
         """
         return self.raw_dict
+
+    def group_description(self):
+	    if self.raw_dict == None:
+		    return None
+	    return self.raw_dict.get("group_description")
 
     def group(self):
         """Return the group details; description, status, suggested type etc
@@ -602,7 +629,7 @@ def rule_2(doc):
     return problems, errors
 
 
-def rule_3(doc):
+def rule_3(descriptor):
     """Validate  :ref:`www:ags4_rule_3`
 
     :param doc:
@@ -612,12 +639,16 @@ def rule_3(doc):
         - a list of ags_errors
         - a list of sys errors
     """
-    problems = []
+    #problems = []
     #report = []
-    errors = []
+    #errors = []
 
-    descriptors = AGS4_DESCRIPTOR.list()
+    #if isinstance()
+    descriptor
+
+    #descriptors = AGS.list()
     ## .. TODO
+    """
     for lidx, row in enumerate(doc.csv_rows):
         if len(row) > 0:
             if row[0] not in descriptors:
@@ -628,7 +659,7 @@ def rule_3(doc):
                 problems.append(p)
 
     return problems, errors
-
+    """
 
 def rule_4(doc):
     """Validate  :ref:`www:ags4_rule_4`
