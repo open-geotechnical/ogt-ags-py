@@ -65,7 +65,7 @@ class OGTGroup:
 		:param group_code: The four character group code to initialize with
 		:type group_code: str
 		"""
-		self.docParent = None
+		self.parentDoc = None
 		"""Pointer to parent :class:`~ogt.ogt_doc.OGTDocument` instance"""
 
 		self.group_code = group_code
@@ -130,8 +130,8 @@ class OGTGroup:
 		return len(self.headings.keys())
 
 	def csv_rows(self):
-		"""Returns the csv rows used in this group"""
-		return self.docParent.csv_rows[self.csv_start_index:self.csv_end_index]
+		"""Returns the csv rows used in this group, return data from parentDocument """
+		return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
 	def deaddata(self):
 		return self.data

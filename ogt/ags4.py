@@ -21,6 +21,12 @@ def ags4dd_file():
 class AGS4_DataDict:
     """This dict contains all the ags4 data, loaded in initialise()"""
 
+    GROUP = "GROUP"
+    HEADING = "HEADING"
+    UNIT = "UNIT"
+    TYPE = "TYPE"
+    DATA = "DATA"
+
     def __init__(self):
 
         self._data = None
@@ -126,7 +132,7 @@ class AGS4_DataDict:
 AGS4 = AGS4_DataDict()
 """Global Instance """
 
-class AGS4_DESCRIPTOR:
+class DEADAGS4_DESCRIPTOR:
     """Constants defining the data descriptors (See :ref:`ags4_rule_3`)
 
        The data descriptor is in the first column of every AGS row
