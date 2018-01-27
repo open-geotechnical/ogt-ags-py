@@ -84,8 +84,8 @@ class OGTProjectWidget( QtGui.QWidget ):
 
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
-        #if G.args.dev:
-        #    self.tabBar.setCurrentIndex(2)
+        if G.args.dev:
+            self.tabBar.setCurrentIndex(3)
 
     def init_load(self):
         pass
@@ -123,8 +123,13 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.ogtDocWidget.load_document(self.ogtDoc)
         self.ogtScheduleWidget.load_document(self.ogtDoc)
         self.ogtSourceViewWidget.load_document(self.ogtDoc)
+        self.ogtProjSummaryWidget.load_document(self.ogtDoc)
 
 
+class PC:
+    node = 0
+    group_code = 1
+    group_description = 1
 
 
 class OGTProjectSummaryWidget( QtGui.QMainWindow ):
@@ -137,7 +142,7 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.debug = False
 
         self.file_path = None
-        self.doc = None
+        self.ogtDoc = None
 
 
 
@@ -147,7 +152,41 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.docProject.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.docProject)
 
+
         self.lblProjectPlace = QtGui.QLabel()
         self.lblProjectPlace.setText("project placeholder")
 
         self.docProject.setWidget(self.lblProjectPlace)
+
+
+        self.tree = QtGui.QTreeWidget()
+        self.tree.setRootIsDecorated(False)
+        self.setCentralWidget(self.tree)
+
+
+        hi = self.tree.headerItem()
+        hi.setText(PC.group_code, "Group")
+        hi.setText(PC.group_description, "Description")
+        hi.setText(PC.node, "Rows")
+
+
+    def load_document(self, ogtDoc):
+
+        self.ogtDoc = ogtDoc
+
+        for g in self.ogtDoc.groups_list():
+            print g.group_description
+            item = QtGui.QTreeWidgetItem()
+
+            item.setText(PC.group_code, g.group_code)
+            f = item.font(PC.group_code)
+            f.setBold(True)
+            item.setFont(PC.group_code, f)
+            item.setIcon(PC.group_code, Ico.icon(Ico.AgsGroup))
+
+            item.setText(PC.group_description, g.group_description)
+
+            item.setText(PC.node, str(g.data_rows_count()))
+            item.setTextAlignment(PC.node, Qt.AlignRight)
+            self.tree.addTopLevelItem(item)
+

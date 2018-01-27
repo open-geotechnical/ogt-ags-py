@@ -111,6 +111,11 @@ class OGTDocument:
         """Return a list of group_codes in preferred order (see :func:`~ogt.ogt_group.groups_sort`)"""
         return ogt.ogt_group.groups_sort(self.groups.keys())
 
+    def groups_list(self):
+        lst = []
+        for g in self.groups_sort():
+            lst.append(self.groups.get(g))
+        return lst
 
     def groups_count(self):
         """Returns no of groups in the document

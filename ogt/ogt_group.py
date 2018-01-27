@@ -97,6 +97,12 @@ class OGTGroup:
 
         self._data_dict = None
 
+    @property
+    def group_description(self):
+        dic =  self.data_dict()
+        if dic:
+            return self.data_dict().group_description
+        return None
 
     def headings_sort(self):
 
@@ -130,15 +136,12 @@ class OGTGroup:
         """Returns the csv rows used in this group, return data from parentDocument """
         return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
-    def deaddata(self):
-        return self.data
 
     def data_row(self, ridx):
         return self.data[ridx]
 
-    def data_rows(self):
-        return self.data
-
+    def data_rows_count(self):
+        return len(self.data)
 
     def data_dict(self):
         """Returns the data dictionary for this group, if it exists
