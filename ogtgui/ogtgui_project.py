@@ -65,7 +65,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.stackWidget = QtGui.QStackedWidget()
         self.mainLayout.addWidget(self.stackWidget)
 
-        self.tabBar.addTab(Ico.icon(Ico.Project), "Summary")
+        self.tabBar.addTab(Ico.icon(Ico.Summary), "Summary")
         self.ogtProjSummaryWidget = OGTProjectSummaryWidget()
         self.stackWidget.addWidget(self.ogtProjSummaryWidget)
         self.ogtProjSummaryWidget.sigGoto.connect(self.on_goto)

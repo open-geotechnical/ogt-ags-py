@@ -56,6 +56,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
         self.tableWidget = QtGui.QTableWidget()
         self.splitter.addWidget(self.tableWidget)
+        self.tableWidget.itemSelectionChanged.connect(self.on_select_changed)
 
         self.errorsWidget = OGTErrorsWidget()
         self.errorsWidget.setFixedWidth(400)
@@ -106,6 +107,14 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.tableWidget.setCurrentCell(lidx, cidx)
         item = self.tableWidget.currentItem()
         self.tableWidget.scrollToItem(item, QtGui.QAbstractItemView.PositionAtCenter)
+
+
+    def on_select_changed(self):
+        item = self.tableWidget.currentItem()
+        if item == None:
+            return
+
+        self.errorsWidget.select_items(item.row(), item.column())
 
 class OGTScheduleWidget( QtGui.QWidget ):
     """The SourceViewWidget info which in row 0 """
@@ -296,6 +305,7 @@ class C_ERR:
     lidx = 1
     cidx = 2
     descr = 3
+    search = 4
 
 class OGTErrorsWidget( QtGui.QWidget ):
 
@@ -327,7 +337,9 @@ class OGTErrorsWidget( QtGui.QWidget ):
         hi.setText(C_ERR.lidx, "Line")
         hi.setText(C_ERR.cidx, "Column")
         hi.setText(C_ERR.descr, "Description")
+        hi.setText(C_ERR.search, "search")
 
+        self.tree.setColumnHidden(C_ERR.search, True)
         self.tree.setColumnWidth(C_ERR.lidx, 50)
         self.tree.setColumnWidth(C_ERR.cidx, 50)
 
@@ -353,7 +365,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
             item.set(C_ERR.lidx, er.line_no, align=Qt.AlignCenter)
             item.set(C_ERR.cidx, er.column_no, align=Qt.AlignCenter)
             #item.setIcon(C_EG.file_name, Ico.icon(Ico.Ags4))
-
+            item.set(C_ERR.search, "%s-%s" % (er.lidx, er.cidx) )
             self.tree.addTopLevelItem(item)
 
         #self.tree.sortByColumn(C_ERR.lidx, Qt.AscendingOrder)
@@ -363,3 +375,10 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.sigGotoSource.emit(item.i(C_ERR.lidx) - 1, item.i(C_ERR.cidx) - 1)
 
 
+    def select_items(self, ridx, cidx):
+        search = "%s-%s" % (ridx, cidx)
+        items = self.tree.findItems(search, Qt.MatchExactly, C_ERR.search)
+        if len(items) > 0:
+            self.tree.blockSignals(True)
+            self.tree.setCurrentItem(items[0])
+            self.tree.blockSignals(False)

@@ -86,8 +86,9 @@ class Ico:
 
     Quit = 'control_eject.png'
 
-    Schedule = "blue-document-task.png"
+    Schedule = "table-heatmap.png"
     Source = "document-text.png"
+    Summary = "page_white_swoosh.png"
 
     TypeCheckBox = "ui-checkbox.png"
     TypeDate = "ui-combo-box-calendar.png"
