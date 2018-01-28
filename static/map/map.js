@@ -1,11 +1,11 @@
 
 var icons = {};
-icons.red 		= 'map/m_red.png';
-icons.yellow 	= 'map/m_yellow.png';
-icons.green 	= 'map/m_green.png';
-icons.purple 	= 'map/m_purple.png';
-icons.orange 	= 'map/m_orange.png';
-icons.blue 		= 'map/m_blue.png';
+icons.red 		= 'markers/m_red.png';
+icons.yellow 	= 'markers/m_yellow.png';
+icons.green 	= 'markers/m_green.png';
+icons.purple 	= 'markers/m_purple.png';
+icons.orange 	= 'markers/m_orange.png';
+icons.blue 		= 'markers/m_blue.png';
 
 var init_flag = false;
 var pending_markers = [];
@@ -75,6 +75,11 @@ function attach_marker(marker, mId, marker_title){
 		QtWidget.marker_double_clicked(marker.mIdx, marker.mLocationId);
 	});
 
+}
+
+function zoom_to_bounds(){
+    //alert(map.getBounds())
+    map.panToBounds( map.getBounds() );
 }
 
 //*****************************************
@@ -147,9 +152,11 @@ function add_address_marker(location_id, label, lat, lng, lbl_method){
 //** add_marker()
 //*****************************************
 function add_marker(widget_name, myId, lat, lng, icon_color, label){
+    //console.log(lat, lng);
 	if(init_flag == false){
 		alert("never");
 	}
+	console.log(lat, lng);
 	idx++;
 	//alert(widget_name);
 	//(markers[widget_name]);
@@ -171,7 +178,7 @@ function add_marker(widget_name, myId, lat, lng, icon_color, label){
 								mEditMode: false
 	});
 	attach_marker(markers[widget_name][myId], myId, label);
-	QtWidget.marker_added(widget_name, myId);
+	QtWidget.marker_added(widget_name, myId, idx);
 	return idx; // pretty pointless
 	
 }
@@ -196,6 +203,8 @@ function hide_markers(widget_name, str_state){
 		markers[widget_name][myId].setVisible(state)
 	}
 }
+
+
 
 //***************************************
 //** Place Marker
@@ -269,7 +278,7 @@ function do_lookup(widget_name, location_id, search_text){
 function send_position(latlng){
 	alert(latlng);
 	QtWidget.mouse_move(latlng.lat(), latlng.lng());
-	alert("pos");
+	//alert("pos");
 }
 
 //**==========================================================================

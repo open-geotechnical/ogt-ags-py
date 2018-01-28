@@ -38,9 +38,52 @@ class WebViewX(QtWebKit.QWebView):
     def mouse_point(self):
         return self.x_mouse_point
 
+class CL:
+    loca_id = 0
+    lat = 1
+    lon = 2
 
+class MapOverviewWidget(QtGui.QWidget):
+    debug = True
 
-class MapViewWidget(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.ogtDoc = None
+
+        self.mainLayout = QtGui.QHBoxLayout()
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        self.mainLayout.setSpacing(0)
+        self.setLayout(self.mainLayout)
+        self.mainLayout.setSpacing(0)
+
+        self.splitter = QtGui.QSplitter()
+        self.mainLayout.addWidget(self.splitter)
+
+        self.mapWidget = MapWidget()
+        self.splitter.addWidget(self.mapWidget)
+
+        self.tree = QtGui.QTreeWidget()
+        self.mainLayout.addWidget(self.tree)
+        hi = self.tree.headerItem()
+        hi.setText(CL.loca_id, "LOCA_ID")
+        hi.setText(CL.lat, "Lat")
+        hi.setText(CL.lon, "Lon")
+
+        self.splitter.setStretchFactor(0, 3)
+        self.splitter.setStretchFactor(1, 1)
+
+    def load_document(self, ogtDoc):
+
+        self.ogtDoc = ogtDoc
+
+        points =  self.ogtDoc.get_points()
+        print points
+        for idx, p in enumerate(points):
+            self.mapWidget.add_marker("xmap", id="ID_%s" % idx, lat=p['lat'], lon=p['lon'])
+        self.mapWidget.execute_js("zoom_to_bounds()")
+
+class MapWidget(QtGui.QWidget):
     debug = True
 
     def __init__(self, parent=None):
@@ -132,14 +175,6 @@ class MapViewWidget(QtGui.QWidget):
         self.groupZoom.setExclusive(True)
         self.connect(self.groupZoom, QtCore.SIGNAL("buttonClicked(QAbstractButton *)"), self.on_zoom_action)
         for b in self.Zoom.levels():
-            """act = QtGui.QAction(tolbar3)
-            act.setText(b[0])
-            act.setProperty("zoom", QtCore.QVariant(b[1]))
-            act.setCheckable(True)
-
-            tolbar3.addAction(act)
-            self.groupZoom.addAction(act)
-            """
             butt = QtGui.QToolButton()
             butt.setText(b[0])
             butt.setProperty("zoom", QtCore.QVariant(b[1]))
@@ -152,33 +187,7 @@ class MapViewWidget(QtGui.QWidget):
 
 
 
-        ##############################
-        ## Map Mode - View or Edit
-        ##############################
-        """
-        self.groupEditMode = QtGui.QButtonGroup(self)
-        self.groupEditMode.setExclusive(True)
-        self.connect(self.groupEditMode, QtCore.SIGNAL("buttonClicked(QAbstractButton *)"), self.on_edit_mode)
-        for b in ['View Mode', 'Edit Mode']:
-            butt = QtGui.QPushButton()
-            butt.setText(b)
-            butt.setCheckable(True)
-            butt.setHidden(True)
-            if b == "View Mode": #G.settings.value("map_mode", "Hybrid"):
-                butt.setChecked(True)
-                butt.setIcon(dIco.icon(dIco.Yellow))
-            else:
-                butt.setIcon(dIco.icon(dIco.Black))
-            tolbar3.addWidget(butt)
-            self.groupEditMode.addButton(butt)
-        self.buttonSave = QtGui.QPushButton()
-        self.buttonSave.setIcon(dIco.icon(dIco.Save))
-        #.buttSave.setText("Save")
-        self.buttonSave.setDisabled(True)
-        self.buttonSave.setHidden(True)
-        tolbar3.addWidget(self.buttonSave)
-        self.connect(self.buttonSave, QtCore.SIGNAL("clicked()"), self.on_save_button)
-        """
+
 
         ###########################################
         ## Web Browser view
@@ -188,6 +197,15 @@ class MapViewWidget(QtGui.QWidget):
         self.webView.page().mainFrame().addToJavaScriptWindowObject("QtWidget", self)
         self.connect(self.webView, QtCore.SIGNAL("loadProgress(int)"), self.on_initialize_progress)
         self.connect(self.webView, QtCore.SIGNAL("loadFinished(bool)"), self.on_initialize_finished)
+
+        page = self.webView.page()
+        page.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
+        page.settings().setAttribute(QtWebKit.QWebSettings.JavascriptEnabled, True)
+
+        self.webInspector = QtWebKit.QWebInspector(self)
+        self.webInspector.setPage(page)
+        mapLayout.addWidget(self.webInspector)
+        #self.webInspector.hide()
 
         ###########################################
         ## Status Bar
@@ -565,14 +583,7 @@ class MapViewWidget(QtGui.QWidget):
         print "on_map_view"
 
 
-    def load_document(self, ogtDoc):
 
-        self.ogtDoc = ogtDoc
-
-        points =  self.ogtDoc.get_points()
-        print points
-        for idx, p in enumerate(points):
-            self.add_marker("xmap", id="ID_%s" % idx, lat=p['lat'], lon=p['lon'])
 
 
 class MapZoomWidget:

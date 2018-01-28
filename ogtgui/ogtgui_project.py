@@ -86,8 +86,8 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.ogtProjSummaryWidget.sigGoto.connect(self.on_goto)
 
         self.tabBar.addTab(Ico.icon(Ico.Map), "Map")
-        self.mapWidget = map_widgets.MapViewWidget()
-        self.stackWidget.addWidget(self.mapWidget)
+        self.mapOverviewWidget = map_widgets.MapOverviewWidget()
+        self.stackWidget.addWidget(self.mapOverviewWidget)
 
 
         self.tabBar.currentChanged.connect(self.on_tab_changed)
@@ -132,7 +132,12 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.ogtScheduleWidget.load_document(self.ogtDoc)
         self.ogtSourceViewWidget.load_document(self.ogtDoc)
         self.ogtProjSummaryWidget.load_document(self.ogtDoc)
-        self.mapWidget.load_document(self.ogtDoc)
+
+        ## HACK
+        QtCore.QTimer.singleShot(4000, self.do_map_after)
+
+    def do_map_after(self):
+        self.mapOverviewWidget.load_document(self.ogtDoc)
 
     def on_goto(self, code):
 
