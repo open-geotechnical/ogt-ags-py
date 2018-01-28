@@ -884,7 +884,7 @@ def validate_code(raw_code, lidx=None, cidx=None):
 
     ucode = code.upper()
     if ucode != code:
-        e = OgtError("Lower space characters `%s`" % code, error=False, cidx=cidx, lidx=lidx)
+        e = OgtError("Lower space characters `%s`" % code, error=True, cidx=cidx, lidx=lidx)
         err_list.append(e)
 
     return ucode, err_list

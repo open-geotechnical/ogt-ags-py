@@ -82,8 +82,8 @@ class OGTDocument:
         self.csv_rows = []
         """A `list` or `list` of each csv value"""
 
-        self.error_rows = {}
-        """A `dict` of rows with errors"""
+        self.error_cells = {}
+        """A `dict` of row/col indexes with errors"""
 
         self.opts = OGTDocumentOptions()
         """Set default options :class:`~ogt.ogt_doc.OGTDocumentOptions` """
@@ -204,20 +204,45 @@ class OGTDocument:
         grp = self.group(grp_code).data_column(head_code)
         return sorted(grp)
 
-    def add_error(self, message, rule=None, lidx=None):
-        e = OgtError(message)
+    def add_error(self, er):
+        """e = OgtError(message)
         e.lidx = lidx
         e.rule = str(rule)
         if not lidx in self.error_rows:
-            self.error_rows[lidx] = []
-        self.error_rows[lidx].append(e)
+            self.error_cells[lidx] = {}
+        """
+       # print er
+        if not er.lidx in self.error_cells:
+            self.error_cells[er.lidx] = {}
+        if not er.cidx in self.error_cells[er.lidx]:
+            self.error_cells[er.lidx][er.cidx] = []
+
+        self.error_cells[er.lidx][er.cidx].append(er)
 
     def add_errors(self, errs):
-
         for e in errs:
-            if not e.lidx in self.error_rows:
-                self.error_rows[e.lidx] = []
-            self.error_rows[e.lidx].append(e)
+            #if not e.lidx in self.error_rows:
+            self.add_error(e)
+                #self.error_rows[e.lidx] = []
+            #self.error_rows[e.lidx].append(e)
+
+    def get_errors(self, lidx=None, cidx=None):
+
+        if lidx != None:
+            recs = self.error_cells.get(lidx)
+            if recs == None:
+                return None
+            if cidx == None:
+                return recs
+            return recs.get(cidx)
+        return None
+
+    def get_errors_list(self):
+        lst = []
+        for lidx in sorted(self.error_cells.keys()):
+            for cidx in sorted(self.error_cells[lidx].keys()):
+                lst.extend(self.error_cells[lidx][cidx])
+        return lst
 
     def write(self, ext="json", beside=False, file_path=None,
               zip=False, overwrite=False):
@@ -760,7 +785,7 @@ class OGTDocument:
                     self.append_group(loop_grp)
 
         #print "===GROUPS===", sorted(self.groups.keys())
-        print "ERRORS=", self.error_rows
+        print "ERRORS=", self.error_cells
         # thirdly
         # - we parse each group's csv rows into the parts
         for group_code, grp in self.groups.iteritems():
