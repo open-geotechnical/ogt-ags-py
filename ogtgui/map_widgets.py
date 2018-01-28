@@ -64,14 +64,28 @@ class MapOverviewWidget(QtGui.QWidget):
         self.splitter.addWidget(self.mapWidget)
 
         self.tree = QtGui.QTreeWidget()
+        self.tree.setRootIsDecorated(False)
+
         self.mainLayout.addWidget(self.tree)
         hi = self.tree.headerItem()
         hi.setText(CL.loca_id, "LOCA_ID")
         hi.setText(CL.lat, "Lat")
         hi.setText(CL.lon, "Lon")
 
+        self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
+
         self.splitter.setStretchFactor(0, 3)
         self.splitter.setStretchFactor(1, 1)
+
+
+    def on_tree_double_clicked(self, item, cidx):
+        item = self.tree.currentItem()
+        if item == None:
+            return
+
+        lat = str(item.text(CL.lat))
+        lon = str(item.text(CL.lon))
+        self.mapWidget.zoom_to(lat=lat, lon=lon, zoom=19)
 
     def load_document(self, ogtDoc):
 
@@ -81,6 +95,13 @@ class MapOverviewWidget(QtGui.QWidget):
         print points
         for idx, p in enumerate(points):
             self.mapWidget.add_marker("xmap", id="ID_%s" % idx, lat=p['lat'], lon=p['lon'])
+
+            item = QtGui.QTreeWidgetItem()
+            item.setText(CL.loca_id, str(p['loca_id']))
+            item.setText(CL.lat, str(p['lat']))
+            item.setText(CL.lon, str(p['lon']))
+            self.tree.addTopLevelItem(item)
+
         self.mapWidget.execute_js("zoom_to_bounds()")
 
 class MapWidget(QtGui.QWidget):
@@ -257,10 +278,10 @@ class MapWidget(QtGui.QWidget):
         js_str = "set_zoom(%s)" % zoom
         self.execute_js(js_str)
 
-    def zoom_to(self, lat, lng, zoom=None):
+    def zoom_to(self, lat=None, lon=None, zoom=None):
         if zoom == None:
             zoom = self.zoomLabel.text()
-        js_str = "zoom_to(%s, %s, %s)" % (lat, lng, zoom)
+        js_str = "zoom_to(%s, %s, %s)" % (lat, lon, zoom)
         print js_str
         self.execute_js(js_str)
 
@@ -437,31 +458,9 @@ class MapWidget(QtGui.QWidget):
             self.statusBar.showMessage("%s results found" % self.result_count, 3000)
             self.progress.hide()
 
-    def add_address(self, dic, zoom_to=False):
-        return
-        if not dic['geo']:
-            print "no geo"
-            return
 
-        if self.map_initialized:
-            self.add_address_marker(dic, zoom_to)
-            return
 
-        self.pending_markers.append([dic, zoom_to])
-        self.timer.start(3000)
 
-    ####################################################
-    ## Add Marker
-    ####################################################
-    def add_address_marker(self, dic, zoom_to=False):
-        self.locations[dic['location_id']] = dic
-        geo = dic['geo']  # json.loads( dic['geo'] )
-        js_str = "add_address_marker(%s, '%s', %s, %s, '%s')" % (
-        dic['location_id'], dic['company'], geo['lat'], geo['lng'], geo['method'])
-        self.execute_js(js_str)
-        if zoom_to:
-            self.pan_to(geo['lat'], geo['lng'])
-            self.set_zoom(self.Zoom.level('Local'))
 
     #def add_marker(self, widget, mId, lat, lng, icon_color=None, label=None):
     def add_marker(self, widget, id=None, lat=None, lon=None, icon_color=None, label=None):

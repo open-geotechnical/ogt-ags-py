@@ -448,12 +448,13 @@ class OGTDocument:
         elif grpLoca.has_heading("LOCA_NATE") and grpLoca.has_heading("LOCA_NATN"):
             for rec in grpLoca.data:
                 #print rec
+                loca_id = rec.get("LOCA_ID")
                 east = float(rec.get("LOCA_NATE"))
                 north = float(rec.get("LOCA_NATN"))
                 #print east, north, rec.get("LOCA_NATE"), rec.get("LOCA_NATN")
                 if east and north:
                     lat, lon = bng_to_latlon.OSGB36toWGS84(east, north)
-                    lst.append(dict(lat=lat, lon=lon, east=east, north=north))
+                    lst.append(dict(lat=lat, lon=lon, east=east, north=north, loca_id=loca_id))
                     #features.append(make_feature(rec, lat, lon))
 
         return lst
