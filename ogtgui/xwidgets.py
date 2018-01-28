@@ -53,6 +53,7 @@ def label(txt, align=Qt.AlignLeft, bold=False, style=None):
     return lbl
 
 
+
 class XTableWidgetItem(QtGui.QTableWidgetItem):
     """Extended QTableWidgetItem with convenience functions"""
     def __init__(self):
@@ -95,6 +96,53 @@ class XTableWidgetItem(QtGui.QTableWidgetItem):
         colo.setNamedColor(bg_color)
         self.setForeground(colo)
 
+
+class XTreeWidgetItem(QtGui.QTreeWidgetItem):
+    """Extended QTableWidgetItem with convenience functions"""
+    def __init__(self):
+        QtGui.QTreeWidgetItem.__init__(self)
+
+
+    def set(self, cidx, text=None, bold=False, bg=None, fg=None, align=None, check=None, ico=None):
+
+        if text:
+            self.setText(cidx, text)
+
+        if bold:
+            self.set_bold(cidx, True)
+
+        if bg:
+            self.set_bg(cidx, bg)
+        if fg:
+            self.set_bg(cidx, fg)
+
+        if align:
+            self.setTextAlignment(cidx, align)
+
+        if check != None:
+            self.setCheckState(cidx, check)
+
+        if ico:
+            self.set_ico(cidx, ico)
+
+
+    def set_bold(self, cidx, state):
+        f = self.font(cidx)
+        f.setBold(state)
+        self.setFont(cidx, f)
+
+    def set_bg(self,cidx,  bg_color):
+        colo = QtGui.QColor()
+        colo.setNamedColor(bg_color)
+        self.setBackgroundColor(cidx, colo)
+
+    def set_fg(self, cidx,  bg_color):
+        colo = QtGui.QColor()
+        colo.setNamedColor(bg_color)
+        self.setForeground(cidx, colo)
+
+    def set_ico(self, cidx, ico):
+        self.setIcon(cidx, Ico.icon(ico))
 
 class GroupHBox(QtGui.QGroupBox):
 

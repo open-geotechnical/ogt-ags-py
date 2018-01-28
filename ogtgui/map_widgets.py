@@ -10,6 +10,7 @@ from Qt import QtCore, QtGui, QtWebKit
 from img import Ico
 import app_globals as G
 from . import PROJECT_ROOT_PATH
+import xwidgets
 
 MAP_PATH = os.path.join(PROJECT_ROOT_PATH, "static", "map")
 
@@ -92,12 +93,13 @@ class MapOverviewWidget(QtGui.QWidget):
         self.ogtDoc = ogtDoc
 
         points =  self.ogtDoc.get_points()
-        print points
+        #print points
         for idx, p in enumerate(points):
             self.mapWidget.add_marker("xmap", id="ID_%s" % idx, lat=p['lat'], lon=p['lon'])
 
-            item = QtGui.QTreeWidgetItem()
-            item.setText(CL.loca_id, str(p['loca_id']))
+            item = xwidgets.XTreeWidgetItem()
+            item.set(CL.loca_id, text=str(p['loca_id']), ico=Ico.TypeID, bold=True)
+            #item.setIcon(CL.loca_id, Ico.icon(Ico.TypeID))
             item.setText(CL.lat, str(p['lat']))
             item.setText(CL.lon, str(p['lon']))
             self.tree.addTopLevelItem(item)
@@ -226,7 +228,7 @@ class MapWidget(QtGui.QWidget):
         self.webInspector = QtWebKit.QWebInspector(self)
         self.webInspector.setPage(page)
         mapLayout.addWidget(self.webInspector)
-        #self.webInspector.hide()
+        self.webInspector.setVisible(False)
 
         ###########################################
         ## Status Bar
@@ -509,7 +511,7 @@ class MapWidget(QtGui.QWidget):
         self.execute_js(js_str)
 
     def execute_js(self, js_str):
-        print "EXEC >", js_str
+        #print "EXEC >", js_str
         self.webView.page().mainFrame().evaluateJavaScript(js_str)
 
     ###########################################
