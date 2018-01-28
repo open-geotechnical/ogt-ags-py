@@ -10,10 +10,13 @@ from ogt import FORMATS
 from ogt import ogt_doc
 
 import app_globals as G
-import ogtgui_doc
-import ogtgui_widgets
+
 from img import Ico
 import xwidgets
+
+import ogtgui_doc
+import ogtgui_widgets
+import map_widgets
 
 class OGTProjectWidget( QtGui.QWidget ):
 
@@ -62,6 +65,12 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.stackWidget = QtGui.QStackedWidget()
         self.mainLayout.addWidget(self.stackWidget)
 
+        self.tabBar.addTab(Ico.icon(Ico.Summary), "Summary")
+        self.ogtProjSummaryWidget = OGTProjectSummaryWidget()
+        self.stackWidget.addWidget(self.ogtProjSummaryWidget)
+        self.ogtProjSummaryWidget.sigGoto.connect(self.on_goto)
+        self.ogtProjSummaryWidget.sigGotoSource.connect(self.on_goto_source)
+
         ## add tables tab
         self.tabBar.addTab(Ico.icon(Ico.Groups), "Groups")
         self.ogtDocWidget = ogtgui_doc.OGTDocumentWidget()
@@ -77,15 +86,17 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.stackWidget.addWidget(self.ogtSourceViewWidget)
 
 
-        self.tabBar.addTab(Ico.icon(Ico.Project), "Summary")
-        self.ogtProjSummaryWidget = OGTProjectSummaryWidget()
-        self.stackWidget.addWidget(self.ogtProjSummaryWidget)
+
+
+        self.tabBar.addTab(Ico.icon(Ico.Map), "Map")
+        self.mapOverviewWidget = map_widgets.MapOverviewWidget()
+        self.stackWidget.addWidget(self.mapOverviewWidget)
 
 
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
-        #if G.args.dev:
-        #    self.tabBar.setCurrentIndex(2)
+        if G.args.dev:
+            self.tabBar.setCurrentIndex(3)
 
     def init_load(self):
         pass
@@ -123,13 +134,38 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.ogtDocWidget.load_document(self.ogtDoc)
         self.ogtScheduleWidget.load_document(self.ogtDoc)
         self.ogtSourceViewWidget.load_document(self.ogtDoc)
+        self.ogtProjSummaryWidget.load_document(self.ogtDoc)
+
+        ## HACK
+        QtCore.QTimer.singleShot(4000, self.do_map_after)
+
+    def do_map_after(self):
+        self.mapOverviewWidget.load_document(self.ogtDoc)
+
+    def on_goto(self, code):
+
+        self.ogtDocWidget.select_group(code)
+        idx = self.stackWidget.indexOf(self.ogtDocWidget)
+        self.tabBar.setCurrentIndex(idx)
 
 
+
+    def on_goto_source(self, lidx, cidx):
+
+        self.ogtSourceViewWidget.select_cell(lidx, cidx)
+        idx = self.stackWidget.indexOf(self.ogtSourceViewWidget)
+        self.tabBar.setCurrentIndex(idx)
+
+class CP:
+    node = 0
+    group_code = 1
+    group_description = 2
 
 
 class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
-    sigUpdated = pyqtSignal(object)
+    sigGoto = pyqtSignal(object)
+    sigGotoSource = pyqtSignal(int, int)
 
     def __init__( self, parent=None):
         QtGui.QMainWindow.__init__( self, parent )
@@ -137,17 +173,80 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.debug = False
 
         self.file_path = None
-        self.doc = None
+        self.ogtDoc = None
 
 
 
-        self.docProject = QtGui.QDockWidget()
-        self.docProject.setWindowTitle("Project")
-        self.docProject.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
-        self.docProject.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.docProject)
+        self.dockProject = QtGui.QDockWidget()
+        self.dockProject.setWindowTitle("Project")
+        self.dockProject.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.dockProject.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockProject)
+
+
+
 
         self.lblProjectPlace = QtGui.QLabel()
         self.lblProjectPlace.setText("project placeholder")
 
-        self.docProject.setWidget(self.lblProjectPlace)
+        self.dockProject.setWidget(self.lblProjectPlace)
+
+
+
+
+        ## Errors
+        self.dockErrors = QtGui.QDockWidget()
+        self.dockErrors.setWindowTitle("Groups")
+        self.dockErrors.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.dockErrors.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dockErrors)
+
+
+        self.tree = QtGui.QTreeWidget()
+        self.tree.setRootIsDecorated(False)
+        self.tree.header().setStretchLastSection(True)
+        self.setCentralWidget(self.tree)
+
+
+        hi = self.tree.headerItem()
+        hi.setText(CP.group_code, "Group")
+        hi.setText(CP.group_description, "Description")
+        hi.setText(CP.node, "Rows")
+
+        self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
+        self.dockErrors.setWidget(self.tree)
+
+        self.errorsWidget = ogtgui_widgets.OGTErrorsWidget()
+        self.setCentralWidget(self.errorsWidget)
+        self.errorsWidget.sigGotoSource.connect(self.on_goto_source)
+
+    def load_document(self, ogtDoc):
+
+        self.ogtDoc = ogtDoc
+
+        for g in self.ogtDoc.groups_list():
+            #print "===", g.group_description
+            item = QtGui.QTreeWidgetItem()
+
+            item.setText(CP.group_code, g.group_code)
+            f = item.font(CP.group_code)
+            f.setBold(True)
+            item.setFont(CP.group_code, f)
+            item.setIcon(CP.group_code, Ico.icon(Ico.AgsGroup))
+
+            item.setText(CP.group_description, g.group_description)
+
+            item.setText(CP.node, str(g.data_rows_count()))
+            item.setTextAlignment(CP.node, Qt.AlignRight)
+            self.tree.addTopLevelItem(item)
+
+        self.errorsWidget.load_document(self.ogtDoc)
+
+    def on_tree_double_clicked(self, item, cidx):
+        item = self.tree.currentItem()
+        if item == None:
+            return
+        self.sigGoto.emit(item.text(CP.group_code))
+
+    def on_goto_source(self, lidx, cidx):
+        self.sigGotoSource.emit(lidx, cidx)

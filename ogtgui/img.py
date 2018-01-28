@@ -46,6 +46,7 @@ class Ico:
 
         return qicon
 
+    Add = "add.png"
 
     Ags3 = "ags3.svg.png"
     Ags4 = "ags4.svg.png"
@@ -81,10 +82,13 @@ class Ico:
 
     Project = "blue-document-list.png"
 
+    Map = "map.png"
+
     Quit = 'control_eject.png'
 
-    Schedule = "blue-document-task.png"
+    Schedule = "table-heatmap.png"
     Source = "document-text.png"
+    Summary = "page_white_swoosh.png"
 
     TypeCheckBox = "ui-checkbox.png"
     TypeDate = "ui-combo-box-calendar.png"

@@ -13,7 +13,7 @@ if HAVE_GEOJSON:
 
 from . import FORMATS
 import ags4
-import ogt.ogt_group
+import ogt_group
 import ogt.utils
 
 
@@ -82,8 +82,8 @@ class OGTDocument:
         self.csv_rows = []
         """A `list` or `list` of each csv value"""
 
-        self.error_rows = {}
-        """A `dict` of rows with errors"""
+        self.error_cells = {}
+        """A `dict` of row/col indexes with errors"""
 
         self.opts = OGTDocumentOptions()
         """Set default options :class:`~ogt.ogt_doc.OGTDocumentOptions` """
@@ -111,6 +111,11 @@ class OGTDocument:
         """Return a list of group_codes in preferred order (see :func:`~ogt.ogt_group.groups_sort`)"""
         return ogt.ogt_group.groups_sort(self.groups.keys())
 
+    def groups_list(self):
+        lst = []
+        for g in self.groups_sort():
+            lst.append(self.groups.get(g))
+        return lst
 
     def groups_count(self):
         """Returns no of groups in the document
@@ -199,14 +204,45 @@ class OGTDocument:
         grp = self.group(grp_code).data_column(head_code)
         return sorted(grp)
 
-    def add_error(self, message, rule=None, lidx=None):
-        e = OgtError(message)
+    def add_error(self, er):
+        """e = OgtError(message)
         e.lidx = lidx
         e.rule = str(rule)
         if not lidx in self.error_rows:
-            self.error_rows[lidx] = []
-        self.error_rows[lidx].append(e)
+            self.error_cells[lidx] = {}
+        """
+       # print er
+        if not er.lidx in self.error_cells:
+            self.error_cells[er.lidx] = {}
+        if not er.cidx in self.error_cells[er.lidx]:
+            self.error_cells[er.lidx][er.cidx] = []
 
+        self.error_cells[er.lidx][er.cidx].append(er)
+
+    def add_errors(self, errs):
+        for e in errs:
+            #if not e.lidx in self.error_rows:
+            self.add_error(e)
+                #self.error_rows[e.lidx] = []
+            #self.error_rows[e.lidx].append(e)
+
+    def get_errors(self, lidx=None, cidx=None):
+
+        if lidx != None:
+            recs = self.error_cells.get(lidx)
+            if recs == None:
+                return None
+            if cidx == None:
+                return recs
+            return recs.get(cidx)
+        return None
+
+    def get_errors_list(self):
+        lst = []
+        for lidx in sorted(self.error_cells.keys()):
+            for cidx in sorted(self.error_cells[lidx].keys()):
+                lst.extend(self.error_cells[lidx][cidx])
+        return lst
 
     def write(self, ext="json", beside=False, file_path=None,
               zip=False, overwrite=False):
@@ -422,6 +458,39 @@ class OGTDocument:
         return ogt.utils.to_yaml( self.to_dict(include_source=include_source,
                                            include_stats=include_stats,
                                            edit_mode=edit_mode) )
+
+    def get_points(self):
+
+        grpLoca = self.group("LOCA")
+        if grpLoca == None:
+            return
+        print "get CLOCA", grpLoca
+        lst = []
+
+        ## WSG84
+        if grpLoca.has_heading("LOCAL_LAT") and grpLoca.has_heading("LOCAL_LON"):
+            for rec in grpLoca.data:
+                lat_s = rec.get("LOCA_LAT")
+                lon_s = rec.get("LOCA_LON")
+                ## addd Point
+                print "YES=", lat_s, lon_s
+
+
+
+        ## BNG British National grid
+        elif grpLoca.has_heading("LOCA_NATE") and grpLoca.has_heading("LOCA_NATN"):
+            for rec in grpLoca.data:
+                #print rec
+                loca_id = rec.get("LOCA_ID")
+                east = float(rec.get("LOCA_NATE"))
+                north = float(rec.get("LOCA_NATN"))
+                #print east, north, rec.get("LOCA_NATE"), rec.get("LOCA_NATN")
+                if east and north:
+                    lat, lon = bng_to_latlon.OSGB36toWGS84(east, north)
+                    lst.append(dict(lat=lat, lon=lon, east=east, north=north, loca_id=loca_id))
+                    #features.append(make_feature(rec, lat, lon))
+
+        return lst
 
 
     def to_geojson(self, minify=False):
@@ -682,20 +751,25 @@ class OGTDocument:
 
             elif lenny == 1:
                 # so we only got a first column, to check its valid
-                err = ags4.rule_3()
+                #err = ags4.rule_3()
                 self.add_error("Row has no data", rule=4, lidx=lidx)
                 continue
 
             elif lenny < 2:
                 # min of two items, so add to errors
                 #self.error_rows[lidx] = row
-                err = ags4.rule_3()
+                #err = ags4.rule_3()
                 self.add_error("Row has no data", rule=4, lidx=lidx)
                 continue
 
             else:
                 # first item is data descriptor
-                if row[0] == ags4.AGS4.GROUP:
+                cleaned_code, errs = ags4.validate_code(row[0], lidx=lidx, cidx=0)
+                #print "===", cleaned_code, errs
+                if len(errs) > 0:
+                    self.add_errors(errs)
+
+                if cleaned_code == ags4.AGS4.GROUP:
 
                     # close existing group if open
                     if loop_grp != None:
@@ -703,12 +777,15 @@ class OGTDocument:
 
 
                     ## we got a new group
-                    loop_grp = ogt.ogt_group.OGTGroup(row[1])
+                    gcode, errs = ags4.validate_code(row[1], lidx=lidx, cidx=1)
+                    if len(errs) > 0:
+                        self.add_errors(errs)
+                    loop_grp = ogt_group.OGTGroup(gcode)
                     loop_grp.csv_start_index = lidx
                     self.append_group(loop_grp)
 
-        print "===GROUPS===", sorted(self.groups.keys())
-
+        #print "===GROUPS===", sorted(self.groups.keys())
+        print "ERRORS=", self.error_cells
         # thirdly
         # - we parse each group's csv rows into the parts
         for group_code, grp in self.groups.iteritems():
@@ -717,14 +794,14 @@ class OGTDocument:
 
             for ridx, row in enumerate(grp.csv_rows()):
 
-                print "~", ridx, row
+                #print "~", ridx, row
                 if len(row) == 0:
                     # empty row
                     continue
 
                 descriptor = row[0]
                 err = ags4.AGS4.validate_descriptor(descriptor)
-                print "err=", descriptor, err
+                #print "err=", descriptor, err
                 if err != None:
                     # todo add to errors
                     pass
@@ -734,18 +811,19 @@ class OGTDocument:
                     pass
 
                 elif descriptor == ags4.AGS4.HEADING:
-
                     grp.headings_source_sort = xrow
                     for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.headings[head_code] = xrow[cidx]
+                        ogr = ogt_group.OGTHeading(ogtGroup=grp)
+                        ogr.set_head_code(xrow[cidx], ridx, cidx)
+                        grp.headings[head_code] = ogr
 
                 elif descriptor == ags4.AGS4.UNIT:
                     for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.units[head_code] = xrow[cidx]
+                        grp.headings[head_code].set_unit(xrow[cidx], ridx, cidx)
 
                 elif descriptor == ags4.AGS4.TYPE:
                     for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.data_types[head_code] = xrow[cidx]
+                        grp.headings[head_code].set_type(xrow[cidx], ridx, cidx)
 
                 elif descriptor == ags4.AGS4.DATA:
                     dic = {}

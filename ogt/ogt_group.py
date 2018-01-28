@@ -72,7 +72,7 @@ class OGTGroup:
         """The four character group code"""
 
         self.headings = {}
-        """A `dict` of headings"""
+        """A `dict` of head_code > ogtHeadings"""
 
         self.headings_sort = []
         """A list of head_codes in recommended sort order"""
@@ -80,10 +80,10 @@ class OGTGroup:
         self.headings_source_sort = []
         """The list of head_code with the sort order in original file"""
 
-        self.units = {}
+        #self.units = {}
         """A `dict` of `head_code:unit`  """
 
-        self.data_types = {}
+        #self.types = {}
         """A `dict` of `head_code:type` """
 
         self.data = []
@@ -97,6 +97,15 @@ class OGTGroup:
 
         self._data_dict = None
 
+    @property
+    def group_description(self):
+        dic =  self.data_dict()
+        if dic:
+            return self.data_dict().group_description
+        return None
+
+    def has_heading(self, head_code):
+        return head_code in self.headings
 
     def headings_sort(self):
 
@@ -120,7 +129,7 @@ class OGTGroup:
         lst = []
         for hcode in self.headings_source_sort:
             #dic = dict(head_code = hcode, unit=self.units[hcode], data_type=self.data_types[hcode])
-            lst.append( dict(head_code = hcode, unit=self.units[hcode], data_type=self.data_types[hcode]) )
+            lst.append( self.headings[hcode] )
         return lst
 
     def headings_count(self):
@@ -130,15 +139,12 @@ class OGTGroup:
         """Returns the csv rows used in this group, return data from parentDocument """
         return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
-    def deaddata(self):
-        return self.data
 
     def data_row(self, ridx):
         return self.data[ridx]
 
-    def data_rows(self):
-        return self.data
-
+    def data_rows_count(self):
+        return len(self.data)
 
     def data_dict(self):
         """Returns the data dictionary for this group, if it exists
@@ -214,13 +220,38 @@ class OGTGroup:
         return lst
 
 
-"""
-class OGTHeadingPLACEHOLDER:
-    def __init__(self, head_code=None, index=None):
 
+class OGTHeading:
+
+    def __init__(self, ogtGroup=None, head_code=None):
+
+        self.ogtGroup = ogtGroup
         self.head_code = head_code
-        self.index = index
-
         self.unit = None
         self.type = None
-"""
+
+        self.head_code_cell = None
+        self.unit_cell = None
+        self.type_cell = None
+
+    @property
+    def head_description(self):
+
+        dd = self.ogtGroup.data_dict()
+        if dd:
+            head, found = dd.heading(self.head_code)
+            if found:
+                return head.get("head_description")
+        return None
+
+    def set_head_code(self, head_code, row_idx, col_idx):
+        self.head_code = head_code
+        self.head_code_index = [row_idx, col_idx]
+
+    def set_unit(self, unit, row_idx, col_idx):
+        self.unit = unit
+        self.unit_index = [row_idx, col_idx]
+
+    def set_type(self, type, row_idx, col_idx):
+        self.type = type
+        self.type_index = [row_idx, col_idx]

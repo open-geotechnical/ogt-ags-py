@@ -95,13 +95,20 @@ class OGTDocumentWidget( QtGui.QWidget ):
         widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
         idx = self.tabBar.addTab( ogtGrp.group_code)
         if ogtGrp.data_dict():
-            self.tabBar.setTabToolTip(idx, ogtGrp.data_dict().group_description())
+            descr = ogtGrp.group_description
+            self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)
 
         self.stackWidget.addWidget(widget)
         widget.load_group(ogtGrp)
         widget.sigGoto.connect(self.on_goto)
 
         return widget
+
+    def select_group(self, group_code):
+        for i in range(0, self.stackWidget.count()):
+            if self.stackWidget.widget(i).ogtGroup.group_code == group_code:
+                self.tabBar.setCurrentIndex(i)
+                return
 
 
     def on_tab_changed(self, idx):
@@ -113,7 +120,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
     def on_goto(self, code):
         grp_code = code.split("_")[0]
         for idx in range(0, self.stackWidget.count()):
-            if self.stackWidget.widget(idx).group_code == grp_code:
+            if self.stackWidget.widget(idx).ogtGroup.group_code == grp_code:
                 self.tabBar.setCurrentIndex(idx)
                 #self.stackWidget.widget(idx).select_heading(code)
                 return

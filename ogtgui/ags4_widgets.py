@@ -266,12 +266,13 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.tree.resizeColumnToContents(CG.code)
 
 
+
 class AGS4GroupViewWidget( QtGui.QWidget ):
     """The GroupView contains the vertically the Group Label at top, headings and notes"""
 
     sigHeadCodeSelected = pyqtSignal(object)
 
-    def __init__( self, parent, mode=None ):
+    def __init__( self, parent=None, mode=None ):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = True
@@ -362,6 +363,33 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
 
         self.agsHeadingsTable.filter_by_group(g['group_code'])
         self.agsGroupNotesTable.load_notes(g['group_code'])
+
+
+
+class AGS4GroupViewDialog(QtGui.QDialog):
+
+
+    def __init__(self, parent=None, group_code=None):
+        QtGui.QDialog.__init__(self, parent)
+
+
+        self.setWindowTitle(group_code)
+        self.setWindowIcon(Ico.icon(Ico.Ags4))
+
+
+        self.setMinimumWidth(1100)
+
+
+
+        self.mainLayout = QtGui.QHBoxLayout()
+        self.mainLayout.setSpacing(0)
+        margarine = 0
+        self.mainLayout.setContentsMargins(margarine, margarine, margarine, margarine)
+        self.setLayout(self.mainLayout)
+
+        self.groupViewWidget = AGS4GroupViewWidget(self)
+        self.mainLayout.addWidget(self.groupViewWidget)
+        self.groupViewWidget.load_group(group_code)
 
 
 
@@ -667,7 +695,7 @@ class PickListComboDelegate(QtGui.QItemDelegate):
     def __init__(self, parent, heading):
         QtGui.QItemDelegate.__init__(self, parent)
 
-        self.head_code = heading['head_code']
+        self.ogtHeading = heading
 
     def createEditor(self, parent, option, index):
 
@@ -675,7 +703,7 @@ class PickListComboDelegate(QtGui.QItemDelegate):
         editor.addItem("--unknown--", "")
 
         # populate combobox from abbreviations
-        for typ in ags4.AGS4.picklist(self.head_code):
+        for typ in ags4.AGS4.picklist(self.ogtHeading.head_code):
             editor.addItem( "%s: %s " % (typ['code'], typ['description']), typ['code'])
 
         return editor
@@ -697,18 +725,18 @@ class NumberEditDelegate(QtGui.QItemDelegate):
     def __init__(self, parent, heading):
         QtGui.QItemDelegate.__init__(self, parent)
 
-        self.head_code = heading['head_code']
+        self.ogtHeading = heading
 
-        self.data_type = heading['data_type']
+        ##self.data_type = heading['type']
         #self.data_type = heading['type']
         self.dp = None
-        if self.data_type.endswith("DP"):
-            self.dp = int(self.data_type[:-2])
+        if self.ogtHeading.type.endswith("DP"):
+            self.dp = int(self.ogtHeading.type[:-2])
 
     def createEditor(self, parent, option, index):
 
         editor = QtGui.QLineEdit(parent)
-        if self.data_type.endswith("DP"):
+        if self.ogtHeading.type.endswith("DP"):
             validator = QtGui.QDoubleValidator()
             validator.setDecimals(self.dp)
             editor.setValidator(validator)
@@ -734,7 +762,7 @@ class IDComboDelegate(QtGui.QItemDelegate):
     def __init__(self, parent, heading, options):
         QtGui.QItemDelegate.__init__(self, parent)
 
-        self.head_code = heading['head_code']
+        self.ogtHeading = heading
         self.options = options
 
     def createEditor(self, parent, option, index):
