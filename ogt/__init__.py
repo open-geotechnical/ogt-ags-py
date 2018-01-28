@@ -93,10 +93,30 @@ try:
 except ImportError as e:
     pass
 
+class COLORS:
+    err_bg = "#FFC5C5"
+    warn_bg = "#FFEDC5"
+
 class OgtError:
 
-    def __init__(self, message):
+    def __init__(self, message, lidx=None, cidx=None, error=True):
 
+        self.error = error
         self.message = message
-        self.lidx = None
+        self.lidx = lidx
+        self.cidx = cidx
 
+    def __repr__(self):
+        return "<Ogt %s - %s [%s,%s]>" % ("ERR" if self.error else "WARN", self.message, self.lidx, self.cidx)
+
+    @property
+    def line_no(self):
+        return self.lidx + 1
+
+    @property
+    def column_no(self):
+        return self.cidx + 1
+
+    @property
+    def bg(self):
+        return COLORS.err_bg if self.error else COLORS.warn_bg

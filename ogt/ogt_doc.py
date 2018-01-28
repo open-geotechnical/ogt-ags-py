@@ -212,6 +212,12 @@ class OGTDocument:
             self.error_rows[lidx] = []
         self.error_rows[lidx].append(e)
 
+    def add_errors(self, errs):
+
+        for e in errs:
+            if not e.lidx in self.error_rows:
+                self.error_rows[e.lidx] = []
+            self.error_rows[e.lidx].append(e)
 
     def write(self, ext="json", beside=False, file_path=None,
               zip=False, overwrite=False):
@@ -431,6 +437,8 @@ class OGTDocument:
     def get_points(self):
 
         grpLoca = self.group("LOCA")
+        if grpLoca == None:
+            return
         print "get CLOCA", grpLoca
         lst = []
 
@@ -718,20 +726,25 @@ class OGTDocument:
 
             elif lenny == 1:
                 # so we only got a first column, to check its valid
-                err = ags4.rule_3()
+                #err = ags4.rule_3()
                 self.add_error("Row has no data", rule=4, lidx=lidx)
                 continue
 
             elif lenny < 2:
                 # min of two items, so add to errors
                 #self.error_rows[lidx] = row
-                err = ags4.rule_3()
+                #err = ags4.rule_3()
                 self.add_error("Row has no data", rule=4, lidx=lidx)
                 continue
 
             else:
                 # first item is data descriptor
-                if row[0] == ags4.AGS4.GROUP:
+                cleaned_code, errs = ags4.validate_code(row[0], lidx=lidx, cidx=0)
+                #print "===", cleaned_code, errs
+                if len(errs) > 0:
+                    self.add_errors(errs)
+
+                if cleaned_code == ags4.AGS4.GROUP:
 
                     # close existing group if open
                     if loop_grp != None:
@@ -739,12 +752,15 @@ class OGTDocument:
 
 
                     ## we got a new group
-                    loop_grp = ogt_group.OGTGroup(row[1])
+                    gcode, errs = ags4.validate_code(row[1], lidx=lidx, cidx=1)
+                    if len(errs) > 0:
+                        self.add_errors(errs)
+                    loop_grp = ogt_group.OGTGroup(gcode)
                     loop_grp.csv_start_index = lidx
                     self.append_group(loop_grp)
 
         #print "===GROUPS===", sorted(self.groups.keys())
-
+        print "ERRORS=", self.error_rows
         # thirdly
         # - we parse each group's csv rows into the parts
         for group_code, grp in self.groups.iteritems():

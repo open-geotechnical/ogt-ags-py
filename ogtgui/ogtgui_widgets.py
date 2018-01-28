@@ -67,18 +67,31 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
             if self.tableWidget.columnCount() < len(row):
                 self.tableWidget.setColumnCount(len(row))
-
+            errs = doco.error_rows.get(ridx)
+            print ridx, errs
             bg = None
             for cidx, cell in enumerate(row):
-                if cidx == 0:
-                    bg = bg_color(cell)
-                item = QtGui.QTableWidgetItem()
+                #print ridx, cidx
+                #if cidx == 0:
+                #    bg = bg_color(cell)
+                item = xwidgets.XTableWidgetItem()
                 item.setText( cell )
                 self.tableWidget.setItem(ridx, cidx, item)
 
+                if errs != None:
+                    s = []
+                    for er in errs:
+                        if er.cidx == cidx:
+                            item.set_bg(er.bg)
+                            s.append(er.message)
+                    if len(s) > 0:
+                        item.setToolTip("\n".join(s))
                 ## color the row
-                item.setBackgroundColor(QtGui.QColor(bg))
+                #item.setBackgroundColor(QtGui.QColor(bg))
 
+    def select_cell(self, lidx, cidx):
+        self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tableWidget))
+        self.tableWidget.setCurrentCell(lidx, cidx)
 
 
 class OGTScheduleWidget( QtGui.QWidget ):
@@ -262,5 +275,76 @@ class ExamplesWidget( QtGui.QWidget ):
 
         file_name = str(item.text(C_EG.file_name))
         self.sigFileSelected.emit(file_name)
+
+
+class C_ERR:
+    """Columns for examples"""
+    err = 0
+    lidx = 1
+    cidx = 2
+    descr = 3
+
+class OGTErrorsWidget( QtGui.QWidget ):
+
+    sigGotoSource = pyqtSignal(int, int)
+
+    def __init__( self, parent=None):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.debug = False
+
+
+
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.mainLayout)
+
+
+        #=============================
+        ## Set up tree
+        self.tree = QtGui.QTreeWidget()
+        self.mainLayout.addWidget(self.tree, 30)
+
+        self.tree.setRootIsDecorated(False)
+        self.tree.header().setStretchLastSection(True)
+
+        hi = self.tree.headerItem()
+        hi.setText(C_ERR.err, "Type")
+        hi.setText(C_ERR.lidx, "Line")
+        hi.setText(C_ERR.cidx, "Column")
+        hi.setText(C_ERR.descr, "Description")
+
+
+        self.tree.itemClicked.connect(self.on_tree_item_clicked)
+
+
+
+
+
+    def load_document(self, ogtDoc):
+
+
+        #print ogtDoc.error_rows
+        for lidx in sorted(ogtDoc.error_rows.keys()):
+
+            errs = ogtDoc.error_rows[lidx]
+
+            for er in errs:
+
+                item = xwidgets.XTreeWidgetItem()
+                item.set(C_ERR.err, "Error" if er.error else "Warning", bg="pink" if er.error else "cyan")
+                item.set(C_ERR.descr, er.message )
+                item.set(C_ERR.lidx, er.line_no, align=Qt.AlignCenter)
+                item.set(C_ERR.cidx, er.column_no, align=Qt.AlignCenter)
+                #item.setIcon(C_EG.file_name, Ico.icon(Ico.Ags4))
+
+                self.tree.addTopLevelItem(item)
+
+        #self.tree.sortByColumn(C_ERR.lidx, Qt.AscendingOrder)
+
+    def on_tree_item_clicked(self, item, col):
+
+        self.sigGotoSource.emit(item.i(C_ERR.lidx) - 1, item.i(C_ERR.cidx) - 1)
 
 

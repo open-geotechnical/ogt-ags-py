@@ -95,7 +95,8 @@ class OGTDocumentWidget( QtGui.QWidget ):
         widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
         idx = self.tabBar.addTab( ogtGrp.group_code)
         if ogtGrp.data_dict():
-            self.tabBar.setTabToolTip(idx, ogtGrp.group_description)
+            descr = ogtGrp.group_description
+            self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)
 
         self.stackWidget.addWidget(widget)
         widget.load_group(ogtGrp)

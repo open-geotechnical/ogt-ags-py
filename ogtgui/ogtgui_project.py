@@ -65,6 +65,12 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.stackWidget = QtGui.QStackedWidget()
         self.mainLayout.addWidget(self.stackWidget)
 
+        self.tabBar.addTab(Ico.icon(Ico.Project), "Summary")
+        self.ogtProjSummaryWidget = OGTProjectSummaryWidget()
+        self.stackWidget.addWidget(self.ogtProjSummaryWidget)
+        self.ogtProjSummaryWidget.sigGoto.connect(self.on_goto)
+        self.ogtProjSummaryWidget.sigGotoSource.connect(self.on_goto_source)
+
         ## add tables tab
         self.tabBar.addTab(Ico.icon(Ico.Groups), "Groups")
         self.ogtDocWidget = ogtgui_doc.OGTDocumentWidget()
@@ -80,10 +86,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.stackWidget.addWidget(self.ogtSourceViewWidget)
 
 
-        self.tabBar.addTab(Ico.icon(Ico.Project), "Summary")
-        self.ogtProjSummaryWidget = OGTProjectSummaryWidget()
-        self.stackWidget.addWidget(self.ogtProjSummaryWidget)
-        self.ogtProjSummaryWidget.sigGoto.connect(self.on_goto)
+
 
         self.tabBar.addTab(Ico.icon(Ico.Map), "Map")
         self.mapOverviewWidget = map_widgets.MapOverviewWidget()
@@ -93,7 +96,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
         if G.args.dev:
-            self.tabBar.setCurrentIndex(4)
+            self.tabBar.setCurrentIndex(3)
 
     def init_load(self):
         pass
@@ -145,6 +148,14 @@ class OGTProjectWidget( QtGui.QWidget ):
         idx = self.stackWidget.indexOf(self.ogtDocWidget)
         self.tabBar.setCurrentIndex(idx)
 
+
+
+    def on_goto_source(self, lidx, cidx):
+
+        self.ogtSourceViewWidget.select_cell(lidx, cidx)
+        idx = self.stackWidget.indexOf(self.ogtSourceViewWidget)
+        self.tabBar.setCurrentIndex(idx)
+
 class CP:
     node = 0
     group_code = 1
@@ -154,6 +165,7 @@ class CP:
 class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
     sigGoto = pyqtSignal(object)
+    sigGotoSource = pyqtSignal(int, int)
 
     def __init__( self, parent=None):
         QtGui.QMainWindow.__init__( self, parent )
@@ -165,17 +177,29 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
 
 
-        self.docProject = QtGui.QDockWidget()
-        self.docProject.setWindowTitle("Project")
-        self.docProject.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
-        self.docProject.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.docProject)
+        self.dockProject = QtGui.QDockWidget()
+        self.dockProject.setWindowTitle("Project")
+        self.dockProject.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.dockProject.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.dockProject)
+
+
 
 
         self.lblProjectPlace = QtGui.QLabel()
         self.lblProjectPlace.setText("project placeholder")
 
-        self.docProject.setWidget(self.lblProjectPlace)
+        self.dockProject.setWidget(self.lblProjectPlace)
+
+
+
+
+        ## Errors
+        self.dockErrors = QtGui.QDockWidget()
+        self.dockErrors.setWindowTitle("Groups")
+        self.dockErrors.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.dockErrors.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dockErrors)
 
 
         self.tree = QtGui.QTreeWidget()
@@ -190,6 +214,11 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         hi.setText(CP.node, "Rows")
 
         self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
+        self.dockErrors.setWidget(self.tree)
+
+        self.errorsWidget = ogtgui_widgets.OGTErrorsWidget()
+        self.setCentralWidget(self.errorsWidget)
+        self.errorsWidget.sigGotoSource.connect(self.on_goto_source)
 
     def load_document(self, ogtDoc):
 
@@ -211,6 +240,7 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
             item.setTextAlignment(CP.node, Qt.AlignRight)
             self.tree.addTopLevelItem(item)
 
+        self.errorsWidget.load_document(self.ogtDoc)
 
     def on_tree_double_clicked(self, item, cidx):
         item = self.tree.currentItem()
@@ -218,3 +248,5 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
             return
         self.sigGoto.emit(item.text(CP.group_code))
 
+    def on_goto_source(self, lidx, cidx):
+        self.sigGotoSource.emit(lidx, cidx)

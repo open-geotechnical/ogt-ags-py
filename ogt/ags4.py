@@ -5,7 +5,7 @@ from operator import itemgetter
 import urllib, urllib2
 import json
 
-from ogt import USER_TEMP
+from ogt import USER_TEMP, OgtError
 import ogt.ogt_doc
 import ogt.utils
 #from ogt import utils, EXAMPLES_DIR
@@ -80,7 +80,7 @@ class AGS4_DataDict:
             return "Missing ags4 data dict"
 
         self._data, err = ogt.utils.read_json_file(ags4dd_file())
-        print self._data.keys()
+        #print self._data.keys()
         if err:
             return err
 
@@ -126,9 +126,11 @@ class AGS4_DataDict:
         if self._data_types_lookup_cache == None:
             self._data_types_lookup_cache = {}
             #typs = AGS4_DD.get("data_types")
+            #print self._data_types
             for typ in self._data_types:
+                #print "typ=", typ
                 self._data_types_lookup_cache[typ['data_type']] = typ
-        return self._data_types_lookup_cache[abbr_code]
+        return self._data_types_lookup_cache.get(abbr_code)
 
     @staticmethod
     def descriptors():
@@ -862,3 +864,28 @@ def get_example_dirs():
         return None, "dir '%s' not exist " % EXAMPLES_DIR
     return sorted(os.listdir(EXAMPLES_DIR)), None
 """
+
+def validate_code(raw_code, lidx=None, cidx=None):
+    """Validates adn checks a code eg PROJ, """
+    err_list = []
+
+    ## Check for whitespace
+    code = raw_code.strip()
+    if code != raw_code:
+        if code == raw_code.lstrip():
+            e = OgtError("Leading white Space `%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
+            err_list.append(e)
+        elif code == raw_code.rstrip():
+            e = OgtError("Trailing white Space `%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
+            err_list.append(e)
+        else:
+            e = OgtError("White Space`%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
+            err_list.append(e)
+
+    ucode = code.upper()
+    if ucode != code:
+        e = OgtError("Lower space characters `%s`" % code, error=False, cidx=cidx, lidx=lidx)
+        err_list.append(e)
+
+    return ucode, err_list
+

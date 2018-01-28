@@ -177,7 +177,8 @@ class MainWindow( QtGui.QMainWindow ):
 
         #fnn = "AGS4-Example.ags"
         #self.load_ags4_example(fnn)
-        fn =  "/home/ogt/AGS4-example-wrd.ags"
+        #fn =  "/home/ogt/AGS4-example-wrd.ags"
+        fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
         self.load_ags4_file(fn)
 
 
@@ -242,7 +243,7 @@ class MainWindow( QtGui.QMainWindow ):
         #print "load_ags4_file", file_path, self
         proj = ogtgui_project.OGTProjectWidget()
         proj.load_ags4_file(file_path)
-
+        #print proj
         self.load_widget(proj, os.path.basename(file_path), ico=Ico.Project)
 
     def add_history(self, file_path):

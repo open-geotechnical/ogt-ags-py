@@ -106,7 +106,7 @@ class XTreeWidgetItem(QtGui.QTreeWidgetItem):
     def set(self, cidx, text=None, bold=False, bg=None, fg=None, align=None, check=None, ico=None):
 
         if text:
-            self.setText(cidx, text)
+            self.setText(cidx, str(text))
 
         if bold:
             self.set_bold(cidx, True)
@@ -143,6 +143,9 @@ class XTreeWidgetItem(QtGui.QTreeWidgetItem):
 
     def set_ico(self, cidx, ico):
         self.setIcon(cidx, Ico.icon(ico))
+
+    def i(self, cidx):
+        return int(str(self.text(cidx)))
 
 class GroupHBox(QtGui.QGroupBox):
 

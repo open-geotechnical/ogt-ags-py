@@ -93,6 +93,8 @@ class MapOverviewWidget(QtGui.QWidget):
         self.ogtDoc = ogtDoc
 
         points =  self.ogtDoc.get_points()
+        if points == None:
+            return
         #print points
         for idx, p in enumerate(points):
             self.mapWidget.add_marker("xmap", id="ID_%s" % idx, lat=p['lat'], lon=p['lon'])
@@ -131,8 +133,8 @@ class MapWidget(QtGui.QWidget):
         local_html_file_path = os.path.join(MAP_PATH, "map.html")
         self.map_url = QtCore.QUrl(local_html_file_path)
 
-        self.timer = QtCore.QTimer(self)
-        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.on_timer)
+        #self.timer = QtCore.QTimer(self)
+        #self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.on_timer)
 
         #####################################################
         ## Popup Menu's
