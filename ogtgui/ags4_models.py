@@ -80,7 +80,7 @@ class Ags4Object(QtCore.QObject):
 
         self.modelNotes = NotesModel()
         self.modelUnits = UnitsModel(self)
-
+        self.modelTypes = TypesModel(self)
 
         self.modelClasses = ClassesModel(self)
         self.modelGroups = GroupsModel(self)
@@ -107,11 +107,11 @@ class Ags4Object(QtCore.QObject):
 
     def load(self):
 
-        #all = ogt.ags4.AGS4.all()
         self.modelAbbrItems.load_data(ags4.AGS4.abbrs())
+        self.modelGroups.load_data(ags4.AGS4.groups())
 
-        groups = ags4.AGS4.groups()
-        self.modelGroups.load_data(groups)
+        self.modelUnits.load_data(ags4.AGS4.units_list())
+        self.modelTypes.load_data(ags4.AGS4.types_list())
 
         self.modelNotes.init_words()
 
@@ -440,7 +440,7 @@ class ClassesModel(xobjects.XStandardItemModel):
     def remove_rows(self):
         print catch
 ##===================================================================
-## Classes
+## Units + Types
 ##===================================================================
 
 class CU:
@@ -455,15 +455,40 @@ class UnitsModel(xobjects.XStandardItemModel):
         self.set_header(CU.description, "Description")
 
 
-    def load_data(self, data):
+    def load_data(self, recs):
 
-        recs = data['units']
+        #recs = data['units']
 
         for rec in recs:
             items = self.make_blank_row()
             items[CU.unit].set(rec['unit'], bold=True, font="monospace")
             items[CU.description].set(rec['description'])
             self.appendRow(items)
+            print rec
 
+        self.emit(QtCore.SIGNAL("loaded"))
+
+class CT:
+    type = 0
+    description = 1
+
+class TypesModel(xobjects.XStandardItemModel):
+    def __init__( self, parent=None):
+        super(xobjects.XStandardItemModel, self).__init__(parent)
+
+        self.set_header(CT.type, "Type")
+        self.set_header(CT.description, "Description")
+
+
+    def load_data(self, recs):
+
+        #recs = data['units']
+
+        for rec in recs:
+            items = self.make_blank_row()
+            items[CT.type].set(rec['data_type'], bold=True, font="monospace")
+            items[CT.description].set(rec['description'])
+            self.appendRow(items)
+            print rec
 
         self.emit(QtCore.SIGNAL("loaded"))

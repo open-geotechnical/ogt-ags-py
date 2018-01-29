@@ -33,10 +33,10 @@ class AGS4_DataDict:
         self._data = None
         self._groups = None
         self._abbrs = None
-        self._data_types = None
+        self._types = None
         self._units = None
 
-        self._data_types_lookup_cache = None
+        self._types_lookup_cache = None
 
         self.initialise()
 
@@ -86,7 +86,7 @@ class AGS4_DataDict:
 
         self._abbrs = self._data['abbrs']
         self._groups = self._data['groups']
-        self._data_types = self._data['data_types']
+        self._types = self._data['data_types']
         self._units = self._data['units']
 
         return None
@@ -108,29 +108,36 @@ class AGS4_DataDict:
     def abbrs(self):
         return self._abbrs
 
-    def data_types(self):
-        return self._data_types
+    def types_list(self):
+        return self._types
 
-    def units(self):
+    def types_dict(self):
+        dic = {}
+        for t in  self._types:
+            dic[t['data_type']] = t['description']
+        return dic
+
+
+    def units_list(self):
         return self._units
 
     def picklist(self, head_code):
         return self._abbrs.get(head_code).get("abbrs")
 
-    def data_types(self):
+    def deaddata_types(self):
         return self._data_types
 
 
 
-    def data_type(self, abbr_code):
-        if self._data_types_lookup_cache == None:
-            self._data_types_lookup_cache = {}
+    def type(self, abbr_code):
+        if self._types_lookup_cache == None:
+            self._types_lookup_cache = {}
             #typs = AGS4_DD.get("data_types")
             #print self._data_types
-            for typ in self._data_types:
+            for typ in self._types:
                 #print "typ=", typ
-                self._data_types_lookup_cache[typ['data_type']] = typ
-        return self._data_types_lookup_cache.get(abbr_code)
+                self._types_lookup_cache[typ['data_type']] = typ
+        return self._types_lookup_cache.get(abbr_code)
 
     @staticmethod
     def descriptors():
@@ -140,8 +147,12 @@ class AGS4_DataDict:
         ]
 
 
-    def heading_valid(self, head_code):
-        parts = head_code.split("_")
+    def headings(self, group_code):
+
+        if not group_code in self._groups:
+            return None
+
+        return self._groups.get("headings")
 
 AGS4 = AGS4_DataDict()
 """Global Instance """
@@ -895,7 +906,7 @@ A2Z = "ABCDEFGHIJKLMNOPQRSTUVWZYZ"
 NUMBERS = "0123456789"
 CHARS = A2Z + NUMBERS
 
-def validate_group_code(group_code, lidx=None, cidx=None):
+def validate_group_str(group_code, lidx=None, cidx=None):
     """Rule 19 Group Heading"""
 
     # first check lengths
@@ -916,14 +927,15 @@ def validate_group_code(group_code, lidx=None, cidx=None):
             # ok
             pass
         else:
-            errs.append(OgtError("Illegal char in  GROUP position %s `%s`" % (idx+1, group_code), error=True, cidx=cidx, lidx=lidx, rule=19))
+            errs.append(OgtError("Invalid char in  GROUP position %s `%s`" % (idx+1, group_code), error=True, cidx=cidx, lidx=lidx, rule=19))
     if len(errs) > 0:
         return errs
 
     return []
 
-def validate_heading_code(head_code, lidx=None, cidx=None):
-    """Validate heading"""
+
+def validate_heading_str(head_code, lidx=None, cidx=None):
+    """Checks the heading is valid"""
     errs = []
     if not "_" in head_code:
         errs.append( OgtError("Invalid HEADING requires a _ `%s` not found" % head_code, error=True, cidx=cidx, lidx=lidx))
@@ -934,7 +946,7 @@ def validate_heading_code(head_code, lidx=None, cidx=None):
     group_code, head_part = head_code.split("_")
 
     # validate the group part
-    errs = validate_group_code(group_code, lidx=lidx, cidx=cidx)
+    errs = validate_group_str(group_code, lidx=lidx, cidx=cidx)
     if len(errs) > 0:
         # assume we cannot continue
         return errs
@@ -946,3 +958,22 @@ def validate_heading_code(head_code, lidx=None, cidx=None):
         return OgtError("Invalid HEADING needa at least onc char `%s`" % head_code, error=True, cidx=cidx, lidx=lidx, rule="19a")
 
     return None
+
+def validate_heading_ags(head_code, lidx=None, cidx=None):
+    """Check the heading is in ags data dict"""
+
+    group_code, _ = head_code.split("_")
+
+    # check group exists
+    grpdic = AGS4.group(group_code)
+
+    if grpdic == None:
+        return OgtError("Invalid GROUP part of HEADING not in ags data dict `%s`" % head_code, error=True, cidx=cidx, lidx=lidx, rule="9")
+
+    heads = grpdic.get("headings")
+    for h in heads:
+        if head_code == h['head_code']:
+            return None
+    return OgtError("HEADING `%s` not found in GROUP `%s`" % (head_code, group_code), error=True, cidx=cidx, lidx=lidx, rule="9")
+
+

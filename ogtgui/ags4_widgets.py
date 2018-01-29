@@ -39,6 +39,9 @@ class AGS4DataDictBrowser( QtGui.QWidget ):
         self.agsGroupsWidget = AGS4GroupsBrowser(self)
         self.tabWidget.addTab(self.agsGroupsWidget, Ico.icon(Ico.AgsGroups), "Groups")
 
+        self.unitsTypesWidget = AGS4UnitsTypesWidget(self)
+        self.tabWidget.addTab(self.unitsTypesWidget, Ico.icon(Ico.AgsGroups), "Units && Types")
+
         ##=============================================================
         #self.agsAbbrevsWidget = AgsAbbrevsWidget.AgsAbbrevsWidget(self)
         #self.tabWidget.addTab(self.agsAbbrevsWidget,dIco.icon(dIco.AgsAbbrevs),  "Abbreviations / Pick lists")
@@ -52,7 +55,7 @@ class AGS4DataDictBrowser( QtGui.QWidget ):
 
         # load data dict
         G.ags.init_load()
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
         self.agsGroupsWidget.set_focus()
 
@@ -787,3 +790,48 @@ class IDComboDelegate(QtGui.QItemDelegate):
     def setModelData(self, editor, model, index):
         txt = editor.itemData(editor.currentIndex()).toString()
         model.setData(index, txt)
+
+class AGS4UnitsTypesWidget( QtGui.QWidget ):
+    """The Units and Types tab"""
+
+    def __init__( self, parent=None):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.debug = False
+        self.setObjectName("AGS4UnitTypesWidget")
+
+
+        self.proxyUnits = QtGui.QSortFilterProxyModel()
+        self.proxyUnits.setSourceModel(G.ags.modelUnits)
+        self.proxyUnits.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+
+        self.proxyTypes = QtGui.QSortFilterProxyModel()
+        self.proxyTypes.setSourceModel(G.ags.modelTypes)
+        self.proxyTypes.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+
+        ##===============================================
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.mainLayout)
+
+        self.splitter = QtGui.QSplitter()
+        self.mainLayout.addWidget(self.splitter)
+
+        self.treeUnits = self.make_tree(self.proxyUnits, "Unit", "Description")
+        self.splitter.addWidget(self.treeUnits)
+
+        self.treeTypes = self.make_tree(self.proxyTypes, "Type", "Description")
+        self.splitter.addWidget(self.treeTypes)
+
+
+    def make_tree(self, model, tit1, tit2):
+        tree = QtGui.QTreeView()
+        tree.setRootIsDecorated(False)
+        tree.setSortingEnabled(True)
+        tree.setModel(model)
+        return tree
+        hi = tree.headerItem()
+        hi.setText(0, tit1)
+        hi.setText(1, tit2)
+        return tree

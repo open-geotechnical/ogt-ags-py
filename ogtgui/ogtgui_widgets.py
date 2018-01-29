@@ -62,7 +62,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
 
         self.errorsWidget = OGTErrorsWidget()
-        self.errorsWidget.setFixedWidth(400)
+        self.errorsWidget.setMinimumWidth(300)
         self.splitter.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.select_cell)
 
@@ -352,8 +352,8 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
         self.tree.setColumnHidden(C_ERR.err, True)
         self.tree.setColumnHidden(C_ERR.search, True)
-        self.tree.setColumnWidth(C_ERR.lidx, 50)
-        self.tree.setColumnWidth(C_ERR.cidx, 50)
+        self.tree.setColumnWidth(C_ERR.lidx, 30)
+        self.tree.setColumnWidth(C_ERR.cidx, 30)
         self.tree.setColumnWidth(C_ERR.rule, 50)
         self.tree.setColumnWidth(C_ERR.highlight, 8)
 
@@ -389,7 +389,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
 
     def select_items(self, ridx, cidx):
-        print "select_items", ridx, cidx
+        #print "select_items", ridx, cidx
         self.tree.blockSignals(True)
 
         # clear selection and  hightlight colors

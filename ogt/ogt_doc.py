@@ -11,7 +11,7 @@ if HAVE_GEOJSON:
     import geojson
     import bng_to_latlon # https://github.com/fmalina/bng_latlon
 
-from . import FORMATS
+from . import FORMATS, OgtError
 import ags4
 import ogt_group
 import ogt.utils
@@ -223,6 +223,9 @@ class OGTDocument:
 
     def add_errors(self, errs):
         if errs == None:
+            return
+        if isinstance(errs, OgtError):
+            self.add_error(errs)
             return
         if len(errs) == 0:
             return
@@ -794,8 +797,7 @@ class OGTDocument:
                     loop_grp.csv_start_index = lidx
                     self.append_group(loop_grp)
 
-        #print "===GROUPS===", sorted(self.groups.keys())
-        #print "ERRORS=", self.error_cells
+
         # thirdly
         # - we parse each group's csv rows into the parts
 
@@ -804,7 +806,7 @@ class OGTDocument:
             #print grp.csv_rows()
 
             # walk the csv rows in this group
-            for ridx, row in enumerate(grp.csv_rows()):
+            for iidx, row in enumerate(grp.csv_rows()):
 
                 if len(row) == 0:
                     # empty row so ignore
@@ -817,7 +819,7 @@ class OGTDocument:
                 xrow = row[1:]
 
                 # the line index is the group's start_index + iterator
-                lidx = grp.csv_start_index + ridx
+                lidx = grp.csv_start_index + iidx
 
                 if descriptor == ags4.AGS4.GROUP:
                     # already got group above so ignore
@@ -836,23 +838,28 @@ class OGTDocument:
                     # next loop the headings, create `OGTHeading objects` and add to group
                     for didx, head_code in enumerate(grp.headings_source_sort):
                         ogr = ogt_group.OGTHeading(ogtGroup=grp)
-                        ogr.set_head_code(head_code, ridx, didx)
+                        ogr.set_head_code(head_code, iidx, didx)
                         grp.headings[head_code] = ogr
 
-                        # Validate heading
-                        # TODO validate custom headings first
-                        errs = ags4.validate_heading_code(head_code, lidx=lidx, cidx=didx+1)
+                        # Validate heading code
+                        errs = ags4.validate_heading_str(head_code, lidx=lidx, cidx=didx+1)
                         self.add_errors(errs)
+
+                        # TODO validate custom headings first
+
+                        # validate heading to ags4
+                        err = ags4.validate_heading_ags(head_code, lidx=lidx, cidx=didx+1)
+                        self.add_errors(err)
 
                 elif descriptor == ags4.AGS4.UNIT:
                     # a UNIT row
                     for didx, head_code in enumerate(grp.headings_source_sort):
-                        grp.headings[head_code].set_unit(xrow[didx], ridx, didx)
+                        grp.headings[head_code].set_unit(xrow[didx], iidx, didx)
 
                 elif descriptor == ags4.AGS4.TYPE:
                     # a TYPE row
                     for didx, head_code in enumerate(grp.headings_source_sort):
-                        grp.headings[head_code].set_type(xrow[didx], ridx, didx)
+                        grp.headings[head_code].set_type(xrow[didx], iidx, didx)
 
                 elif descriptor == ags4.AGS4.DATA:
                     # a DATA row
