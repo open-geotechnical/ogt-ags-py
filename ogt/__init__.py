@@ -97,29 +97,43 @@ except ImportError as e:
 
 
 class COLORS:
+    noerr_bg = "#D8FFC5"
     err_bg = "#FFC5C5"
     warn_bg = "#FFEDC5"
 
 class OgtError:
 
-    def __init__(self, message, lidx=None, cidx=None, error=True):
+    def __init__(self, message, lidx=None, cidx=None, error=True, rule=None):
 
         self.error = error
+        """True to flag as error(default), False is a warning"""
+
         self.message = message
+        """The error message"""
+
+        self.rule = None if rule == None else str(rule)
+        """The ags4 rule of error"""
+
         self.lidx = lidx
+        """The line index of error """
+
         self.cidx = cidx
+        """The csv column index of the error """
 
     def __repr__(self):
         return "<Ogt %s - %s [%s,%s]>" % ("ERR" if self.error else "WARN", self.message, self.lidx, self.cidx)
 
     @property
     def line_no(self):
+        """The line no is the line index +1 """
         return self.lidx + 1
 
     @property
     def column_no(self):
+        """The column_no no is the column index +1 """
         return self.cidx + 1
 
     @property
     def bg(self):
+        """Background color of error/warning"""
         return COLORS.err_bg if self.error else COLORS.warn_bg

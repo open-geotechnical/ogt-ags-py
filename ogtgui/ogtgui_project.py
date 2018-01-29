@@ -226,7 +226,7 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
         for g in self.ogtDoc.groups_list():
             #print "===", g.group_description
-            item = QtGui.QTreeWidgetItem()
+            item = xwidgets.XTreeWidgetItem()
 
             item.setText(CP.group_code, g.group_code)
             f = item.font(CP.group_code)
@@ -234,7 +234,7 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
             item.setFont(CP.group_code, f)
             item.setIcon(CP.group_code, Ico.icon(Ico.AgsGroup))
 
-            item.setText(CP.group_description, g.group_description)
+            item.set(CP.group_description, g.group_description)
 
             item.setText(CP.node, str(g.data_rows_count()))
             item.setTextAlignment(CP.node, Qt.AlignRight)

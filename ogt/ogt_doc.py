@@ -222,6 +222,8 @@ class OGTDocument:
         self.error_cells[er.lidx][er.cidx].append(er)
 
     def add_errors(self, errs):
+        if errs == None:
+            return
         if len(errs) == 0:
             return
         for e in errs:
@@ -796,48 +798,67 @@ class OGTDocument:
         #print "ERRORS=", self.error_cells
         # thirdly
         # - we parse each group's csv rows into the parts
+
         for group_code, grp in self.groups.iteritems():
             #print "========", group_code, grp, grp.csv_rows()
             #print grp.csv_rows()
 
+            # walk the csv rows in this group
             for ridx, row in enumerate(grp.csv_rows()):
 
-                #print "~", ridx, row
                 if len(row) == 0:
-                    # empty row
+                    # empty row so ignore
                     continue
 
-                # We already validated descriptiors above
+                # We already validated descriptiors above but still need to clean here (TODO)
                 descriptor = row[0].strip().upper()
-                #err = ags4.AGS4.validate_descriptor(descriptor)
-                #print "err=", descriptor, err
-                #if err != None:
-                    # todo add to errors
-                #    pass
-                xrow = row[1:] # row without data descriptor
+
+                # xrow is the stuff without data descriptor in first col
+                xrow = row[1:]
+
+                # the line index is the group's start_index + iterator
+                lidx = grp.csv_start_index + ridx
 
                 if descriptor == ags4.AGS4.GROUP:
+                    # already got group above so ignore
                     pass
 
                 elif descriptor == ags4.AGS4.HEADING:
-                    grp.headings_source_sort = xrow
-                    for cidx, head_code in enumerate(grp.headings_source_sort):
+                    # Its a HEADING row
+
+                    # first create a list in headings in original file order, cleaned
+                    grp.headings_source_sort = []
+                    for didx, raw_head_code in enumerate(xrow):
+                        cleaned_head_code, errs = ags4.validate_code(raw_head_code, lidx=lidx, cidx=didx+1)
+                        self.add_errors(errs)
+                        grp.headings_source_sort.append(cleaned_head_code)
+
+                    # next loop the headings, create `OGTHeading objects` and add to group
+                    for didx, head_code in enumerate(grp.headings_source_sort):
                         ogr = ogt_group.OGTHeading(ogtGroup=grp)
-                        ogr.set_head_code(xrow[cidx], ridx, cidx)
+                        ogr.set_head_code(head_code, ridx, didx)
                         grp.headings[head_code] = ogr
 
+                        # Validate heading
+                        # TODO validate custom headings first
+                        errs = ags4.validate_heading_code(head_code, lidx=lidx, cidx=didx+1)
+                        self.add_errors(errs)
+
                 elif descriptor == ags4.AGS4.UNIT:
-                    for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.headings[head_code].set_unit(xrow[cidx], ridx, cidx)
+                    # a UNIT row
+                    for didx, head_code in enumerate(grp.headings_source_sort):
+                        grp.headings[head_code].set_unit(xrow[didx], ridx, didx)
 
                 elif descriptor == ags4.AGS4.TYPE:
-                    for cidx, head_code in enumerate(grp.headings_source_sort):
-                        grp.headings[head_code].set_type(xrow[cidx], ridx, cidx)
+                    # a TYPE row
+                    for didx, head_code in enumerate(grp.headings_source_sort):
+                        grp.headings[head_code].set_type(xrow[didx], ridx, didx)
 
                 elif descriptor == ags4.AGS4.DATA:
+                    # a DATA row
                     dic = {}
-                    for cidx, head_code in enumerate(grp.headings_source_sort):
-                        dic[head_code] = xrow[cidx]
+                    for didx, head_code in enumerate(grp.headings_source_sort):
+                        dic[head_code] = xrow[didx]
                     grp.data.append( dic )
 
         #print self.error_rows

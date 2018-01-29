@@ -114,7 +114,7 @@ class XTreeWidgetItem(QtGui.QTreeWidgetItem):
         if bg:
             self.set_bg(cidx, bg)
         if fg:
-            self.set_bg(cidx, fg)
+            self.set_fg(cidx, fg)
 
         if align:
             self.setTextAlignment(cidx, align)

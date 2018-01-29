@@ -183,7 +183,7 @@ class OGTGroupWidget( QtGui.QWidget ):
             v_labels.append( str(ridx + 1) )
 
             for cidx, heading in enumerate(self.ogtGroup.headings_list()):
-                #print hrec, row
+                #print heading
                 item = QtGui.QTableWidgetItem()
                 item.setText(row[heading.head_code])
                 self.table.setItem(ridx + 1, cidx, item)

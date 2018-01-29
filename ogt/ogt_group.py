@@ -234,6 +234,9 @@ class OGTHeading:
         self.unit_cell = None
         self.type_cell = None
 
+    def __repr__(self):
+        return "OGTHeading `%s`>" % self.head_code
+
     @property
     def head_description(self):
 

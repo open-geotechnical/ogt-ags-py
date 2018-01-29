@@ -54,9 +54,12 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.splitter = QtGui.QSplitter()
         self.tabWidget.addTab(self.splitter, "Grid View")
 
+        sty = "QTableView {gridline-color: #dddddd;}"
         self.tableWidget = QtGui.QTableWidget()
         self.splitter.addWidget(self.tableWidget)
         self.tableWidget.itemSelectionChanged.connect(self.on_select_changed)
+        self.tableWidget.setStyleSheet(sty)
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
 
         self.errorsWidget = OGTErrorsWidget()
         self.errorsWidget.setFixedWidth(400)
@@ -77,8 +80,11 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
         for ridx, row in enumerate(doco.csv_rows):
 
+            # each csv_row is not the same, so extend here
             if self.tableWidget.columnCount() < len(row):
                 self.tableWidget.setColumnCount(len(row))
+
+
             #errs = doco.error_cells.get(ridx)
             #print ridx, errs
             bg = None
@@ -88,19 +94,18 @@ class OGTSourceViewWidget( QtGui.QWidget ):
                 #    bg = bg_color(cell)
                 item = xwidgets.XTableWidgetItem()
                 item.setText( cell )
+                item.set_bg("#EAFFE0")
                 self.tableWidget.setItem(ridx, cidx, item)
+
 
                 errs = doco.get_errors(lidx=ridx, cidx=cidx)
                 if errs != None:
-                    s = []
                     for er in errs:
                         if er.cidx == cidx:
                             item.set_bg(er.bg)
-                            s.append(er.message)
-                    if len(s) > 0:
-                        item.setToolTip("\n".join(s))
                 ## color the row
                 #item.setBackgroundColor(QtGui.QColor(bg))
+            self.tableWidget.setRowHeight(ridx, 20)
 
     def select_cell(self, lidx, cidx):
         self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tableWidget))
@@ -112,6 +117,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
     def on_select_changed(self):
         item = self.tableWidget.currentItem()
         if item == None:
+            self.errorsWidget.select_items(None, None)
             return
 
         self.errorsWidget.select_items(item.row(), item.column())
@@ -304,8 +310,10 @@ class C_ERR:
     err = 0
     lidx = 1
     cidx = 2
-    descr = 3
-    search = 4
+    rule = 3
+    highlight = 4
+    descr = 5
+    search = 6
 
 class OGTErrorsWidget( QtGui.QWidget ):
 
@@ -331,17 +339,23 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
         self.tree.setRootIsDecorated(False)
         self.tree.header().setStretchLastSection(True)
+        self.tree.setSortingEnabled(True)
 
         hi = self.tree.headerItem()
         hi.setText(C_ERR.err, "Type")
         hi.setText(C_ERR.lidx, "Line")
-        hi.setText(C_ERR.cidx, "Column")
+        hi.setText(C_ERR.cidx, "Col")
+        hi.setText(C_ERR.rule, "Rule")
+        hi.setText(C_ERR.highlight, "Rule")
         hi.setText(C_ERR.descr, "Description")
         hi.setText(C_ERR.search, "search")
 
+        self.tree.setColumnHidden(C_ERR.err, True)
         self.tree.setColumnHidden(C_ERR.search, True)
         self.tree.setColumnWidth(C_ERR.lidx, 50)
         self.tree.setColumnWidth(C_ERR.cidx, 50)
+        self.tree.setColumnWidth(C_ERR.rule, 50)
+        self.tree.setColumnWidth(C_ERR.highlight, 8)
 
         self.tree.itemClicked.connect(self.on_tree_item_clicked)
 
@@ -361,24 +375,34 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
             item = xwidgets.XTreeWidgetItem()
             item.set(C_ERR.err, "Error" if er.error else "Warning", bg=er.bg)
-            item.set(C_ERR.descr, er.message )
+            item.set(C_ERR.descr, er.message, bg=er.bg )
             item.set(C_ERR.lidx, er.line_no, align=Qt.AlignCenter)
             item.set(C_ERR.cidx, er.column_no, align=Qt.AlignCenter)
-            #item.setIcon(C_EG.file_name, Ico.icon(Ico.Ags4))
+            item.set(C_ERR.rule, "-" if er.rule == None else er.rule, align=Qt.AlignCenter)
             item.set(C_ERR.search, "%s-%s" % (er.lidx, er.cidx) )
             self.tree.addTopLevelItem(item)
 
         #self.tree.sortByColumn(C_ERR.lidx, Qt.AscendingOrder)
 
     def on_tree_item_clicked(self, item, col):
-
         self.sigGotoSource.emit(item.i(C_ERR.lidx) - 1, item.i(C_ERR.cidx) - 1)
 
 
     def select_items(self, ridx, cidx):
-        search = "%s-%s" % (ridx, cidx)
-        items = self.tree.findItems(search, Qt.MatchExactly, C_ERR.search)
-        if len(items) > 0:
-            self.tree.blockSignals(True)
-            self.tree.setCurrentItem(items[0])
-            self.tree.blockSignals(False)
+        print "select_items", ridx, cidx
+        self.tree.blockSignals(True)
+
+        # clear selection and  hightlight colors
+        self.tree.clearSelection()
+        root = self.tree.invisibleRootItem()
+        for i in range(0, root.childCount()):
+            root.child(i).set_bg(C_ERR.highlight, "white")
+
+        if ridx != None and cidx != None:
+            # search and hightlight row/col if any
+            search = "%s-%s" % (ridx, cidx)
+            items = self.tree.findItems(search, Qt.MatchExactly, C_ERR.search)
+            if len(items) > 0:
+                for item in items:
+                    item.set_bg(C_ERR.highlight, "purple")
+        self.tree.blockSignals(False)

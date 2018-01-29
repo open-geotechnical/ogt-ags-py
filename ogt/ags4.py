@@ -140,7 +140,8 @@ class AGS4_DataDict:
         ]
 
 
-
+    def heading_valid(self, head_code):
+        parts = head_code.split("_")
 
 AGS4 = AGS4_DataDict()
 """Global Instance """
@@ -889,3 +890,59 @@ def validate_descriptor(des, lidx=None, cidx=None):
     if des in AGS4.descriptors():
         return None
     return OgtError("Invalid descriptor `%s` not found" % des, error=True, cidx=cidx, lidx=lidx)
+
+A2Z = "ABCDEFGHIJKLMNOPQRSTUVWZYZ"
+NUMBERS = "0123456789"
+CHARS = A2Z + NUMBERS
+
+def validate_group_code(group_code, lidx=None, cidx=None):
+    """Rule 19 Group Heading"""
+
+    # first check lengths
+    lenny = len(group_code)
+    if lenny == 0:
+        # no group code so get outta here
+        return [OgtError("Invalid GROUP, needs one char at least `%s`" % group_code,
+                         error=True, cidx=cidx, lidx=lidx, rule=19)]
+
+    if lenny > 4:
+        return [OgtError("Invalid GROUP, longer then four chars `%s`" % group_code, error=True, cidx=cidx, lidx=lidx, rule=19)]
+
+
+    # check characters are valid
+    errs = []
+    for idx, char in enumerate(group_code):
+        if char in A2Z or char in NUMBERS:
+            # ok
+            pass
+        else:
+            errs.append(OgtError("Illegal char in  GROUP position %s `%s`" % (idx+1, group_code), error=True, cidx=cidx, lidx=lidx, rule=19))
+    if len(errs) > 0:
+        return errs
+
+    return []
+
+def validate_heading_code(head_code, lidx=None, cidx=None):
+    """Validate heading"""
+    errs = []
+    if not "_" in head_code:
+        errs.append( OgtError("Invalid HEADING requires a _ `%s` not found" % head_code, error=True, cidx=cidx, lidx=lidx))
+        # cannot continue ??
+        return errs
+
+    ## split the heading into group + remainder
+    group_code, head_part = head_code.split("_")
+
+    # validate the group part
+    errs = validate_group_code(group_code, lidx=lidx, cidx=cidx)
+    if len(errs) > 0:
+        # assume we cannot continue
+        return errs
+
+    if len(head_code) > 9:
+        return [OgtError("Invalid HEADING > 9 chars `%s`" % head_code,
+                     error=True, cidx=cidx, lidx=lidx, rule="19a")]
+    if len(head_code) == 0:
+        return OgtError("Invalid HEADING needa at least onc char `%s`" % head_code, error=True, cidx=cidx, lidx=lidx, rule="19a")
+
+    return None
