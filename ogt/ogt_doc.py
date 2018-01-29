@@ -211,6 +211,8 @@ class OGTDocument:
         if not lidx in self.error_rows:
             self.error_cells[lidx] = {}
         """
+        if er == None:
+            return
        # print er
         if not er.lidx in self.error_cells:
             self.error_cells[er.lidx] = {}
@@ -220,6 +222,8 @@ class OGTDocument:
         self.error_cells[er.lidx][er.cidx].append(er)
 
     def add_errors(self, errs):
+        if len(errs) == 0:
+            return
         for e in errs:
             #if not e.lidx in self.error_rows:
             self.add_error(e)
@@ -763,11 +767,15 @@ class OGTDocument:
                 continue
 
             else:
-                # first item is data descriptor
+
+                # first item is data descriptor, but check code is valid (whitespace etc)
                 cleaned_code, errs = ags4.validate_code(row[0], lidx=lidx, cidx=0)
-                #print "===", cleaned_code, errs
-                if len(errs) > 0:
-                    self.add_errors(errs)
+                self.add_errors(errs)
+
+                # Check tis a valid descriptor
+                er = ags4.validate_descriptor(cleaned_code, lidx=lidx, cidx=0)
+                self.add_error(er)
+
 
                 if cleaned_code == ags4.AGS4.GROUP:
 
@@ -775,17 +783,17 @@ class OGTDocument:
                     if loop_grp != None:
                         loop_grp.csv_end_index = lidx
 
-
-                    ## we got a new group
+                    ## we got a new group, check group has ucase, no whitespace etc
                     gcode, errs = ags4.validate_code(row[1], lidx=lidx, cidx=1)
                     if len(errs) > 0:
                         self.add_errors(errs)
+
                     loop_grp = ogt_group.OGTGroup(gcode)
                     loop_grp.csv_start_index = lidx
                     self.append_group(loop_grp)
 
         #print "===GROUPS===", sorted(self.groups.keys())
-        print "ERRORS=", self.error_cells
+        #print "ERRORS=", self.error_cells
         # thirdly
         # - we parse each group's csv rows into the parts
         for group_code, grp in self.groups.iteritems():
@@ -799,12 +807,13 @@ class OGTDocument:
                     # empty row
                     continue
 
-                descriptor = row[0]
-                err = ags4.AGS4.validate_descriptor(descriptor)
+                # We already validated descriptiors above
+                descriptor = row[0].strip().upper()
+                #err = ags4.AGS4.validate_descriptor(descriptor)
                 #print "err=", descriptor, err
-                if err != None:
+                #if err != None:
                     # todo add to errors
-                    pass
+                #    pass
                 xrow = row[1:] # row without data descriptor
 
                 if descriptor == ags4.AGS4.GROUP:

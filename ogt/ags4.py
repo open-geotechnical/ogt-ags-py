@@ -139,12 +139,7 @@ class AGS4_DataDict:
             AGS4_DataDict.GROUP, AGS4_DataDict.HEADING, AGS4_DataDict.UNIT, AGS4_DataDict.TYPE, AGS4_DataDict.DATA
         ]
 
-    @staticmethod
-    def validate_descriptor(des):
 
-        if des in AGS4.descriptors():
-            return None
-        return "Invalid descriptor `%s` not found"
 
 
 AGS4 = AGS4_DataDict()
@@ -884,8 +879,13 @@ def validate_code(raw_code, lidx=None, cidx=None):
 
     ucode = code.upper()
     if ucode != code:
-        e = OgtError("Lower space characters `%s`" % code, error=True, cidx=cidx, lidx=lidx)
+        e = OgtError("Lower space characters `%s`" % code, error=False, cidx=cidx, lidx=lidx)
         err_list.append(e)
 
     return ucode, err_list
 
+def validate_descriptor(des, lidx=None, cidx=None):
+    """Check its one of GROUP, UNIT, DATA, etc"""
+    if des in AGS4.descriptors():
+        return None
+    return OgtError("Invalid descriptor `%s` not found" % des, error=True, cidx=cidx, lidx=lidx)
