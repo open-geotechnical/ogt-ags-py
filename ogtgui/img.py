@@ -61,6 +61,8 @@ class Ico:
     AgsHeading = "layout_header.png"
     AgsNotes = "note.png"
 
+    Busy = "arrow_in.png"
+
     Clear = "control.png"
 
     Document = "blue-folder-open-document.png"

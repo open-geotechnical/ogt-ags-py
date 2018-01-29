@@ -75,6 +75,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.proxy.setSourceModel(G.ags.modelGroups)
         self.proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
 
+
         ##===============================================
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -107,7 +108,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.comboSearchFor.addItem("Code", CG.code)
         self.comboSearchFor.addItem("Description", CG.description)
         self.comboSearchFor.addItem("Code + Description", CG.search)
-
+        self.comboSearchFor.setMaximumWidth(150)
         # clear button
         self.buttClear = xwidgets.ClearButton(self, callback=self.on_clear_filter)
         grpFilter.addWidget(self.buttClear)
@@ -117,6 +118,8 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.txtFilter.setMaximumWidth(100)
         grpFilter.addWidget(self.txtFilter, )
         self.txtFilter.textChanged.connect(self.on_txt_changed)
+
+        grpFilter.layout.addStretch(3)
 
         ##================================
         ## Classification Tree
@@ -195,7 +198,8 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
     def init(self):
         print "init", self
 
-
+    def on_proxy_changed(self, tl, br):
+        print "changes", tl, br
 
     #=========================================
     def on_groups_tree_selected(self, sel=None, desel=None):
@@ -231,8 +235,19 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
         cidx = self.comboSearchFor.itemData(self.comboSearchFor.currentIndex()).toInt()[0]
         self.proxy.setFilterKeyColumn(cidx)
-        self.proxy.setFilterFixedString(self.txtFilter.text())
 
+        txt = str(self.txtFilter.text()).strip()
+        if "_" in txt:
+            grp_code, _ = txt.split("_")
+        else:
+            grp_code = txt
+        self.proxy.setFilterFixedString(grp_code)
+
+        if self.proxy.rowCount() == 1:
+
+            # TODO
+            # #self.tree.selectionModel().select(self.proxy.index(0,0))
+            pass
 
 
     def on_clear_filter(self):

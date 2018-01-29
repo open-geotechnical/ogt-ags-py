@@ -151,7 +151,14 @@ class MainWindow( QtGui.QMainWindow ):
         self.stackWidget = QtGui.QStackedWidget()
         centralLayout.addWidget(self.stackWidget)
 
-
+        # create a progress dialog and hide
+        self.progressDialog = QtGui.QProgressDialog()
+        self.progressDialog.setMinimumWidth(300)
+        self.progressDialog.setWindowIcon(Ico.icon(Ico.Busy))
+        self.progressDialog.setRange(0, 0)
+        self.progressDialog.setCancelButton(None)
+        self.progressDialog.setModal(True)
+        self.progressDialog.hide()
 
         #=========================================
         # Seutp basic window dims, and restore
@@ -164,6 +171,8 @@ class MainWindow( QtGui.QMainWindow ):
         QtCore.QTimer.singleShot(200, self.on_after)
 
 
+
+
     def on_after(self):
         #self.examplesWidget.load()
         #print "on_after", self, G.args.dev
@@ -172,14 +181,15 @@ class MainWindow( QtGui.QMainWindow ):
         #G.Ags.load()
         if G.args.dev:
             self.on_browse_ags4()
-
+            pass
 
 
         #fnn = "AGS4-Example.ags"
         #self.load_ags4_example(fnn)
         #fn =  "/home/ogt/AGS4-example-wrd.ags"
-        fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
-        self.load_ags4_file(fn)
+        if G.args.dev:
+            fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
+            #self.load_ags4_file(fn)
 
 
 
@@ -238,6 +248,9 @@ class MainWindow( QtGui.QMainWindow ):
                     self.tabBar.setCurrentIndex(idx)
                     return
 
+        self.progressDialog.setWindowTitle("Loading...")
+        self.progressDialog.setLabelText(file_path)
+        self.progressDialog.show()
 
         self.add_history(file_path)
         #print "load_ags4_file", file_path, self
@@ -245,6 +258,8 @@ class MainWindow( QtGui.QMainWindow ):
         proj.load_ags4_file(file_path)
         #print proj
         self.load_widget(proj, os.path.basename(file_path), ico=Ico.Project)
+
+        self.progressDialog.hide()
 
     def add_history(self, file_path):
         history = G.settings.get_list("history")

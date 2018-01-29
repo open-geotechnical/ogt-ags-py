@@ -211,7 +211,7 @@ class OGTGroupWidget( QtGui.QWidget ):
                         self.table.cellWidget(0, cidx).set_link(True)
                         item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
 
-
+                self.table.setRowHeight(ridx + 1, 25)
         # resize columns, with max_width
         col_width = 200
 

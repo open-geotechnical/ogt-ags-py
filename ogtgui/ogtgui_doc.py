@@ -69,7 +69,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
     #         widget = self.load_group(dic)
 
 
-    def load_ags4_file(self, file_path):
+    def deadload_ags4_file(self, file_path):
 
         self.file_path = None
 
@@ -93,7 +93,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
     def load_group(self, ogtGrp):
         #print "load_group", ogtGrp, self
         widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
-        idx = self.tabBar.addTab( ogtGrp.group_code)
+        idx = self.tabBar.addTab( "%s - %s " % (ogtGrp.group_code, ogtGrp.data_rows_count()) )
         if ogtGrp.data_dict():
             descr = ogtGrp.group_description
             self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)

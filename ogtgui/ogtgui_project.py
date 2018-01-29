@@ -209,9 +209,14 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         hi.setText(CP.group_code, "Group")
         hi.setText(CP.group_description, "Description")
         hi.setText(CP.node, "Rows")
-        hi.setTextAlignment(CP.node, Qt.AlignCenter)
+        hi.setTextAlignment(CP.node, Qt.AlignRight)
         self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
         self.dockGroups.setWidget(self.tree)
+
+        self.tree.setColumnWidth(CP.node, 40)
+        self.tree.setColumnWidth(CP.group_code, 70)
+        self.tree.setMinimumWidth(300)
+
 
         centralWidget = QtGui.QWidget()
         centralLay = xwidgets.vlayout()
@@ -242,6 +247,8 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
             item.set(CP.node, str(g.data_rows_count()), align=Qt.AlignRight)
             self.tree.addTopLevelItem(item)
+
+
 
         self.errorsWidget.load_document(self.ogtDoc)
 
