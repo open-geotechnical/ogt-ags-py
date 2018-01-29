@@ -748,3 +748,12 @@ def validate_heading_ags(head_code, lidx=None, cidx=None):
     return OgtError("HEADING `%s` not found in GROUP `%s`" % (head_code, group_code), error=True, cidx=cidx, lidx=lidx, rule="9")
 
 
+def validate_type_ags(typ, lidx=None, cidx=None):
+
+    types = AGS4.types_dict()
+    if types.has_key(typ):
+        return None
+
+    return OgtError("TYPE `%s` not ing AGS4 " % (typ), error=True, cidx=cidx, lidx=lidx, rule="TODO")
+
+

@@ -861,6 +861,10 @@ class OGTDocument:
                     for didx, head_code in enumerate(grp.headings_source_sort):
                         clean_str, errs = ags4.validate_clean_str(xrow[didx], lidx=lidx, cidx=didx+1)
                         self.add_errors(errs)
+
+                        ## Aae there custom types ??
+                        errs = ags4.validate_type_ags(clean_str, lidx=lidx, cidx=didx+1)
+                        self.add_errors(errs)
                         grp.headings[head_code].set_type(clean_str, iidx, didx)
 
                 elif descriptor == ags4.AGS4.DATA:

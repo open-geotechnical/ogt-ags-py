@@ -55,7 +55,7 @@ class AGS4DataDictBrowser( QtGui.QWidget ):
 
         # load data dict
         G.ags.init_load()
-        self.tabWidget.setCurrentIndex(1)
+        #self.tabWidget.setCurrentIndex(1)
 
         self.agsGroupsWidget.set_focus()
 

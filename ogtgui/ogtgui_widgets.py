@@ -338,8 +338,6 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
         self.debug = False
 
-
-
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0,0,0,0)
@@ -374,18 +372,11 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.tree.itemClicked.connect(self.on_tree_item_clicked)
 
 
-
-
-
     def load_document(self, ogtDoc):
 
 
         #print ogtDoc.error_rows
         for er in ogtDoc.get_errors_list():
-
-            #errs = ogtDoc.error_rows[lidx]
-
-            #for er in errs:
 
             item = xwidgets.XTreeWidgetItem()
             item.set(C_ERR.err, "Error" if er.error else "Warning", bg=er.bg)
