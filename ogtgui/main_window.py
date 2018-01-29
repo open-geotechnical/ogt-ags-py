@@ -166,7 +166,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     def on_after(self):
         #self.examplesWidget.load()
-        print "on_after", self, G.args.dev
+        #print "on_after", self, G.args.dev
         #self.on_ags4_browse()
 
         #G.Ags.load()

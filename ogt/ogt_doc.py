@@ -774,7 +774,7 @@ class OGTDocument:
             else:
 
                 # first item is data descriptor, but check code is valid (whitespace etc)
-                cleaned_code, errs = ags4.validate_code(row[0], lidx=lidx, cidx=0)
+                cleaned_code, errs = ags4.validate_clean_str(row[0], lidx=lidx, cidx=0)
                 self.add_errors(errs)
 
                 # Check tis a valid descriptor
@@ -789,7 +789,7 @@ class OGTDocument:
                         loop_grp.csv_end_index = lidx
 
                     ## we got a new group, check group has ucase, no whitespace etc
-                    gcode, errs = ags4.validate_code(row[1], lidx=lidx, cidx=1)
+                    gcode, errs = ags4.validate_clean_str(row[1], lidx=lidx, cidx=1)
                     if len(errs) > 0:
                         self.add_errors(errs)
 
@@ -831,7 +831,7 @@ class OGTDocument:
                     # first create a list in headings in original file order, cleaned
                     grp.headings_source_sort = []
                     for didx, raw_head_code in enumerate(xrow):
-                        cleaned_head_code, errs = ags4.validate_code(raw_head_code, lidx=lidx, cidx=didx+1)
+                        cleaned_head_code, errs = ags4.validate_clean_str(raw_head_code, lidx=lidx, cidx=didx+1)
                         self.add_errors(errs)
                         grp.headings_source_sort.append(cleaned_head_code)
 
@@ -859,7 +859,9 @@ class OGTDocument:
                 elif descriptor == ags4.AGS4.TYPE:
                     # a TYPE row
                     for didx, head_code in enumerate(grp.headings_source_sort):
-                        grp.headings[head_code].set_type(xrow[didx], iidx, didx)
+                        clean_str, errs = ags4.validate_clean_str(xrow[didx], lidx=lidx, cidx=didx+1)
+                        self.add_errors(errs)
+                        grp.headings[head_code].set_type(clean_str, iidx, didx)
 
                 elif descriptor == ags4.AGS4.DATA:
                     # a DATA row

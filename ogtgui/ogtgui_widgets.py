@@ -8,10 +8,11 @@ import collections
 
 from Qt import QtGui, QtCore, Qt, pyqtSignal
 
-from  . import xwidgets
-from .img import Ico
+import xwidgets
+from img import Ico
 from ogt import ags4
 
+import app_globals as G
 
 def bg_color(descr):
     if descr == ags4.AGS4.GROUP:
@@ -36,6 +37,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
+        self.setObjectName("OGTSourceViewWidget")
 
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -51,8 +53,14 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.tabWidget.addTab(self.sourceView, "Raw Text")
 
         # Grid view
+        widget = QtGui.QWidget()
+        gridLay = xwidgets.vlayout()
+        widget.setLayout(gridLay)
+        self.tabWidget.addTab(widget, "Grid View")
+
         self.splitter = QtGui.QSplitter()
-        self.tabWidget.addTab(self.splitter, "Grid View")
+        self.splitter.setObjectName(self.objectName() + "grid_splitter")
+        gridLay.addWidget(self.splitter)
 
         sty = "QTableView {gridline-color: #dddddd;}"
         self.tableWidget = QtGui.QTableWidget()
@@ -66,8 +74,14 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.splitter.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.select_cell)
 
+        G.settings.restore_splitter(self.splitter)
+        self.splitter.splitterMoved.connect(self.on_splitter_moved)
 
         self.tabWidget.setCurrentIndex(1)
+
+
+    def on_splitter_moved(self, i, pos):
+        G.settings.save_splitter(self.splitter)
 
     def load_document(self, doco):
 

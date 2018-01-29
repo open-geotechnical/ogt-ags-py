@@ -5,7 +5,7 @@ from operator import itemgetter
 import urllib, urllib2
 import json
 
-from ogt import USER_TEMP, OgtError
+from ogt import PROJECT_ROOT_PATH, OgtError
 import ogt.ogt_doc
 import ogt.utils
 #from ogt import utils, EXAMPLES_DIR
@@ -14,7 +14,7 @@ def ags4dd_file():
     """
     :return: str with path to the `ags4.min.json` data dict file
     """
-    return os.path.join(USER_TEMP, "ags4.min.json")
+    return os.path.join(PROJECT_ROOT_PATH, "static", "ags-4.0.4.json")
 
 
 
@@ -40,11 +40,14 @@ class AGS4_DataDict:
 
         self.initialise()
 
+    """
     def update(self):
-        """Downloads data dict file from online
-
-        :return: An error if one occured,  else None
-        """
+        #Downloads data dict file from online
+        #
+        #:return: An error if one occured,  else None
+        #TODO later
+        #
+        return
         if not os.path.exists(USER_TEMP):
             os.makedirs(USER_TEMP)
 
@@ -68,25 +71,25 @@ class AGS4_DataDict:
 
             ogt.utils.write_file(os.path.join(USER_TEMP, blobby), txt)
         return None
-
+    """
 
 
     def initialise(self):
         """Check env is sane and loads the ags data dict file"""
-        if not os.path.exists(USER_TEMP):
-            os.makedirs(USER_TEMP)
+        #if not os.path.exists(USER_TEMP):
+        #    os.makedirs(USER_TEMP)
 
         if not os.path.exists(ags4dd_file()):
             return "Missing ags4 data dict"
 
         self._data, err = ogt.utils.read_json_file(ags4dd_file())
-        #print self._data.keys()
+
         if err:
             return err
 
         self._abbrs = self._data['abbrs']
         self._groups = self._data['groups']
-        self._types = self._data['data_types']
+        self._types = self._data['types']
         self._units = self._data['units']
 
         return None
@@ -114,7 +117,7 @@ class AGS4_DataDict:
     def types_dict(self):
         dic = {}
         for t in  self._types:
-            dic[t['data_type']] = t['description']
+            dic[t['type']] = t['description']
         return dic
 
 
@@ -124,19 +127,15 @@ class AGS4_DataDict:
     def picklist(self, head_code):
         return self._abbrs.get(head_code).get("abbrs")
 
-    def deaddata_types(self):
-        return self._data_types
+
 
 
 
     def type(self, abbr_code):
         if self._types_lookup_cache == None:
             self._types_lookup_cache = {}
-            #typs = AGS4_DD.get("data_types")
-            #print self._data_types
             for typ in self._types:
-                #print "typ=", typ
-                self._types_lookup_cache[typ['data_type']] = typ
+                self._types_lookup_cache[typ['type']] = typ
         return self._types_lookup_cache.get(abbr_code)
 
     @staticmethod
@@ -395,36 +394,7 @@ class Problem:
     def __repr__(self):
         return "<Problem rule=%s row=%s col=%s m=%s>" % (self.rule, self.row, self.column, self.message)
 
-def run_tests(rules):
-    """Run tests on files in ags4_tests/
 
-    :param rules: A list of test to run eg [7 8 9]. Empty = all
-    :type rule: list of int's
-    :rtype: tuple
-    :return:
-
-        - A list of ags errors
-        - A list of system errors
-    """
-
-
-    files, err = ogt.utils.list_examples("ags4_tests")
-    if err:
-        return None, err
-
-    summary = []
-    for ags_file in files:
-        #print "-----------------------"
-        print "file=", ags_file
-        # print "-----------------------"
-
-        report, err = validate_ags4_file(ags_file)
-        print report, err
-
-        summary.append(report)
-
-    s = summary_to_string(summary)
-    return s, None
 
 def summary_to_string(summary):
     #line = "=".repeat(30)
@@ -435,7 +405,7 @@ def summary_to_string(summary):
 
     return ret
 
-def validate_ags4_file(file_path, rules=[]):
+def DEADvalidate_ags4_file(file_path, rules=[]):
 
     #print "rules=", rules
 
@@ -639,218 +609,24 @@ def rule_2(doc):
     return problems, errors
 
 
-def rule_3(descriptor):
-    """Validate  :ref:`www:ags4_rule_3`
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    #problems = []
-    #report = []
-    #errors = []
-
-    #if isinstance()
-    descriptor
-
-    #descriptors = AGS.list()
-    ## .. TODO
-    """
-    for lidx, row in enumerate(doc.csv_rows):
-        if len(row) > 0:
-            if row[0] not in descriptors:
-                #report.append("Invalid descriptor `%s` line %s has " % (row[0], lidx+1))
-                p = Problem(row=lidx)
-                p.message = "Invalid descriptor"
-                p.data = row[0]
-                problems.append(p)
-
-    return problems, errors
-    """
-
-def rule_4(doc):
-    """Validate  :ref:`www:ags4_rule_4`
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    problems = []
-    #report = []
-    errors = []
 
 
-    ## The GROUP row contains only one DATA item, the GROUP name, in addition to the Data
-    for idx, row in enumerate(doc.csv_rows):
-        lenny = len(row)
-        if lenny > 0:
-
-            if row[0] == AGS4_DESCRIPTOR.group:
-                if lenny != 2:
-                    g = "?" if lenny == 1 else row[1]
-                    p = Problem(group_code=g, row=idx)
-                    p.message = "Group descriptor has %s items, should be one" % idx + 1
-                    problems.append(p)
-                    #report.append("Group descriptor `%s` at line %s  has %s items, should be one" % (g, idx + 1, lenny - 1))
 
 
-    # All other rows in the GROUP have a number of DATA items defined by the HEADING row.
-    header_len = -1
-    for idx, row in enumerate(doc.csv_rows):
-        lenny = len(row)
-        if lenny == 0:
-            # got a blank line
-            header_len = -1
-
-        if lenny > 0:
-            if row[0] == AGS4_DESCRIPTOR.heading:
-                header_len = lenny
-            if row[0] == AGS4_DESCRIPTOR.data:
-                if header_len != lenny:
-                    p = Problem(row=idx)
-                    p.message = "DATA field's dont match headers"
-                    problems.append(p)
-                    #report.append("DATA field's dont match headers at line %s" % (idx + 1))
 
 
-    return problems, errors
-
-def rule_5(doc):
-    """Validate  :ref:`www:ags4_rule_5`
-
-    .. todo:: Rule 5 validation
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    problems = []
-    errors = []
-
-    errors.append("TODO - csv double quotes")
-
-    return problems, errors
-
-def rule_6(doc):
-    """Validate  :ref:`www:ags4_rule_6`
-
-    .. todo:: Rule 6 validation
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    problems = []
-    errors = []
-
-    errors.append("TODO - comma separated")
-
-    return problems, errors
-
-def rule_7(doc):
-    """Validate  :ref:`ags4_rule_7`
-
-    .. todo:: Rule 7 Field ordering
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    problems = []
-    errors = []
-
-    ## HEADING s shall be in the order described in the AGS4 Data Dictionary
-    for group_code, grp in doc.groups.items():
-
-        if grp.data_dict() == None:
-            print "--------"
-            print group_code
-            print "+++++++++"
-            #ags_sort = grp.data_dict().headings_sort()
-
-            #print grp.headings_sort
-            #sss
 
 
-    return problems, errors
 
-def rule_8(doc):
-    """Validate  :ref:`ags4_rule_8`
-
-    .. todo:: Rule 8 Units
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    problems = []
-    errors = []
-
-    return problems, errors
-
-def rule_9(doc):
-    """Validate  :ref:`ags4_rule_9`
-
-    .. todo:: Rule 9 Data Dictionary
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    problems = []
-    errors = []
-
-    return problems, errors
-
-def rule_10(doc):
-    """Validate  :ref:`ags4_rule_10`
-
-    .. todo:: Rule 10 validation
-
-    :param doc:
-    :type doc: :class:`~ogt.ogt_doc.OGTDocument`
-    :rtype: tuple
-    :return:
-        - a list of ags_errors
-        - a list of sys errors
-    """
-    problems = []
-    errors = []
-
-    return problems, errors
-
-
+EXAMPLES_FILE = os.path.join(PROJECT_ROOT_PATH, "static", "ags4_examples.min.json")
 def examples():
     # TODO check dir exists
-    pth =  os.path.join(USER_TEMP, "ags4_examples.min.json")
-    data, err = ogt.utils.read_json_file(pth)
+
+    data, err = ogt.utils.read_json_file(EXAMPLES_FILE)
     return data, err
 
 def examples_list():
-    # TODO check dir exists
-    pth =  os.path.join(USER_TEMP, "ags4_examples.min.json")
-    data, err = ogt.utils.read_json_file(pth)
+    data, err = ogt.utils.read_json_file(EXAMPLES_FILE)
     if err:
         return None, err
     return [ {"file_name": r['file_name']} for r in data['ags4_examples'] ], None
@@ -865,34 +641,29 @@ def example(file_name):
             return r, None
     return None, "Example `%s` not found " % file_name
 
-"""
-def get_example_dirs():
-    if not os.path.exists(EXAMPLES_DIR):
-        return None, "dir '%s' not exist " % EXAMPLES_DIR
-    return sorted(os.listdir(EXAMPLES_DIR)), None
-"""
 
-def validate_code(raw_code, lidx=None, cidx=None):
-    """Validates adn checks a code eg PROJ, """
+def validate_clean_str(raw_code, upper=True, lidx=None, cidx=None):
+    """Validates and checks a code eg PROJ, """
     err_list = []
 
     ## Check for whitespace
     code = raw_code.strip()
     if code != raw_code:
         if code == raw_code.lstrip():
-            e = OgtError("Leading white Space `%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
+            e = OgtError("Leading white space `%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
             err_list.append(e)
         elif code == raw_code.rstrip():
-            e = OgtError("Trailing white Space `%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
+            e = OgtError("Trailing white space `%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
             err_list.append(e)
         else:
-            e = OgtError("White Space`%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
+            e = OgtError("White space`%s`" % raw_code, error=False, cidx=cidx, lidx=lidx)
             err_list.append(e)
 
-    ucode = code.upper()
-    if ucode != code:
-        e = OgtError("Lower space characters `%s`" % code, error=False, cidx=cidx, lidx=lidx)
-        err_list.append(e)
+    if upper:
+        ucode = code.upper()
+        if ucode != code:
+            e = OgtError("Contains lower chars `%s`" % code, error=False, cidx=cidx, lidx=lidx)
+            err_list.append(e)
 
     return ucode, err_list
 
@@ -900,7 +671,7 @@ def validate_descriptor(des, lidx=None, cidx=None):
     """Check its one of GROUP, UNIT, DATA, etc"""
     if des in AGS4.descriptors():
         return None
-    return OgtError("Invalid descriptor `%s` not found" % des, error=True, cidx=cidx, lidx=lidx)
+    return OgtError("Invalid descriptor `%s` " % des, error=True, cidx=cidx, lidx=lidx, rule=3)
 
 A2Z = "ABCDEFGHIJKLMNOPQRSTUVWZYZ"
 NUMBERS = "0123456789"
