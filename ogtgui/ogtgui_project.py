@@ -96,7 +96,8 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
         if G.args.dev:
-            self.tabBar.setCurrentIndex(3)
+            #self.tabBar.setCurrentIndex(3)
+            pass
 
     def init_load(self):
         pass
@@ -184,22 +185,18 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dockProject)
 
 
-
-
         self.lblProjectPlace = QtGui.QLabel()
         self.lblProjectPlace.setText("project placeholder")
 
         self.dockProject.setWidget(self.lblProjectPlace)
 
 
-
-
         ## Errors
-        self.dockErrors = QtGui.QDockWidget()
-        self.dockErrors.setWindowTitle("Groups")
-        self.dockErrors.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
-        self.dockErrors.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.dockErrors)
+        self.dockGroups = QtGui.QDockWidget()
+        self.dockGroups.setWindowTitle("Groups")
+        self.dockGroups.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.dockGroups.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dockGroups)
 
 
         self.tree = QtGui.QTreeWidget()
@@ -212,12 +209,23 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         hi.setText(CP.group_code, "Group")
         hi.setText(CP.group_description, "Description")
         hi.setText(CP.node, "Rows")
-
+        hi.setTextAlignment(CP.node, Qt.AlignCenter)
         self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
-        self.dockErrors.setWidget(self.tree)
+        self.dockGroups.setWidget(self.tree)
+
+        centralWidget = QtGui.QWidget()
+        centralLay = xwidgets.vlayout()
+        centralWidget.setLayout(centralLay)
+
+        self.setCentralWidget(centralWidget)
+
+        lbl = QtGui.QLabel()
+        lbl.setText("Errors and Warnings")
+        lbl.setStyleSheet("font-weight: bold; padding: 3px; background-color: #eeeeee;")
+        centralLay.addWidget(lbl)
 
         self.errorsWidget = ogtgui_widgets.OGTErrorsWidget()
-        self.setCentralWidget(self.errorsWidget)
+        centralLay.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.on_goto_source)
 
     def load_document(self, ogtDoc):
@@ -228,16 +236,11 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
             #print "===", g.group_description
             item = xwidgets.XTreeWidgetItem()
 
-            item.setText(CP.group_code, g.group_code)
-            f = item.font(CP.group_code)
-            f.setBold(True)
-            item.setFont(CP.group_code, f)
-            item.setIcon(CP.group_code, Ico.icon(Ico.AgsGroup))
+            item.set(CP.group_code, g.group_code, bold=True, ico=Ico.AgsGroup)
 
             item.set(CP.group_description, g.group_description)
 
-            item.setText(CP.node, str(g.data_rows_count()))
-            item.setTextAlignment(CP.node, Qt.AlignRight)
+            item.set(CP.node, str(g.data_rows_count()), align=Qt.AlignRight)
             self.tree.addTopLevelItem(item)
 
         self.errorsWidget.load_document(self.ogtDoc)

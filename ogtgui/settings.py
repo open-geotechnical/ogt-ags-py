@@ -72,7 +72,7 @@ class XSettings( QtCore.QObject ):
         wname = str(splitter.objectName())
         if not wname:
             print "Splitter has no name", splitter
-        self.settings.setValue("splitter/%s" % wname, splitter.saveState())
+        self.qsettings.setValue("splitter/%s" % wname, splitter.saveState())
 
     def restore_splitter(self, splitter):
         wname = str(splitter.objectName())
