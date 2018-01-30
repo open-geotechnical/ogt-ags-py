@@ -180,7 +180,7 @@ class MainWindow( QtGui.QMainWindow ):
 
         #G.Ags.load()
         if G.args.dev:
-            self.on_browse_ags4()
+            #self.on_browse_ags4()
             pass
 
 

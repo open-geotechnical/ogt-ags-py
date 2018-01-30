@@ -88,6 +88,8 @@ class Ico:
 
     Quit = 'control_eject.png'
 
+    Refresh = "arrow_refresh.png"
+
     Schedule = "table-heatmap.png"
     Source = "document-text.png"
     Summary = "page_white_swoosh.png"

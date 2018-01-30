@@ -79,6 +79,12 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
         self.tabWidget.setCurrentIndex(1)
 
+    def clear(self):
+        self.tableWidget.clear()
+        self.tableWidget.setRowCount(0)
+        self.tableWidget.setColumnCount(0)
+        self.sourceView.setText("")
+        self.errorsWidget.clear()
 
     def on_splitter_moved(self, i, pos):
         G.settings.save_splitter(self.splitter)
@@ -155,6 +161,10 @@ class OGTScheduleWidget( QtGui.QWidget ):
         self.mainLayout.addWidget(self.tableWidget)
 
 
+    def clear(self):
+        self.tableWidget.clear()
+        self.tableWidget.setRowCount(0)
+        self.tableWidget.setColumnCount(0)
 
 
     def load_document(self, doco):
@@ -371,12 +381,20 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
         self.tree.itemClicked.connect(self.on_tree_item_clicked)
 
+    def clear(self):
+        self.tree.clear()
 
     def load_document(self, ogtDoc):
 
+        errrs = ogtDoc.get_errors_list()
+        if len(errrs) == 0:
+            item = xwidgets.XTreeWidgetItem()
+            item.set(C_ERR.descr, "Yipee! no errors :-)", bg="#D5FF71")
+            item.setFirstColumnSpanned(True)
+            self.tree.addTopLevelItem(item)
+            return
 
-        #print ogtDoc.error_rows
-        for er in ogtDoc.get_errors_list():
+        for er in errrs:
 
             item = xwidgets.XTreeWidgetItem()
             item.set(C_ERR.err, "Error" if er.error else "Warning", bg=er.bg)
@@ -390,7 +408,11 @@ class OGTErrorsWidget( QtGui.QWidget ):
         #self.tree.sortByColumn(C_ERR.lidx, Qt.AscendingOrder)
 
     def on_tree_item_clicked(self, item, col):
-        self.sigGotoSource.emit(item.i(C_ERR.lidx) - 1, item.i(C_ERR.cidx) - 1)
+        lidx = item.i(C_ERR.lidx) - 1
+        cidx = item.i(C_ERR.cidx) - 1
+        if lidx == None and cidx == None:
+            return
+        self.sigGotoSource.emit(lidx, cidx)
 
 
     def select_items(self, ridx, cidx):

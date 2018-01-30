@@ -741,7 +741,7 @@ def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
     grpdic = AGS4.group(group_code_in)
 
     if grpdic == None:
-        return OgtError("Invalid GROUP `%s` for heading `%s`, not in ags data dict" % (group_code_in,head_code), error=True, cidx=cidx, lidx=lidx, rule="9")
+        return OgtError("Invalid GROUP `%s` for HEADING `%s`, not in ags data dict" % (group_code_in,head_code), error=True, cidx=cidx, lidx=lidx, rule="9")
 
     heads = grpdic.get("headings")
     for h in heads:
@@ -749,7 +749,7 @@ def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
             # Yipee, the head_code is in the origin group
             return None
 
-    #
+    # split the head code amd check source group + heading i that group
     sgroup_code, _ = head_code.split("_")
 
     # check group exists

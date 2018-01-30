@@ -80,6 +80,13 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
         self.load_document(doc)
 
+    def clear(self):
+
+        while self.tabBar.count() > 0:
+            self.tabBar.removeTab(0)
+
+        while self.stackWidget.count() > 0:
+            self.stackWidget.removeWidget(self.stackWidget.widget(0))
 
     def load_document(self, ogtdoc):
 

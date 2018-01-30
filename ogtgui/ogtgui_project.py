@@ -40,11 +40,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.lblHeader.setStyleSheet("background-color: black; color: #dddddd; font-size: 14pt; padding: 3px 5px;")
         self.topLay.addWidget(self.lblHeader, 100)
 
-        self.buttExport = QtGui.QToolButton()
-        self.buttExport.setText("Export..")
-        self.buttExport.setIcon(Ico.icon(Ico.Export))
-        self.buttExport.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self.buttExport.setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.buttExport = xwidgets.XToolButton(label="Export", ico=Ico.Export, menu=True, popup=True)
         self.topLay.addWidget(self.buttExport)
 
         menu =  QtGui.QMenu()
@@ -53,6 +49,12 @@ class OGTProjectWidget( QtGui.QWidget ):
         for a in FORMATS:
             menu.addAction("%s - TODO" % a)
 
+        self.buttReload = xwidgets.XToolButton(label="Reload", ico=Ico.Refresh, popup=True, callback=self.on_reload)
+        #self.buttReload.setText("Relaod")
+        #self.buttReload.setIcon(Ico.icon(Ico.Refresh))
+        #self.buttReload.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        #self.buttReload.setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.topLay.addWidget(self.buttReload)
 
         self.mainLayout.addSpacing(5)
 
@@ -104,6 +106,19 @@ class OGTProjectWidget( QtGui.QWidget ):
 
     def on_tab_changed(self, idx):
         self.stackWidget.setCurrentIndex(idx)
+
+    def on_reload(self):
+
+        fp = self.ogtDoc.source_file_path
+
+        self.ogtSourceViewWidget.clear()
+        self.ogtDocWidget.clear()
+
+        self.ogtScheduleWidget.clear()
+        self.ogtProjSummaryWidget.clear()
+
+        self.ogtDoc = None
+        self.load_ags4_file(fp)
 
     def load_ags4_string(self, contents, file_name):
 
@@ -232,6 +247,11 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.errorsWidget = ogtgui_widgets.OGTErrorsWidget()
         centralLay.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.on_goto_source)
+
+    def clear(self):
+
+        self.errorsWidget.clear()
+        self.tree.clear()
 
     def load_document(self, ogtDoc):
 

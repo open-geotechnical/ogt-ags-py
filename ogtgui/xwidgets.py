@@ -52,6 +52,64 @@ def label(txt, align=Qt.AlignLeft, bold=False, style=None):
         lbl.setStyleSheet(style)
     return lbl
 
+class XToolButton(QtGui.QToolButton):
+    def __init__( self, parent=None, both=True, callback=None, ico=None,
+                  popup=False, autoRaise=True, menu=False, disabled=False,
+                label=None, text=None, tooltip=None, bold=False, checkable=False,
+                width=None):
+        QtGui.QToolButton.__init__( self, parent )
+
+
+        self.setAutoRaise(autoRaise)
+
+
+        self.setDisabled(disabled)
+
+        if width:
+            self.setFixedWidth(width)
+
+        if both:
+            self.setToolButtonStyle( Qt.ToolButtonTextBesideIcon)
+        else:
+            self.setToolButtonStyle( Qt.ToolButtonIconOnly)
+
+        if checkable:
+            self.setCheckable(True)
+
+        if callback:
+            self.clicked.connect(callback)
+
+        if tooltip:
+            self.setToolTip(tooltip)
+
+        if label:
+            self.setText(label)
+        if text:
+            self.setText(text)
+
+        if bold:
+            self.setBold(True)
+
+        if ico:
+            self.set_ico(ico)
+
+        if popup:
+            self.setPopupMode(QtGui.QToolButton.InstantPopup)
+
+        if menu:
+            self.setMenu(QtGui.QMenu())
+
+    def set_ico(self, ico):
+        self.setIcon(Ico.icon(ico))
+
+    def setBold(self, state=True):
+
+        f = self.font()
+        f.setBold(True)
+        self.setFont(f)
+
+    def set_bg(self, color):
+        self.setStyleSheet("background-color: %s" % color)
 
 
 class XTableWidgetItem(QtGui.QTableWidgetItem):
@@ -145,7 +203,10 @@ class XTreeWidgetItem(QtGui.QTreeWidgetItem):
         self.setIcon(cidx, Ico.icon(ico))
 
     def i(self, cidx):
-        return int(str(self.text(cidx)))
+        try:
+            return int(str(self.text(cidx)))
+        except:
+            return None
 
 class GroupHBox(QtGui.QGroupBox):
 
