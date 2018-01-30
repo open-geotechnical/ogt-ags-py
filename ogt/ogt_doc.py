@@ -6,9 +6,11 @@ import StringIO
 import hashlib
 import zipfile
 
-from . import HAVE_GEOJSON
+from . import HAVE_GEOJSON, HAVE_BNG_LATLON
 if HAVE_GEOJSON:
     import geojson
+
+if HAVE_BNG_LATLON:
     import bng_to_latlon # https://github.com/fmalina/bng_latlon
 
 from . import FORMATS, OgtError
@@ -488,6 +490,8 @@ class OGTDocument:
 
         ## BNG British National grid
         elif grpLoca.has_heading("LOCA_NATE") and grpLoca.has_heading("LOCA_NATN"):
+            if not HAVE_BNG_LATLON:
+                return lst
             for rec in grpLoca.data:
                 #print rec
                 loca_id = rec.get("LOCA_ID")

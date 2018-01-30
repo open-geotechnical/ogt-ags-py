@@ -94,7 +94,14 @@ except ImportError as e:
     pass
 
 
+HAVE_BNG_LATLON = False
+"""`True` if :ref:`excel`  handling libs installed"""
+try:
+    import bng_to_latlon # https://github.com/fmalina/bng_latlon
 
+    HAVE_BNG_LATLON = True
+except ImportError as e:
+    pass
 
 class COLORS:
     noerr_bg = "#D8FFC5"
