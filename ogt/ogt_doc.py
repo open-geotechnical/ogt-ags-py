@@ -848,7 +848,7 @@ class OGTDocument:
                         # TODO validate custom headings first
 
                         # validate heading to ags4
-                        err = ags4.validate_heading_ags(head_code, lidx=lidx, cidx=didx+1)
+                        err = ags4.validate_heading_ags(head_code, grp.group_code, lidx=lidx, cidx=didx+1)
                         self.add_errors(err)
 
                 elif descriptor == ags4.AGS4.UNIT:

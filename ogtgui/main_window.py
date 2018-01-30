@@ -189,7 +189,7 @@ class MainWindow( QtGui.QMainWindow ):
         #fn =  "/home/ogt/AGS4-example-wrd.ags"
         if G.args.dev:
             fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
-            #self.load_ags4_file(fn)
+            self.load_ags4_file(fn)
 
 
 

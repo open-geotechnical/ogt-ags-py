@@ -730,13 +730,30 @@ def validate_heading_str(head_code, lidx=None, cidx=None):
 
     return None
 
-def validate_heading_ags(head_code, lidx=None, cidx=None):
-    """Check the heading is in ags data dict"""
+def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
+    """Check the heading is in ags data dict. This is done by
+         - First check if the heading is in the group (eg SPEC_*)
+         - Then split the HEAD_ING and check the group and the heading in theat group
 
-    group_code, _ = head_code.split("_")
+    """
+    # first get the group that this heading is in
+    # check group exists
+    grpdic = AGS4.group(group_code_in)
+
+    if grpdic == None:
+        return OgtError("Invalid GROUP `%s` for heading `%s`, not in ags data dict" % (group_code_in,head_code), error=True, cidx=cidx, lidx=lidx, rule="9")
+
+    heads = grpdic.get("headings")
+    for h in heads:
+        if head_code == h['head_code']:
+            # Yipee, the head_code is in the origin group
+            return None
+
+    #
+    sgroup_code, _ = head_code.split("_")
 
     # check group exists
-    grpdic = AGS4.group(group_code)
+    grpdic = AGS4.group(sgroup_code)
 
     if grpdic == None:
         return OgtError("Invalid GROUP part of HEADING not in ags data dict `%s`" % head_code, error=True, cidx=cidx, lidx=lidx, rule="9")
@@ -745,7 +762,7 @@ def validate_heading_ags(head_code, lidx=None, cidx=None):
     for h in heads:
         if head_code == h['head_code']:
             return None
-    return OgtError("HEADING `%s` not found in GROUP `%s`" % (head_code, group_code), error=True, cidx=cidx, lidx=lidx, rule="9")
+    return OgtError("HEADING `%s` not found in GROUP `%s`" % (head_code, sgroup_code), error=True, cidx=cidx, lidx=lidx, rule="9")
 
 
 def validate_type_ags(typ, lidx=None, cidx=None):
