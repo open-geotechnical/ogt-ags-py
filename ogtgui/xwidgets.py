@@ -53,9 +53,11 @@ def label(txt, align=Qt.AlignLeft, bold=False, style=None):
     return lbl
 
 class XToolButton(QtGui.QToolButton):
-    def __init__( self, parent=None, both=True, callback=None, ico=None,
+    def __init__( self, parent=None, both=True,  ico=None,
                   popup=False, autoRaise=True, menu=False, disabled=False,
-                label=None, text=None, tooltip=None, bold=False, checkable=False,
+                label=None, text=None, tooltip=None, bold=False,
+                  callback=None, toggledCallback=None,
+                  checkable=False, checked=True,
                 width=None):
         QtGui.QToolButton.__init__( self, parent )
 
@@ -75,9 +77,13 @@ class XToolButton(QtGui.QToolButton):
 
         if checkable:
             self.setCheckable(True)
+        if checked:
+            self.setChecked(True)
 
         if callback:
             self.clicked.connect(callback)
+        if toggledCallback:
+            self.toggled.connect(toggledCallback)
 
         if tooltip:
             self.setToolTip(tooltip)

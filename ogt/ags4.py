@@ -776,3 +776,11 @@ def validate_type_ags(typ, lidx=None, cidx=None):
     return OgtError("TYPE `%s` not ing AGS4 " % (typ), error=True, cidx=cidx, lidx=lidx, rule="TODO")
 
 
+def validate_headings_sort(group_code, cidx=None, lidx=None):
+
+    errs = []
+
+
+
+
+    return errs

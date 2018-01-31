@@ -15,7 +15,6 @@ if HAVE_BNG_LATLON:
 
 from . import FORMATS, OgtError
 import ags4
-import ogt_group
 import ogt.utils
 
 
@@ -881,6 +880,9 @@ class OGTDocument:
                     for didx, head_code in enumerate(grp.headings_source_sort):
                         dic[head_code] = xrow[didx]
                     grp.data.append( dic )
+
+
+            print group_code, grp
 
         #print self.error_rows
 

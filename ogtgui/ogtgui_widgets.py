@@ -11,6 +11,7 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 import xwidgets
 from img import Ico
 from ogt import ags4
+from ogt import ERR_COLORS
 
 import app_globals as G
 
@@ -29,9 +30,13 @@ def bg_color(descr):
 
     return "#ffffff"
 
-
+class FILTER_ROLE:
+    warn = Qt.UserRole + 3
+    err = Qt.UserRole + 5
 class OGTSourceViewWidget( QtGui.QWidget ):
     """The SourceViewWidget info which in row 0 """
+
+
 
     def __init__( self, parent=None):
         QtGui.QWidget.__init__( self, parent )
@@ -73,6 +78,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.errorsWidget.setMinimumWidth(300)
         self.splitter.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.select_cell)
+        self.errorsWidget.sigErrorsFilter.connect(self.update_colours)
 
         G.settings.restore_splitter(self.splitter)
         self.splitter.splitterMoved.connect(self.on_splitter_moved)
@@ -93,8 +99,8 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
         self.sourceView.setText(doco.source)
 
-        self.errorsWidget.load_document(doco)
-
+        show_warn, show_err = self.errorsWidget.get_error_filters()
+        print "filters=", show_warn, show_err
         #print doco.cells()
         self.tableWidget.setRowCount(len(doco.csv_rows))
 
@@ -120,12 +126,43 @@ class OGTSourceViewWidget( QtGui.QWidget ):
 
                 errs = doco.get_errors(lidx=ridx, cidx=cidx)
                 if errs != None:
+                    #print ridx, cidx, errs
                     for er in errs:
+                        #print ridx, cidx, er.error
+                        if er.error:
+                            item.setData(FILTER_ROLE.err, "1")
+                        else:
+                            item.setData(FILTER_ROLE.warn, "1")
+                        """    
                         if er.cidx == cidx:
                             item.set_bg(er.bg)
+                        """
+                    self.set_item_bg(item, show_warn, show_err)
                 ## color the row
                 #item.setBackgroundColor(QtGui.QColor(bg))
             self.tableWidget.setRowHeight(ridx, 20)
+
+
+        self.errorsWidget.load_document(doco)
+
+    def set_item_bg(self, item, show_warn, show_err):
+        has_warn = item.data(FILTER_ROLE.warn).toBool()
+        has_err = item.data(FILTER_ROLE.err).toBool()
+        item.set_bg("white")
+        if show_warn and has_warn:
+            item.set_bg(ERR_COLORS.warn_bg)
+        if show_err and has_err:
+            item.set_bg(ERR_COLORS.err_bg)
+
+
+    def update_colours(self, show_warn, show_err):
+        self.tableWidget.setUpdatesEnabled(False)
+        for ridx in range(0, self.tableWidget.rowCount()):
+            for cidx in range(0, self.tableWidget.columnCount()):
+                item = self.tableWidget.item(ridx, cidx)
+                if item:
+                    self.set_item_bg(item, show_warn, show_err)
+        self.tableWidget.setUpdatesEnabled(True)
 
     def select_cell(self, lidx, cidx):
         self.tabWidget.setCurrentIndex(self.tabWidget.indexOf(self.tableWidget))
@@ -141,6 +178,9 @@ class OGTSourceViewWidget( QtGui.QWidget ):
             return
 
         self.errorsWidget.select_items(item.row(), item.column())
+
+
+
 
 class OGTScheduleWidget( QtGui.QWidget ):
     """The SourceViewWidget info which in row 0 """
@@ -342,6 +382,7 @@ class C_ERR:
 class OGTErrorsWidget( QtGui.QWidget ):
 
     sigGotoSource = pyqtSignal(int, int)
+    sigErrorsFilter = pyqtSignal(bool, bool)
 
     def __init__( self, parent=None):
         QtGui.QWidget.__init__( self, parent )
@@ -353,6 +394,22 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.setLayout(self.mainLayout)
 
+        self.toolBar = QtGui.QToolBar()
+        self.mainLayout.addWidget(self.toolBar)
+
+        self.buttGroupFilters = QtGui.QButtonGroup(self)
+        self.buttGroupFilters.setExclusive(False)
+
+        self.buttWarnings = xwidgets.XToolButton(label="Show Warnings", checkable=True, checked=False)
+        self.buttGroupFilters.addButton(self.buttWarnings)
+
+        self.buttErrors = xwidgets.XToolButton(label="Show Errors", checkable=True, checked=True)
+        self.buttGroupFilters.addButton(self.buttErrors)
+
+        self.buttGroupFilters.buttonClicked.connect(self.on_update_filter)
+
+        self.toolBar.addWidget(self.buttWarnings)
+        self.toolBar.addWidget(self.buttErrors)
 
         #=============================
         ## Set up tree
@@ -397,7 +454,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
         for er in errrs:
 
             item = xwidgets.XTreeWidgetItem()
-            item.set(C_ERR.err, "Error" if er.error else "Warning", bg=er.bg)
+            item.set(C_ERR.err, "1" if er.error else "0")
             item.set(C_ERR.descr, er.message, bg=er.bg )
             item.set(C_ERR.lidx, er.line_no, align=Qt.AlignCenter)
             item.set(C_ERR.cidx, er.column_no, align=Qt.AlignCenter)
@@ -405,7 +462,9 @@ class OGTErrorsWidget( QtGui.QWidget ):
             item.set(C_ERR.search, "%s-%s" % (er.lidx, er.cidx) )
             self.tree.addTopLevelItem(item)
 
-        #self.tree.sortByColumn(C_ERR.lidx, Qt.AscendingOrder)
+        self.on_show_warnings(sig=False)
+        self.on_show_errors(sig=False)
+
 
     def on_tree_item_clicked(self, item, col):
         lidx = item.i(C_ERR.lidx) - 1
@@ -433,3 +492,38 @@ class OGTErrorsWidget( QtGui.QWidget ):
                 for item in items:
                     item.set_bg(C_ERR.highlight, "purple")
         self.tree.blockSignals(False)
+
+    def on_update_filter(self):
+        self.on_show_warnings()
+        self.on_show_errors()
+        self.emit_filters_sig()
+
+    def on_show_warnings(self, sig=True):
+        hidden = self.buttWarnings.isChecked() == False
+        root = self.tree.invisibleRootItem()
+        self.tree.setUpdatesEnabled(False)
+        for ridx in range(0, root.childCount()):
+            if str(root.child(ridx).text(C_ERR.err)) == "0":
+                root.child(ridx).setHidden(hidden)
+        self.tree.setUpdatesEnabled(True)
+        if sig:
+            self.emit_filters_sig()
+
+    def on_show_errors(self, sig=True):
+        hidden = self.buttErrors.isChecked() == False
+        root = self.tree.invisibleRootItem()
+        self.tree.setUpdatesEnabled(False)
+        for ridx in range(0, root.childCount()):
+            if str(root.child(ridx).text(C_ERR.err)) == "1":
+                root.child(ridx).setHidden(hidden)
+        self.tree.setUpdatesEnabled(True)
+        if sig:
+            self.emit_filters_sig()
+
+    def emit_filters_sig(self):
+        self.sigErrorsFilter.emit(self.buttWarnings.isChecked(), self.buttErrors.isChecked())
+
+    def get_error_filters(self):
+        return self.buttWarnings.isChecked(), self.buttErrors.isChecked()
+
+

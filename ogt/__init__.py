@@ -103,7 +103,7 @@ try:
 except ImportError as e:
     pass
 
-class COLORS:
+class ERR_COLORS:
     noerr_bg = "#D8FFC5"
     err_bg = "#FFC5C5"
     warn_bg = "#FFEDC5"
@@ -143,4 +143,4 @@ class OgtError:
     @property
     def bg(self):
         """Background color of error/warning"""
-        return COLORS.err_bg if self.error else COLORS.warn_bg
+        return ERR_COLORS.err_bg if self.error else ERR_COLORS.warn_bg
