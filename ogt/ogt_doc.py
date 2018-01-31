@@ -256,6 +256,15 @@ class OGTDocument:
         return None
 
     def get_errors_list(self):
+
+        lst = []
+        for ridx, row in enumerate(self.cells):
+            for cidx, cell in enumerate(row):
+                lst.extend(cell.errors)
+
+        #print lst
+        return lst
+
         lst = []
         for lidx in sorted(self.error_cells.keys()):
             for cidx in sorted(self.error_cells[lidx].keys()):
@@ -758,14 +767,16 @@ class OGTDocument:
                 rcells.append( OGTCell(lidx=lidx, cidx=cidx, value=val))
             self.cells.append(rcells)
 
+        ###############################======================================================================
         # next walk and clean
-        for ridx, row in enumerate(self.cells):
+        for lidx, row in enumerate(self.cells):
             for cidx, cell in enumerate(row):
-                print "is_descr", cell, cell.cidx
+                #print "is_descr", cell, cell.cidx
                 if cidx == 0:
                     cell.to_upper()
 
-
+                    errs = ags4.validate_descriptor(cell.value, lidx=lidx, cidx=cidx)
+                    self.add_errors(errs)
 
         ## Step 2
         # walk the decoded rows, and recognise the groups
@@ -1238,21 +1249,21 @@ class OGTCell:
         self.cidx = cidx
         self.raw = value
 
-        self.warnings = []
         self.errors = []
-        self.value, errs = ags4.strip_string(self.raw, lidx=lidx, cidx=cidx, cell=self)
+        self.value, errs = ags4.strip_string(self.raw,  cell=self)
         for e in errs:
-            if e.error:
+            self.errors.append(e)
+            """if e.error:
                 self.errors.append(e)
             else:
                 self.warnings.append(e)
-
+            """
         self.descriptior = None
 
     def to_upper(self):
         sup = self.value.upper()
         if sup != self.value:
-            self.warnings.append(OgtError("Lower space chars `%s`" % self.value, error=False,  cell=self))
+            self.errors.append(OgtError("Lower space chars `%s`" % self.value, cell=self, type=OgtError.WARN))
         self.value = sup
 
     def __repr__(self):

@@ -110,9 +110,13 @@ class ERR_COLORS:
 
 class OgtError:
 
-    def __init__(self, message, lidx=None, cidx=None, error=True, rule=None, cell=None):
+    WARN = 0
+    ERR = 1
 
-        self.error = error
+
+    def __init__(self, message, type=1, lidx=None, cidx=None, rule=None, cell=None):
+
+        self.type = type
         """True to flag as error(default), False is a warning"""
 
         self.message = message
@@ -130,19 +134,24 @@ class OgtError:
         self.cell = cell
 
     def __repr__(self):
-        return "<Ogt %s - %s [%s,%s]>" % ("ERR" if self.error else "WARN", self.message, self.lidx, self.cidx)
+        return "<Ogt %s - %s [%s,%s]>" % ("ERR" if self.type else "WARN", self.message, self.lidx, self.cidx)
 
     @property
     def line_no(self):
         """The line no is the line index +1 """
+        if self.cell:
+            return self.cell.lidx + 10
+        if self.lidx == None:
+            return 9999
         return self.lidx + 1
 
     @property
     def column_no(self):
         """The column_no no is the column index +1 """
+        return 22
         return self.cidx + 1
 
     @property
     def bg(self):
         """Background color of error/warning"""
-        return ERR_COLORS.err_bg if self.error else ERR_COLORS.warn_bg
+        return ERR_COLORS.err_bg if self.type else ERR_COLORS.warn_bg

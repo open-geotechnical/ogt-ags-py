@@ -131,7 +131,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
                     #print ridx, cidx, errs
                     for er in errs:
                         #print ridx, cidx, er.error
-                        if er.error:
+                        if er.type:
                             item.setData(FILTER_ROLE.err, "1")
                         else:
                             item.setData(FILTER_ROLE.warn, "1")
@@ -403,7 +403,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.buttGroupFilters = QtGui.QButtonGroup(self)
         self.buttGroupFilters.setExclusive(False)
 
-        self.buttWarnings = xwidgets.XToolButton(label="Show Warnings", checkable=True, checked=False)
+        self.buttWarnings = xwidgets.XToolButton(label="Show Warnings", checkable=True, checked=True)
         self.buttGroupFilters.addButton(self.buttWarnings)
 
         self.buttErrors = xwidgets.XToolButton(label="Show Errors", checkable=True, checked=True)
@@ -457,7 +457,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
         for er in errrs:
 
             item = xwidgets.XTreeWidgetItem()
-            item.set(C_ERR.err, "1" if er.error else "0")
+            item.set(C_ERR.err, "1" if er.type else "0")
             item.set(C_ERR.descr, er.message, bg=er.bg )
             item.set(C_ERR.lidx, er.line_no, align=Qt.AlignCenter)
             item.set(C_ERR.cidx, er.column_no, align=Qt.AlignCenter)
