@@ -89,6 +89,8 @@ class OGTDocument:
         self.opts = OGTDocumentOptions()
         """Set default options :class:`~ogt.ogt_doc.OGTDocumentOptions` """
 
+        self.cells = []
+
     def deadcells(self):
         return self._csv_cells
 
@@ -719,11 +721,13 @@ class OGTDocument:
         #      marking some basic errors
         #   3) parse each group into its headings, units data etc
 
+        ## Copy source as a string into mem here
+        self.source = ags4_str
+
         if file_name:
             self.source_file_path = file_name
 
-        ## Copy source as a string into mem here
-        self.source = ags4_str
+
 
         ## Step 1:
         #  - split ags_string into lines
@@ -739,6 +743,7 @@ class OGTDocument:
                 # append blank line
                 self.lines.append([])
                 self.csv_rows.append([])
+                self.cells.append([])
                 continue
 
             # decode csv line
@@ -748,12 +753,27 @@ class OGTDocument:
             self.lines.append(line)
             self.csv_rows.append(row)
 
+            rcells = []
+            for cidx, val in enumerate(row):
+                rcells.append( OGTCell(lidx=lidx, cidx=cidx, value=val))
+            self.cells.append(rcells)
+
+        # next walk and clean
+        for ridx, row in enumerate(self.cells):
+            for cidx, cell in enumerate(row):
+                print "is_descr", cell, cell.cidx
+                if cidx == 0:
+                    cell.to_upper()
+
+
+
         ## Step 2
         # walk the decoded rows, and recognise the groups
         # and mark the start_index and end index of group
 
         # the pointer used for group
         loop_grp = None
+        print self.cells
 
         # walk the parsed cvs rows
         for lidx, row in enumerate(self.csv_rows):
@@ -1210,6 +1230,33 @@ class OGTGroup:
         return lst
 
 
+class OGTCell:
+
+    def __init__(self, lidx, cidx, value):
+
+        self.lidx = lidx
+        self.cidx = cidx
+        self.raw = value
+
+        self.warnings = []
+        self.errors = []
+        self.value, errs = ags4.strip_string(self.raw, lidx=lidx, cidx=cidx, cell=self)
+        for e in errs:
+            if e.error:
+                self.errors.append(e)
+            else:
+                self.warnings.append(e)
+
+        self.descriptior = None
+
+    def to_upper(self):
+        sup = self.value.upper()
+        if sup != self.value:
+            self.warnings.append(OgtError("Lower space chars `%s`" % self.value, error=False,  cell=self))
+        self.value = sup
+
+    def __repr__(self):
+        return "<Cell [%s,%s] `%s`>" % (self.lidx, self.cidx, self.raw)
 
 class OGTHeading:
 

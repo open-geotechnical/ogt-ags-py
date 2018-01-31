@@ -240,7 +240,6 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         ## Populate header
         HEADER_HEIGHT = 80
-        #print self.ogtGroup.headings
         for cidx, heading in enumerate(self.ogtGroup.headings_list()):
 
             hitem = xwidgets.XTableWidgetItem()
@@ -266,7 +265,7 @@ class OGTGroupWidget( QtGui.QWidget ):
             v_labels.append( str(ridx + 1) )
 
             for cidx, heading in enumerate(self.ogtGroup.headings_list()):
-                #print heading
+
                 #item = QtGui.QTableWidgetItem()
                 #item.setText(row[heading.head_code])
                 #self.tableData.setItem(ridx + 1, cidx, item)
@@ -283,7 +282,7 @@ class OGTGroupWidget( QtGui.QWidget ):
 
 
                 if heading.type == "ID":
-                    #print hrec
+
                     if self.ogtGroup.group_code  == heading.head_code.split("_")[0]:
                         # in same group as heading, so highlight the ID
                         pass #item.setBackgroundColor(QtGui.QColor("#FFF96C"))

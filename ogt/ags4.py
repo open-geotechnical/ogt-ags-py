@@ -650,6 +650,24 @@ def example(file_name):
             return r, None
     return None, "Example `%s` not found " % file_name
 
+def strip_string(raw_str,  lidx=None, cidx=None, cell=None):
+    """Validates and checks a code eg PROJ, """
+    err_list = []
+
+    ## Check for whitespace
+    strippped = raw_str.strip()
+    if strippped != raw_str:
+        if strippped == raw_str.lstrip():
+            e = OgtError("Leading white space `%s`" % raw_str, error=False, cidx=cidx, lidx=lidx, cell=None)
+            err_list.append(e)
+        elif strippped == raw_str.rstrip():
+            e = OgtError("Trailing white space `%s`" % raw_str, error=False, cidx=cidx, lidx=lidx, cell=None)
+            err_list.append(e)
+        else:
+            e = OgtError("White space`%s`" % raw_str, error=False, cidx=cidx, lidx=lidx, cell=None)
+            err_list.append(e)
+
+    return strippped, err_list
 
 def validate_clean_str(raw_code, upper=True, lidx=None, cidx=None):
     """Validates and checks a code eg PROJ, """
@@ -801,8 +819,8 @@ def validate_headings_sort(group_code, heading_codes, cidx=None, lidx=None):
 
     clst = []
     cidxs = []
-    print plst
-    print heading_codes
+    #print plst
+    #print heading_codes
     for idx, c in enumerate(plst):
         if c == None:
             continue

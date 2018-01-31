@@ -110,7 +110,7 @@ class ERR_COLORS:
 
 class OgtError:
 
-    def __init__(self, message, lidx=None, cidx=None, error=True, rule=None):
+    def __init__(self, message, lidx=None, cidx=None, error=True, rule=None, cell=None):
 
         self.error = error
         """True to flag as error(default), False is a warning"""
@@ -126,6 +126,8 @@ class OgtError:
 
         self.cidx = cidx
         """The csv column index of the error """
+
+        self.cell = cell
 
     def __repr__(self):
         return "<Ogt %s - %s [%s,%s]>" % ("ERR" if self.error else "WARN", self.message, self.lidx, self.cidx)
