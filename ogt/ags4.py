@@ -170,11 +170,18 @@ class AGS4_DataDict:
 
 
     def headings(self, group_code):
+        #print sorted(self._groups.keys())
+        #print self._groups
+        if not group_code in self._groups:
+            # print "NOT HOUND"
+            return None
+        #print self._groups[group_code]["headings"]
+        return self._groups[group_code]["headings"]
 
+    def headings_index(self, group_code):
         if not group_code in self._groups:
             return None
-
-        return self._groups.get("headings")
+        return [h['head_code'] for h in self._groups[group_code]["headings"]]
 
 AGS4 = AGS4_DataDict()
 """Global Instance """
@@ -776,9 +783,40 @@ def validate_type_ags(typ, lidx=None, cidx=None):
     return OgtError("TYPE `%s` not ing AGS4 " % (typ), error=True, cidx=cidx, lidx=lidx, rule="TODO")
 
 
-def validate_headings_sort(group_code, cidx=None, lidx=None):
+def validate_headings_sort(group_code, heading_codes, cidx=None, lidx=None):
 
+    # get ags headings list for group
+    ags_headings = AGS4.headings_index(group_code)
+    if ags_headings == None:
+        return
+
+    plst = []
+    for ags_head in ags_headings:
+        if ags_head in heading_codes:
+            plst.append(ags_head)
+        else:
+            plst.append(None)
+    if plst == heading_codes:
+        return None
+
+    clst = []
+    cidxs = []
+    for idx, c in enumerate(plst):
+        if c == None:
+            continue
+        if heading_codes[idx] != c:
+            clst.append(c)
+            cidxs.append(idx + 1)
+    if len(clst) == 0:
+        return None
     errs = []
+    for idx, cidx in enumerate(cidxs):
+        errs.append( OgtError("Headings order incorrect, should be `%s` cols %s " % (",".join(clst), ",".join([str(c) for c in cidxs])),
+                              lidx=lidx, cidx=cidx, rule=9))
+
+
+
+
 
 
 

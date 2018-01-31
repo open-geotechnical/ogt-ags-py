@@ -203,11 +203,13 @@ class OGTDocument:
         return "rrr"
 
 
-    def column_data(self, head_code):
+    def get_column_data(self, head_code):
         # get the group from eg LOCA_ID
         grp_code = head_code.split("_")[0]
-        grp = self.group(grp_code).data_column(head_code)
-        return sorted(grp)
+        grp = self.group(grp_code)
+        if grp == None:
+            return
+        return sorted(grp.get_column_data(head_code))
 
     def add_error(self, er):
         """e = OgtError(message)
@@ -858,6 +860,9 @@ class OGTDocument:
                         err = ags4.validate_heading_ags(head_code, grp.group_code, lidx=lidx, cidx=didx+1)
                         self.add_errors(err)
 
+                    errs = ags4.validate_headings_sort(grp.group_code, grp.headings_source_sort, lidx=lidx)
+                    self.add_errors(errs)
+
                 elif descriptor == ags4.AGS4.UNIT:
                     # a UNIT row
                     for didx, head_code in enumerate(grp.headings_source_sort):
@@ -882,7 +887,7 @@ class OGTDocument:
                     grp.data.append( dic )
 
 
-            print group_code, grp
+            #print group_code, grp.headings_source_sort
 
         #print self.error_rows
 

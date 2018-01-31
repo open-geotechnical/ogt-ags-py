@@ -206,7 +206,7 @@ class OGTGroupWidget( QtGui.QWidget ):
                         item.setBackgroundColor(QtGui.QColor("#FFF96C"))
                     else:
                         # Dropdown for ID
-                        optts = self.ogtGroup.parentDoc.column_data(heading.head_code)
+                        optts = self.ogtGroup.parentDoc.get_column_data(heading.head_code)
                         self.table.setItemDelegateForColumn(cidx, ags4_widgets.IDComboDelegate(self, heading, options=optts))
                         self.table.cellWidget(0, cidx).set_link(True)
                         item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
