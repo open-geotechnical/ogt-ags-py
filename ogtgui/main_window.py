@@ -70,7 +70,9 @@ class MainWindow( QtGui.QMainWindow ):
         self.actionRecent = self.menuFile.addAction("Recent")
         self.actionRecent.setMenu(QtGui.QMenu())
         self.actionRecent.menu().triggered.connect(self.on_open_recent)
+        self.menuFile.addSeparator()
 
+        self.actionNewProject = self.menuFile.addAction(Ico.icon(Ico.Add), "New Project", self.on_new_project)
         self.menuFile.addSeparator()
 
         self.actionQuit = self.menuFile.addAction(Ico.icon(Ico.Quit), "Quit", self.on_quit)
@@ -82,9 +84,9 @@ class MainWindow( QtGui.QMainWindow ):
         self.actionAgs4Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS4 data dict", self.on_browse_ags4)
         self.actionAgs4Browse.setCheckable(True)
 
-        self.actionAgs3Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS 3: data dict", self.on_ags3_browse)
-        self.actionAgs3Browse.setCheckable(True)
-        self.actionAgs3Browse.setDisabled(True)
+        #self.actionAgs3Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS 3: data dict", self.on_ags3_browse)
+        #self.actionAgs3Browse.setCheckable(True)
+        #self.actionAgs3Browse.setDisabled(True)
 
         #=======
         ## Examples - its an example widget within
@@ -181,12 +183,13 @@ class MainWindow( QtGui.QMainWindow ):
         #G.Ags.load()
         if G.args.dev:
             #self.on_browse_ags4()
+            self.on_new_project()
             pass
 
 
         #fnn = "AGS4-Example.ags"
         #self.load_ags4_example(fnn)
-        #fn =  "/home/ogt/AGS4-example-wrd.ags"
+        fn =  "/home/ogt/AGS4-example-wrd.ags"
         if G.args.dev:
             fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
             self.load_ags4_file(fn)
@@ -237,6 +240,11 @@ class MainWindow( QtGui.QMainWindow ):
 
         self.load_widget(proj, file_name, ico=Ico.Project)
 
+    def on_new_project(self):
+
+
+        projWidget = ogtgui_project.OGTProjectWidget(empty=True)
+        self.load_widget(projWidget, "New Project", ico=Ico.Project)
 
     def load_ags4_file(self, file_path):
 
@@ -317,14 +325,6 @@ class MainWindow( QtGui.QMainWindow ):
         self.set_action_checked(self.actionAgs4Browse, True)
 
 
-    def on_ags3_browse(self):
-        """
-
-        .. todo:: :term:`ags3` browser
-
-
-        """
-        print "TODO", "on_ags3_browse", self
 
     def on_open_ags_file(self):
 
@@ -336,3 +336,5 @@ class MainWindow( QtGui.QMainWindow ):
         if dial.exec_():
             fn = str(dial.selectedFiles()[0])
             self.load_ags4_file(fn)
+
+

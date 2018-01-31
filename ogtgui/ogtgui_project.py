@@ -22,12 +22,14 @@ class OGTProjectWidget( QtGui.QWidget ):
 
     sigUpdated = pyqtSignal(object)
 
-    def __init__( self, parent=None):
+    def __init__( self, parent=None, empty=False):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
 
         self.ogtDoc = None
+        if empty:
+            self.ogtDoc = ogt_doc.OGTDocument()
 
         self.mainLayout = xwidgets.vlayout()
         self.setLayout(self.mainLayout)
@@ -40,14 +42,19 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.lblHeader.setStyleSheet("background-color: black; color: #dddddd; font-size: 14pt; padding: 3px 5px;")
         self.topLay.addWidget(self.lblHeader, 100)
 
+        self.buttActAdd = xwidgets.XToolButton(label="Add..", ico=Ico.Add, menu=True, popup=True)
+        self.topLay.addWidget(self.buttActAdd)
+
+        self.buttImport = xwidgets.XToolButton(label="Import", ico=Ico.Import, menu=True, popup=True)
+        self.topLay.addWidget(self.buttImport)
+
+        self.buttImport.menu().addAction("Add default PROJ, UNIT, etc groups", self.on_add_default_groups)
+
         self.buttExport = xwidgets.XToolButton(label="Export", ico=Ico.Export, menu=True, popup=True)
         self.topLay.addWidget(self.buttExport)
 
-        menu =  QtGui.QMenu()
-        self.buttExport.setMenu(menu)
-
         for a in FORMATS:
-            menu.addAction("%s - TODO" % a)
+            self.buttExport.menu().addAction("%s - TODO" % a)
 
         self.buttReload = xwidgets.XToolButton(label="Reload", ico=Ico.Refresh, popup=True, callback=self.on_reload)
         #self.buttReload.setText("Relaod")
@@ -98,7 +105,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
         if G.args.dev:
-            #self.tabBar.setCurrentIndex(3)
+            self.tabBar.setCurrentIndex(3)
             pass
 
     def init_load(self):
@@ -145,6 +152,7 @@ class OGTProjectWidget( QtGui.QWidget ):
 
     def load_document(self):
         proj = self.ogtDoc.proj_dict()
+        #print proj
         self.lblHeader.setText(proj['PROJ_NAME'])
 
         self.ogtDocWidget.load_document(self.ogtDoc)
@@ -172,11 +180,114 @@ class OGTProjectWidget( QtGui.QWidget ):
         idx = self.stackWidget.indexOf(self.ogtSourceViewWidget)
         self.tabBar.setCurrentIndex(idx)
 
+
+    def on_add_default_groups(self):
+
+        for g in ogt_doc.GROUPS_REQUIRED:
+            self.ogtDoc.add_group(g)
+
 class CP:
     node = 0
     group_code = 1
     group_description = 2
 
+
+
+class OGTProjectsModel(QtCore.QAbstractItemModel):
+
+    class C:
+        node = 0
+        group_code = 1
+        group_description = 2
+
+    def __init__( self, parent=None):
+        QtCore.QAbstractItemModel.__init__( self, parent )
+
+        self.ogtDoc = None
+
+    def load_document(self, ogtDoc):
+        self.ogtDoc = ogtDoc
+        self.modelReset.emit()
+        print self.ogtDoc, self
+
+    def columnCount(self, pidx):
+        return 3
+
+    def headerData(self, p_int, orientation, role=None):
+        #print p_int, orientation, role
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            lst = ["Rows", "Group", "Description"]
+            return QtCore.QVariant(lst[p_int])
+        return QtCore.QVariant()
+
+    def rowCount(self, pidx):
+        if self.ogtDoc == None:
+            return 0
+        if pidx.row() == -1:
+            return self.ogtDoc.groups_count()
+        print "rowcount", self.ogtDoc.groups_count(), pidx.row(), pidx.column(), pidx
+        return 0 #self.ogtDoc.groups_count()
+
+    def index(self, row, col, pidx):
+        """
+        if not pidx.isValid():
+            return self.createIndex(row, col, None)
+        parentNode = pidx.internalPointer()
+        return self.createIndex(row, col, parentNode.subnodes[row])
+        """
+        return self.createIndex(row, col, None)
+        #return QtCore.QModelIndex()
+
+    def parent(self, index):
+
+        if not index.isValid():
+            print "parent index.isValue()  FALSE"
+            return QtCore.QModelIndex()
+        node = index.internalPointer()
+        if node != None and node.parent() is None:
+            ss
+            return QtCore.QModelIndex()
+        else:
+            return self.createIndex(0, 0, None)
+            return self.createIndex(node.parent.row, 0, node.parent)
+
+        print "parent", child.row(), child.column(), child #, child.parent()
+        #return None
+        if False: #child.isValid():
+
+            ip =  child.internalPointer()
+            print "parent not valid", ip
+            if ip:
+                print "return"
+                #return child.internalPointer().parent()
+                return self.createIndex(ip.parent().row(), 0, ip.parent())
+            #return QtCore.QModelIndex()
+        #return self.createIndex(child.row(), child.column(), None)
+        return QtCore.QModelIndex()
+
+    def data(self, midx, role):
+
+        if role == Qt.DecorationRole:
+            return QtCore.QVariant()
+
+        if role == Qt.TextAlignmentRole:
+            return QtCore.QVariant(int(Qt.AlignTop | Qt.AlignLeft))
+
+        if role != Qt.DisplayRole:
+            return QtCore.QVariant()
+
+        #node = self.nodeFromIndex(midx)
+
+        if midx.column() == 0:
+            return QtCore.QVariant(self.ogtDoc.group_by_index(midx.row()))
+
+        elif midx.column() == 1:
+            return QtCore.QVariant(self.ogtDoc.group_by_index(midx.row()))
+
+        elif midx.column() == 2:
+            return QtCore.QVariant(self.ogtDoc.group_by_index(midx.row()))
+
+        return QtCore.QVariant()
 
 class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
@@ -214,10 +325,17 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dockGroups)
 
 
+
+        self.model = None
+
+        #self.tree = QtGui.QTreeView()
+        #self.tree.setModel(QtGui.QStandardItemModel())
         self.tree = QtGui.QTreeWidget()
         self.tree.setRootIsDecorated(False)
         self.tree.header().setStretchLastSection(True)
         self.setCentralWidget(self.tree)
+
+
 
 
         hi = self.tree.headerItem()
@@ -226,6 +344,8 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         hi.setText(CP.node, "Rows")
         hi.setTextAlignment(CP.node, Qt.AlignRight)
         self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
+
+
         self.dockGroups.setWidget(self.tree)
 
         self.tree.setColumnWidth(CP.node, 40)
@@ -255,8 +375,11 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
     def load_document(self, ogtDoc):
 
+       # self.model = OGTProjectsModel()
+        #self.model.load_document(ogtDoc)
         self.ogtDoc = ogtDoc
-
+        #self.tree.setModel(self.model)
+        #return
         for g in self.ogtDoc.groups_list():
             #print "===", g.group_description
             item = xwidgets.XTreeWidgetItem()
@@ -280,3 +403,5 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
     def on_goto_source(self, lidx, cidx):
         self.sigGotoSource.emit(lidx, cidx)
+
+

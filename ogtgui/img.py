@@ -81,6 +81,7 @@ class Ico:
     Groups = "tables-stacks.png"
     Group = "table.png"
 
+    Import = "arrow-join-270.png"
 
     Project = "blue-document-list.png"
 

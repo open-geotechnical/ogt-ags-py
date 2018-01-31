@@ -28,6 +28,29 @@ class AGS4_DataDict:
     DATA = "DATA"
 
 
+    @staticmethod
+    def group_header():
+        """The list of headers as required and defined in :ref:`ags4_rule_2a`
+
+        - GROUP = first .. obviously = tab on spreadsheet or db table
+        - HEADING = second.. the columns, = cols on spreasheet or db fields
+        - the data type and unit
+        - then the almighty DATA ! ;-)
+        - as this is the "group_header(), doth not return the DATA
+
+        :return: A list of `descriptors` in order
+        """
+        return [
+            AGS4_DataDict.group,
+            AGS4_DataDict.heading,
+            AGS4_DataDict.unit,
+            AGS4_DataDict.type
+        ]
+
+    @staticmethod
+    def list():
+         return AGS4_DataDict.group_header() + [AGS4_DataDict.data]
+
     def __init__(self):
 
         self._data = None
@@ -168,28 +191,7 @@ class DEADAGS4_DESCRIPTOR:
     type = "TYPE"
     data = "DATA"
 
-    @staticmethod
-    def group_header():
-        """The list of headers as required and defined in :ref:`ags4_rule_2a`
 
-        - GROUP = first .. obviously = tab on spreadsheet or db table
-        - HEADING = second.. the columns, = cols on spreasheet or db fields
-        - the data type and unit
-        - then the almighty DATA ! ;-)
-        - as this is the "group_header(), doth not return the DATA
-
-        :return: A list of `descriptors` in order
-        """
-        return [
-            AGS4_DESCRIPTOR.group,
-            AGS4_DESCRIPTOR.heading,
-            AGS4_DESCRIPTOR.unit,
-            AGS4_DESCRIPTOR.type
-        ]
-
-    @staticmethod
-    def list():
-         return AGS4_DESCRIPTOR.group_header() + [AGS4_DESCRIPTOR.data]
 
 
 
