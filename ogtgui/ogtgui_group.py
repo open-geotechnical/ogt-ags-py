@@ -96,6 +96,78 @@ class OGTHeaderWidget( QtGui.QWidget ):
     def on_goto(self):
         self.sigGoto.emit(self.ogtHeading.head_code)
 
+class GroupModel(QtCore.QAbstractTableModel):
+    """Model for groups
+    """
+    def __init__(self):
+        QtCore.QAbstractTableModel.__init__(self)
+
+        self.ogtGroup = None
+
+    def load_group(self, ogtGroup):
+
+        self.ogtGroup = ogtGroup
+
+    def rowCount(self, parent=None, *args):
+        """Returns the number of rows of the model"""
+        if self.ogtGroup == None:
+            return 0
+        #print "=", self.ogtGroup.data_rows_count()
+        return self.ogtGroup.data_rows_count()
+
+    def columnCount(self, parent=None, *args):
+        """Returns the number of columns of the model"""
+        if self.ogtGroup == None:
+            return 0
+        return self.ogtGroup.headings_count()
+
+    def data(self, index, role=Qt.DisplayRole):
+        """Returns the data at the given index"""
+        #rint index, index.row(), index.column()
+        if role == Qt.DisplayRole: # or role == Qt.EditRole:
+
+            return self.ogtGroup.data_cell(index.row(), index.column())
+
+        return None
+
+    def headerData(self, idx, orientation, role=Qt.DisplayRole):
+        """Returns the headers to display"""
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self.ogtGroup.headings_source_sort[idx]
+
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return str(idx + 1)
+
+        return None
+
+    def deadsetData(self, index, value, role=None):
+        """Updates data when modified in the view"""
+        if role == Qt.EditRole:
+            if index.column() == 1:
+                self._editor.trains[index.row()].serviceCode = value
+            elif index.column() == 2:
+                self._editor.trains[index.row()].trainTypeCode = value
+            elif index.column() == 3:
+                self._editor.trains[index.row()].appearTimeStr = value
+            elif index.column() == 4:
+                self._editor.trains[index.row()].trainHeadStr = value
+            elif index.column() == 5:
+                self._editor.trains[index.row()].initialSpeed = value
+            elif index.column() == 6:
+                self._editor.trains[index.row()].initialDelayStr = value
+            else:
+                return False
+            self.dataChanged.emit(index, index)
+            return True
+        return False
+
+    def flags(self, index):
+        """Returns the flags of the model"""
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        if index.column() != 0:
+            flags |= Qt.ItemIsEditable
+        return flags
+
 class OGTGroupWidget( QtGui.QWidget ):
     """Shows a group with labels at top, and table underneath"""
 
@@ -134,9 +206,15 @@ class OGTGroupWidget( QtGui.QWidget ):
         self.lblGroupDescription.setStyleSheet(sty + "")
         topLay.addWidget(self.lblGroupDescription, 100)
 
-        self.table = QtGui.QTableWidget()
-        self.mainLayout.addWidget(self.table, 200)
+        self.tableHeadings = QtGui.QTableWidget()
+        self.mainLayout.addWidget(self.tableHeadings, 0)
 
+
+        self.tableData = QtGui.QTableView()
+        self.mainLayout.addWidget(self.tableData, 200)
+        self.model = None
+        self.tableData.horizontalHeader().hide()
+        #self.table2.setModel(self.model)
 
     def load_group(self, ogtGroup):
 
@@ -149,14 +227,16 @@ class OGTGroupWidget( QtGui.QWidget ):
             descr = self.ogtGroup.group_description
         self.lblGroupDescription.setText( "-" if descr == None else descr )
 
-
+        self.model = GroupModel()
+        self.model.load_group(self.ogtGroup)
+        self.tableData.setModel(self.model)
 
         # Init table, first row = 0 is headings (cos we cant embed widgets in a header on pyqt4)
         #headings = self.ogtGroup.headings()
-        self.table.setRowCount(1)
-        self.table.setColumnCount( self.ogtGroup.headings_count() )
+        self.tableHeadings.setRowCount(1)
+        self.tableHeadings.setColumnCount( self.ogtGroup.headings_count() )
 
-        v_labels = QtCore.QStringList() # vertical labels
+        #v_labels = QtCore.QStringList() # vertical labels
 
         ## Populate header
         HEADER_HEIGHT = 80
@@ -165,62 +245,68 @@ class OGTGroupWidget( QtGui.QWidget ):
 
             hitem = xwidgets.XTableWidgetItem()
             hitem.set(heading.head_code, bold=True)
-            self.table.setHorizontalHeaderItem(cidx, hitem)
+            self.tableHeadings.setHorizontalHeaderItem(cidx, hitem)
 
             header_widget = OGTHeaderWidget(ogtDoc=self.ogtGroup.parentDoc)
             header_widget.set_data(heading)
 
-            self.table.setCellWidget(0, cidx, header_widget )
+            self.tableHeadings.setCellWidget(0, cidx, header_widget )
             header_widget.sigGoto.connect(self.on_goto)
 
-        self.table.setRowHeight(0, HEADER_HEIGHT)
-        v_labels.append("")
+        self.tableHeadings.setVerticalHeaderLabels([""])
 
+        self.tableHeadings.setRowHeight(0, HEADER_HEIGHT)
+        self.tableHeadings.setFixedHeight(HEADER_HEIGHT + 30)
+        v_labels = QtCore.QStringList()
+        #return
         # Load the data
         for ridx, row in enumerate(self.ogtGroup.data):
 
-            self.table.setRowCount( self.table.rowCount() + 1)
+            #self.tableData.setRowCount( self.tableData.rowCount() + 1)
             v_labels.append( str(ridx + 1) )
 
             for cidx, heading in enumerate(self.ogtGroup.headings_list()):
                 #print heading
-                item = QtGui.QTableWidgetItem()
-                item.setText(row[heading.head_code])
-                self.table.setItem(ridx + 1, cidx, item)
+                #item = QtGui.QTableWidgetItem()
+                #item.setText(row[heading.head_code])
+                #self.tableData.setItem(ridx + 1, cidx, item)
 
                 if heading.type == "PA":
                     # Combo dropdown
-                    self.table.setItemDelegateForColumn(cidx, ags4_widgets.PickListComboDelegate(self, heading))
-                    item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
+                    self.tableData.setItemDelegateForColumn(cidx, ags4_widgets.PickListComboDelegate(self, heading))
+                    #item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
 
                 if heading.type in ["2DP"]:
                     # Number editor
-                    item.setTextAlignment(Qt.AlignRight|Qt.AlignVCenter)
-                    self.table.setItemDelegateForColumn(cidx, ags4_widgets.NumberEditDelegate(self, heading))
+                    #item.setTextAlignment(Qt.AlignRight|Qt.AlignVCenter)
+                    self.tableData.setItemDelegateForColumn(cidx, ags4_widgets.NumberEditDelegate(self, heading))
 
 
                 if heading.type == "ID":
                     #print hrec
                     if self.ogtGroup.group_code  == heading.head_code.split("_")[0]:
                         # in same group as heading, so highlight the ID
-                        item.setBackgroundColor(QtGui.QColor("#FFF96C"))
+                        pass #item.setBackgroundColor(QtGui.QColor("#FFF96C"))
                     else:
                         # Dropdown for ID
                         optts = self.ogtGroup.parentDoc.get_column_data(heading.head_code)
-                        self.table.setItemDelegateForColumn(cidx, ags4_widgets.IDComboDelegate(self, heading, options=optts))
-                        self.table.cellWidget(0, cidx).set_link(True)
-                        item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
+                        self.tableData.setItemDelegateForColumn(cidx, ags4_widgets.IDComboDelegate(self, heading, options=optts))
+                        #self.tableData.cellWidget(0, cidx).set_link(True)
+                        #item.setBackgroundColor(QtGui.QColor("#FFFDBF"))
 
-                self.table.setRowHeight(ridx + 1, 25)
+                self.tableData.setRowHeight(ridx + 1, 25)
         # resize columns, with max_width
         col_width = 200
 
-        self.table.resizeColumnsToContents()
-        for cidx in range(0, self.table.columnCount()):
-            if self.table.columnWidth(cidx) > col_width:
-                self.table.setColumnWidth(cidx, col_width)
-
-        self.table.setVerticalHeaderLabels(v_labels)
+        #self.tableHeadings.resizeColumnsToContents()
+        for cidx in range(0, self.tableHeadings.columnCount()):
+            self.tableHeadings.setColumnWidth(cidx, 120)
+            if self.tableHeadings.columnWidth(cidx) > col_width:
+                self.tableHeadings.setColumnWidth(cidx, col_width)
+            self.tableData.setColumnWidth(cidx, self.tableHeadings.columnWidth(cidx))
+        #print self.tableData.verticalHeader().width()
+        self.tableHeadings.verticalHeader().setFixedWidth(self.tableData.verticalHeader().width())
+        #self.table.setVerticalHeaderLabels(v_labels)
 
     def on_goto(self, code):
         #print "on_goto", code, self

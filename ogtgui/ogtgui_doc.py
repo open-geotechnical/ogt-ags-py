@@ -95,7 +95,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
         #data = doc.to_dict()
         for gkey in self.ogtDoc.groups_sort():
             self.load_group( self.ogtDoc.group(gkey) )
-
+        self.tabBar.setCurrentIndex(2)
 
     def load_group(self, ogtGrp):
         #print "load_group", ogtGrp, self

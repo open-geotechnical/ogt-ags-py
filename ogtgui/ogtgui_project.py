@@ -105,7 +105,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
         if G.args.dev:
-            self.tabBar.setCurrentIndex(3)
+            self.tabBar.setCurrentIndex(1)
             pass
 
     def init_load(self):

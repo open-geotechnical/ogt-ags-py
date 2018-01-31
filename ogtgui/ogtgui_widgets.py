@@ -70,9 +70,11 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         sty = "QTableView {gridline-color: #dddddd;}"
         self.tableWidget = QtGui.QTableWidget()
         self.splitter.addWidget(self.tableWidget)
-        self.tableWidget.itemSelectionChanged.connect(self.on_select_changed)
+
         self.tableWidget.setStyleSheet(sty)
         self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.tableWidget.itemSelectionChanged.connect(self.on_select_changed)
+        self.tableWidget.horizontalHeader().sectionClicked.connect(self.on_row_clicked)
 
         self.errorsWidget = OGTErrorsWidget()
         self.errorsWidget.setMinimumWidth(300)
@@ -100,7 +102,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.sourceView.setText(doco.source)
 
         show_warn, show_err = self.errorsWidget.get_error_filters()
-        print "filters=", show_warn, show_err
+        #print "filters=", show_warn, show_err
         #print doco.cells()
         self.tableWidget.setRowCount(len(doco.csv_rows))
 
@@ -180,7 +182,8 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.errorsWidget.select_items(item.row(), item.column())
 
 
-
+    def on_row_clicked(self, ridx):
+        print ridx
 
 class OGTScheduleWidget( QtGui.QWidget ):
     """The SourceViewWidget info which in row 0 """

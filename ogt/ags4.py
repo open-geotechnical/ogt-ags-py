@@ -801,6 +801,8 @@ def validate_headings_sort(group_code, heading_codes, cidx=None, lidx=None):
 
     clst = []
     cidxs = []
+    print plst
+    print heading_codes
     for idx, c in enumerate(plst):
         if c == None:
             continue

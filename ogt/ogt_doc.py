@@ -1126,6 +1126,9 @@ class OGTGroup:
         """Returns the csv rows used in this group, return data from parentDocument """
         return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
+    def data_cell(self, ridx, cidx):
+        #print self.data
+        return self.data[ridx][self.headings_source_sort[cidx]]
 
     def data_row(self, ridx):
         return self.data[ridx]
