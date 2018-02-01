@@ -777,7 +777,7 @@ class OGTDocument:
             #for cidx, cell in enumerate(row):
             #print "is_descr", cell, cell.cidx
             #if cidx == 0:
-            print lidx, row
+            #print lidx, row
             lenny = len(row)
             if lenny == 0:
                 continue
@@ -834,8 +834,8 @@ class OGTDocument:
 
         # the pointer used for group
         loop_grp = None
-        print self.cells
-
+        #print self.cells
+        return None
         # walk the parsed cvs rows
         for lidx, row in []: #enumerate(self.csv_rows):
 
@@ -1139,14 +1139,14 @@ class OGTGroup:
         self.group_code = group_code
         """The four character group code"""
 
-        self.headings = {}
-        self.headings_list = []
+        #self.headings = {}
+        self._headings = []
         """A `dict` of head_code > ogtHeadings"""
 
-        self.headings_sort = []
+        #self.headings_sort = []
         """A list of head_codes in recommended sort order"""
 
-        self.headings_source_sort = []
+        #self.headings_source_sort = []
         """The list of head_code with the sort order in original file"""
 
         #self.units = {}
@@ -1191,16 +1191,16 @@ class OGTGroup:
             self.headings_source_sort.append(hcell.value)
 
             # create `OGTHeading objects` and add to group
-            oHead = OGTHeading(cell=hcell.value, ogtGroup=self)
+            oHead = OGTHeading(cell=hcell, ogtGroup=self)
             #self.headings[hcell.value] = oHead
-            self.headings_list.append(oHead)
+            self._headings.append(oHead)
 
     def set_units(self, row_cells, lidx):
 
         self.units_lidx = lidx
 
         for idx, cell in enumerate(row_cells):
-            self.headings_list[idx].set_unit(cell)
+            self._headings[idx].set_unit(cell)
 
     def set_types(self, row_cells, lidx):
 
@@ -1211,7 +1211,7 @@ class OGTGroup:
             #clean_str, errs = ags4.validate_clean_str(xrow[didx], lidx=lidx, cidx=didx + 1)
             #self.add_errors(errs)
 
-            self.headings_list[idx].set_type(cell)
+            self._headings[idx].set_type(cell)
             """
             for didx, head_code in enumerate(grp.headings_source_sort):
 
@@ -1242,8 +1242,10 @@ class OGTGroup:
 
         return self._headings_sort
 
-    def deheadings_list(self):
-        """Return a list of heading dicts"""
+    def headings_list(self):
+        """Return a list of heading """
+        #return s
+        return self._headings
         lst = []
         for hcode in self.headings_source_sort:
             #dic = dict(head_code = hcode, unit=self.units[hcode], data_type=self.data_types[hcode])
@@ -1251,7 +1253,7 @@ class OGTGroup:
         return lst
 
     def headings_count(self):
-        return len(self.headings.keys())
+        return len(self._headings)
 
     def cells(self):
         """Returns the csv rows used in this group, return data from parentDocument """
@@ -1259,8 +1261,9 @@ class OGTGroup:
 
     def data_cell(self, ridx, cidx):
         #print self.data
-        return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
+        #return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
         #return self.data[ridx][self.headings_source_sort[cidx]]
+        return self.data[ridx][cidx]
 
     def add_data_row(self, row_cells):
         self.data.append(row_cells)
@@ -1384,11 +1387,20 @@ class OGTCell:
             return
         self.errors.extend(errs)
 
-    def deadto_upper(self):
-        sup = self.value.upper()
-        if sup != self.value:
-            self.errors.append(OgtError("Lower space chars `%s`" % self.value, cell=self, warn=True))
-        self.value = sup
+    def get_bg(self):
+        """Ok so its not really logic, but idea is to color cells in code, and acorss www, desktop, mobile,
+        - no erros its white
+        - an data dic violation = dd vilolation
+        - a error eg incorrect stuff = rule
+        - warn = stuff fixed, eg white space
+        """
+        for err in self.errors:
+            if err.type == OgtError.ERR: # found an error
+                return err.bg
+        for err in self.errors:
+            if err.type == OgtError.WARN: # found a warning
+                return err.bg
+        return "white" # cool and dandy
 
     def __repr__(self):
         return "<Cell [%s,%s] `%s`>" % (self.lidx, self.cidx, self.raw)
@@ -1403,10 +1415,12 @@ class OGTHeading:
         self.type = None
 
         self.head_code_cell = cell
+        if isinstance( self.head_code_cell, str):
+            stopppp
         self.unit_cell = None
         self.type_cell = None
 
-    def __repr__(self):
+    def dead__repr__(self):
         return "OGTHeading `%s`>" % self.head_code
 
     @property
@@ -1423,16 +1437,25 @@ class OGTHeading:
         return self.head_code_cell.value
 
     def dead_set_head_code(self, head_code, row_idx, col_idx):
-        self.head_code = head_code
-        self.head_code_index = [row_idx, col_idx]
+        self.deadhead_code = head_code
+        self.deadhead_code_index = [row_idx, col_idx]
+
 
     def set_unit(self, cell):
         cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
         cell.add_errors(errs)
         self.unit_cell = cell
 
+    @property
+    def unit_label(self):
+        return "" if self.unit_cell == None else self.unit_cell.value
+
+
     def set_type(self, cell):
         cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
         cell.add_errors(errs)
         self.type_cell = cell
 
+    @property
+    def type_label(self):
+        return "" if self.type_cell == None else self.type_cell.value

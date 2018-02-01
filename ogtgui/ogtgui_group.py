@@ -81,9 +81,9 @@ class OGTHeaderWidget( QtGui.QWidget ):
         descr = self.ogtHeading.head_description
         self.lblHeadDescription.setText("-" if descr == None else descr)
 
-        self.lblUnit.setText("-" if self.ogtHeading.unit == None else self.ogtHeading.unit)
+        self.lblUnit.setText(self.ogtHeading.unit_label)
         #typ = "<a href="""
-        self.lblType.setText(self.ogtHeading.type)
+        self.lblType.setText(self.ogtHeading.unit_label)
         #self.lblType.setToolTip(hrec['type'])
 
         #print hrec['type'], self.doc.type(hrec['type'])
@@ -91,7 +91,7 @@ class OGTHeaderWidget( QtGui.QWidget ):
         if typ:
             self.lblType.setToolTip(typ['description'])
         else:
-            self.lblType.setToolTip(self.ogtHeading.type)
+            self.lblType.setToolTip(self.ogtHeading.type_label)
 
     def on_goto(self):
         self.sigGoto.emit(self.ogtHeading.head_code)
@@ -128,8 +128,10 @@ class GroupModel(QtCore.QAbstractTableModel):
             return self.ogtGroup.data_cell(index.row(), index.column()).value
 
         if role == Qt.BackgroundColorRole:
-            print self.ogtGroup.data_cell(index.row(), index.column())
-            return QtGui.QColor("red")
+            #print self.ogtGroup.data_cell(index.row(), index.column())
+            cell = self.ogtGroup.data_cell(index.row(), index.column())
+            bg = cell.get_bg()
+            return QtGui.QColor(bg)
 
 
         return None
@@ -212,14 +214,24 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         self.tableHeadings = QtGui.QTableWidget()
         self.mainLayout.addWidget(self.tableHeadings, 0)
-
+        self.tableHeadings.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.tableHeadings.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.tableData = QtGui.QTableView()
         self.mainLayout.addWidget(self.tableData, 200)
         self.tableData.horizontalHeader().hide()
         self.tableData.setModel(QtGui.QStandardItemModel()) # empty model
 
+        self.tableData.horizontalScrollBar().valueChanged.connect(self.on_table_data_h_scroll)
+        #self.tableData.verticalScrollBar().valueChanged.connect(self.on_tree_sched_v_scroll)
+
         self.model = None
+
+    def on_table_data_h_scroll(self, x):
+        self.tableHeadings.horizontalScrollBar().setValue(x)
+
+    def on_tree_sched_v_scroll(self, x):
+        self.treeSamples.verticalScrollBar().setValue(x)
 
     def load_group(self, ogtGroup):
 
@@ -245,13 +257,14 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         ## Populate header
         HEADER_HEIGHT = 80
-        for cidx, heading in enumerate(self.ogtGroup.headings_list):
-
+        print "headings list", self.ogtGroup.headings_list()
+        for cidx, heading in enumerate(self.ogtGroup.headings_list()):
+            print cidx, heading, self
             hitem = xwidgets.XTableWidgetItem()
             hitem.set(heading.head_code, bold=True)
             self.tableHeadings.setHorizontalHeaderItem(cidx, hitem)
 
-            header_widget = OGTHeaderWidget(ogtDoc=self.ogtGroup.parentDoc)
+            header_widget = OGTHeaderWidget(ogtDoc=self.ogtGroup.ogtDoc)
             header_widget.set_heading(heading)
 
             self.tableHeadings.setCellWidget(0, cidx, header_widget )
