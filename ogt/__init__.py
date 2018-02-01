@@ -114,9 +114,9 @@ class OgtError:
     ERR = 1
 
 
-    def __init__(self, message, type=1, lidx=None, cidx=None, rule=None, cell=None):
+    def __init__(self, message, warn=False, lidx=None, cidx=None, rule=None, cell=None):
 
-        self.type = type
+        self.type = OgtError.WARN if warn else OgtError.ERR
         """True to flag as error(default), False is a warning"""
 
         self.message = message

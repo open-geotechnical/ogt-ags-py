@@ -763,7 +763,7 @@ class NumberEditDelegate(QtGui.QItemDelegate):
 
     def setEditorData(self, editor, index):
         editor.blockSignals(True)
-        curr = index.model().data(index).toString()
+        curr = index.model().data(index) #.toString()
         editor.setText(curr)
         editor.blockSignals(False)
 

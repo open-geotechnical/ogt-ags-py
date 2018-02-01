@@ -658,13 +658,13 @@ def strip_string(raw_str,  lidx=None, cidx=None, cell=None):
     strippped = raw_str.strip()
     if strippped != raw_str:
         if strippped == raw_str.lstrip():
-            e = OgtError("Leading white space `%s`" % raw_str, type=OgtError.WARN, cidx=cidx, lidx=lidx, cell=None)
+            e = OgtError("Leading white space `%s`" % raw_str, warn=True, cidx=cidx, lidx=lidx, cell=None)
             err_list.append(e)
         elif strippped == raw_str.rstrip():
-            e = OgtError("Trailing white space `%s`" % raw_str, type=OgtError.WARN, cidx=cidx, lidx=lidx, cell=None)
+            e = OgtError("Trailing white space `%s`" % raw_str, warn=True, cidx=cidx, lidx=lidx, cell=None)
             err_list.append(e)
         else:
-            e = OgtError("White space`%s`" % raw_str, type=OgtError.WARN, cidx=cidx, lidx=lidx, cell=None)
+            e = OgtError("White space`%s`" % raw_str, warn=True, cidx=cidx, lidx=lidx, cell=None)
             err_list.append(e)
 
     return strippped, err_list
@@ -677,46 +677,86 @@ def validate_clean_str(raw_code, upper=True, lidx=None, cidx=None):
     code = raw_code.strip()
     if code != raw_code:
         if code == raw_code.lstrip():
-            e = OgtError("Leading white space `%s`" % raw_code, type=OgtError.WARN, cidx=cidx, lidx=lidx)
+            e = OgtError("Leading white space `%s`" % raw_code, warn=True, cidx=cidx, lidx=lidx)
             err_list.append(e)
         elif code == raw_code.rstrip():
-            e = OgtError("Trailing white space `%s`" % raw_code, type=OgtError.WARN, cidx=cidx, lidx=lidx)
+            e = OgtError("Trailing white space `%s`" % raw_code, warn=True, cidx=cidx, lidx=lidx)
             err_list.append(e)
         else:
-            e = OgtError("White space`%s`" % raw_code, type=OgtError.WARN, cidx=cidx, lidx=lidx)
+            e = OgtError("White space`%s`" % raw_code, warn=True, cidx=cidx, lidx=lidx)
             err_list.append(e)
 
     if upper:
         ucode = code.upper()
         if ucode != code:
-            e = OgtError("Contains lower chars `%s`" % code, type=OgtError.WARN, cidx=cidx, lidx=lidx)
+            e = OgtError("Contains lower chars `%s`" % code, warn=True, cidx=cidx, lidx=lidx)
             err_list.append(e)
 
     return ucode, err_list
 
-def validate_descriptor(des, lidx=None, cidx=None):
-    """Check its one of GROUP, UNIT, DATA, etc"""
-    if des in AGS4.descriptors():
-        return None
-    return OgtError("Invalid descriptor `%s` " % des, type=OgtError.WARN, cidx=cidx, lidx=lidx, rule=3)
+def validate_upper(raw_str, lidx=None, cidx=None):
+    """Validate uppercase """
+    err_list = []
+    ustr = raw_str.upper()
+    if ustr != raw_str:
+        e = OgtError("Contains lower chars `%s`" % raw_str, warn=True, cidx=cidx, lidx=lidx)
+        err_list.append(e)
+    return  ustr, err_list
+
 
 A2Z = "ABCDEFGHIJKLMNOPQRSTUVWZYZ"
 NUMBERS = "0123456789"
 CHARS = A2Z + NUMBERS
 
+def validate_a2z(astr):
+    """Ensure string contains only A-Z uppercase
+
+    :return: A list of errors
+    """
+    errs = []
+    for idx, char in enumerate(astr):
+        if not char in A2Z:
+            errs.append(OgtError("Invalid char at position %s `%s`" % (idx+1, astr), rule=19))
+    return errs
+
+def validate_descriptor(des, lidx=None, cidx=None, cell=None):
+    """Check its case and whether its a data descriptor
+
+    :return: Cleaned descriptor, valid_descroiptor and list of errors
+
+    """
+
+    # check upper
+    up_des, errs = validate_upper(des)
+
+    # check only a2z
+    cerrs = validate_a2z(up_des)
+    if cerrs:
+        errs.extend(cerrs)
+
+    # check it a description
+    if up_des in AGS4.descriptors():
+        return up_des, True, errs
+
+    errs.append( OgtError("Invalid descriptor `%s` " % des, warn=True, cidx=cidx, lidx=lidx, rule=3))
+    return up_des, False, errs
+
+
 def validate_group_str(group_code, lidx=None, cidx=None):
     """Rule 19 Group Heading"""
 
-    # first check lengths
+    # first check length for empty
     lenny = len(group_code)
     if lenny == 0:
         # no group code so get outta here
-        return [OgtError("Invalid GROUP, needs one char at least `%s`" % group_code,
-                         type=OgtError.ERR, cidx=cidx, lidx=lidx, rule=19)]
+        return group_code, [OgtError("Invalid GROUP, needs one char at least `%s`" % group_code,
+                         cidx=cidx, lidx=lidx, rule=19)]
+
+    # check upper
+    group_code, errs = validate_upper(group_code)
 
     if lenny > 4:
-        return [OgtError("Invalid GROUP, longer then four chars `%s`" % group_code, type=OgtError.ERR, cidx=cidx, lidx=lidx, rule=19)]
-
+        errs.append( OgtError("Invalid GROUP, longer then four chars `%s`" % group_code, cidx=cidx, lidx=lidx, rule=19))
 
     # check characters are valid
     errs = []
@@ -725,37 +765,36 @@ def validate_group_str(group_code, lidx=None, cidx=None):
             # ok
             pass
         else:
-            errs.append(OgtError("Invalid char in  GROUP position %s `%s`" % (idx+1, group_code), type=OgtError.ERR, cidx=cidx, lidx=lidx, rule=19))
-    if len(errs) > 0:
-        return errs
+            errs.append(OgtError("Invalid char in  GROUP position %s `%s`" % (idx+1, group_code), cidx=cidx, lidx=lidx, rule=19))
 
-    return []
+    return group_code, errs
 
 
 def validate_heading_str(head_code, lidx=None, cidx=None):
     """Checks the heading is valid"""
-    errs = []
+
+    head_code, errs = validate_upper(head_code)
+
     if not "_" in head_code:
-        errs.append( OgtError("Invalid HEADING requires a _ `%s` not found" % head_code, type=OgtError.ERR, cidx=cidx, lidx=lidx))
+        errs.append( OgtError("Invalid HEADING requires a _ `%s` not found" % head_code, cidx=cidx, lidx=lidx))
         # cannot continue ??
-        return errs
+        return head_code, errs
 
     ## split the heading into group + remainder
     group_code, head_part = head_code.split("_")
 
     # validate the group part
-    errs = validate_group_str(group_code, lidx=lidx, cidx=cidx)
+    group_code, errs = validate_group_str(group_code, lidx=lidx, cidx=cidx)
     if len(errs) > 0:
         # assume we cannot continue
-        return errs
+        return group_code, errs
 
     if len(head_code) > 9:
-        return [OgtError("Invalid HEADING > 9 chars `%s`" % head_code,
-                         type=OgtError.ERR, cidx=cidx, lidx=lidx, rule="19a")]
+        errs.append(OgtError("Invalid HEADING > 9 chars `%s`" % head_code, cidx=cidx, lidx=lidx, rule="19a"))
     if len(head_code) == 0:
-        return OgtError("Invalid HEADING needa at least onc char `%s`" % head_code, type=OgtError.ERR, cidx=cidx, lidx=lidx, rule="19a")
+        errs.append(OgtError("Invalid HEADING needs at least onc char `%s`" % head_code,  cidx=cidx, lidx=lidx, rule="19a"))
 
-    return None
+    return head_code, errs
 
 def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
     """Check the heading is in ags data dict. This is done by
@@ -768,7 +807,7 @@ def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
     grpdic = AGS4.group(group_code_in)
 
     if grpdic == None:
-        return OgtError("Invalid GROUP `%s` for HEADING `%s`, not in ags data dict" % (group_code_in,head_code), type=OgtError.ERR, cidx=cidx, lidx=lidx, rule="9")
+        return OgtError("Invalid GROUP `%s` for HEADING `%s`, not in ags data dict" % (group_code_in,head_code), cidx=cidx, lidx=lidx, rule="9")
 
     heads = grpdic.get("headings")
     for h in heads:
@@ -783,13 +822,13 @@ def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
     grpdic = AGS4.group(sgroup_code)
 
     if grpdic == None:
-        return OgtError("Invalid GROUP part of HEADING not in ags data dict `%s`" % head_code, type=OgtError.ERR, cidx=cidx, lidx=lidx, rule="9")
+        return OgtError("Invalid GROUP part of HEADING not in ags data dict `%s`" % head_code, cidx=cidx, lidx=lidx, rule=9)
 
     heads = grpdic.get("headings")
     for h in heads:
         if head_code == h['head_code']:
             return None
-    return OgtError("HEADING `%s` not found in GROUP `%s`" % (head_code, sgroup_code), type=OgtError.ERR, cidx=cidx, lidx=lidx, rule="9")
+    return OgtError("HEADING `%s` not found in GROUP `%s`" % (head_code, sgroup_code), warn=True, cidx=cidx, lidx=lidx, rule=9)
 
 
 def validate_type_ags(typ, lidx=None, cidx=None):
@@ -798,7 +837,7 @@ def validate_type_ags(typ, lidx=None, cidx=None):
     if types.has_key(typ):
         return None
 
-    return OgtError("TYPE `%s` not ing AGS4 " % (typ), type=OgtError.ERR, cidx=cidx, lidx=lidx, rule="TODO")
+    return OgtError("TYPE `%s` not ing AGS4 " % (typ), cidx=cidx, lidx=lidx, rule="TODO")
 
 
 def validate_headings_sort(group_code, heading_codes, cidx=None, lidx=None):
@@ -812,15 +851,16 @@ def validate_headings_sort(group_code, heading_codes, cidx=None, lidx=None):
     for ags_head in ags_headings:
         if ags_head in heading_codes:
             plst.append(ags_head)
-        else:
-            plst.append(None)
+        #else:
+        #    plst.append(None)
     if plst == heading_codes:
         return None
 
     clst = []
     cidxs = []
-    #print plst
-    #print heading_codes
+    print "----------------------"
+    print plst
+    print heading_codes
     for idx, c in enumerate(plst):
         if c == None:
             continue

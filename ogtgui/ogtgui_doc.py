@@ -94,6 +94,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
         #print "doc=", doc
         #data = doc.to_dict()
         for gkey in self.ogtDoc.groups_sort():
+            print "here", gkey
             self.load_group( self.ogtDoc.group(gkey) )
         self.tabBar.setCurrentIndex(3)
 

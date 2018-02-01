@@ -256,18 +256,20 @@ class MainWindow( QtGui.QMainWindow ):
                     self.tabBar.setCurrentIndex(idx)
                     return
 
-        self.progressDialog.setWindowTitle("Loading...")
-        self.progressDialog.setLabelText(file_path)
-        self.progressDialog.show()
+        if False:
+            self.progressDialog.setWindowTitle("Loading...")
+            self.progressDialog.setLabelText(file_path)
+            self.progressDialog.show()
 
-        self.add_history(file_path)
+            self.add_history(file_path)
         #print "load_ags4_file", file_path, self
         proj = ogtgui_project.OGTProjectWidget()
         proj.load_ags4_file(file_path)
         #print proj
         self.load_widget(proj, os.path.basename(file_path), ico=Ico.Project)
 
-        self.progressDialog.hide()
+        if False:
+            self.progressDialog.hide()
 
     def add_history(self, file_path):
         history = G.settings.get_list("history")

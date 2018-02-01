@@ -74,7 +74,7 @@ class OGTHeaderWidget( QtGui.QWidget ):
     def set_link(self, state):
         self.buttLink.setVisible(state)
 
-    def set_data(self, ogtHeading):
+    def set_heading(self, ogtHeading):
 
         self.ogtHeading = ogtHeading
 
@@ -124,9 +124,13 @@ class GroupModel(QtCore.QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         """Returns the data at the given index"""
         #rint index, index.row(), index.column()
-        if role == Qt.DisplayRole: # or role == Qt.EditRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            return self.ogtGroup.data_cell(index.row(), index.column()).value
 
-            return self.ogtGroup.data_cell(index.row(), index.column())
+        if role == Qt.BackgroundColorRole:
+            print self.ogtGroup.data_cell(index.row(), index.column())
+            return QtGui.QColor("red")
+
 
         return None
 
@@ -140,7 +144,7 @@ class GroupModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def deadsetData(self, index, value, role=None):
+    def dead_setData(self, index, value, role=None):
         """Updates data when modified in the view"""
         if role == Qt.EditRole:
             if index.column() == 1:
@@ -161,7 +165,7 @@ class GroupModel(QtCore.QAbstractTableModel):
             return True
         return False
 
-    def flags(self, index):
+    def dead_flags(self, index):
         """Returns the flags of the model"""
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
         if index.column() != 0:
@@ -212,9 +216,10 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         self.tableData = QtGui.QTableView()
         self.mainLayout.addWidget(self.tableData, 200)
-        self.model = None
         self.tableData.horizontalHeader().hide()
-        #self.table2.setModel(self.model)
+        self.tableData.setModel(QtGui.QStandardItemModel()) # empty model
+
+        self.model = None
 
     def load_group(self, ogtGroup):
 
@@ -240,14 +245,14 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         ## Populate header
         HEADER_HEIGHT = 80
-        for cidx, heading in enumerate(self.ogtGroup.headings_list()):
+        for cidx, heading in enumerate(self.ogtGroup.headings_list):
 
             hitem = xwidgets.XTableWidgetItem()
             hitem.set(heading.head_code, bold=True)
             self.tableHeadings.setHorizontalHeaderItem(cidx, hitem)
 
             header_widget = OGTHeaderWidget(ogtDoc=self.ogtGroup.parentDoc)
-            header_widget.set_data(heading)
+            header_widget.set_heading(heading)
 
             self.tableHeadings.setCellWidget(0, cidx, header_widget )
             header_widget.sigGoto.connect(self.on_goto)
@@ -257,7 +262,7 @@ class OGTGroupWidget( QtGui.QWidget ):
         self.tableHeadings.setRowHeight(0, HEADER_HEIGHT)
         self.tableHeadings.setFixedHeight(HEADER_HEIGHT + 30)
         v_labels = QtCore.QStringList()
-        #return
+
         # Load the data
         for ridx, row in enumerate(self.ogtGroup.data):
 

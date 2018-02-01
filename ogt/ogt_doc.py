@@ -74,7 +74,7 @@ class OGTDocument:
             TODO: need to sort out utf8 vs ascii vs windows characters
         """
 
-        self.groups = {}
+        self.groups_list = []
         """A `dict` of group code to :class:`~ogt.ogt_group.OGTGroup` instances"""
 
         self.lines = []
@@ -132,7 +132,7 @@ class OGTDocument:
         """
         return len(self.groups.keys())
 
-    def append_group(self, ogtGroup):
+    def add_group(self, ogtGroup):
         """Appends an :class;`~ogt.ogt_group.OGTGroup` instance to this document
 
         : TODO:  decide what to do with dupes.. append or keep both says pedor ?
@@ -141,10 +141,10 @@ class OGTDocument:
         :type grp: ~ogt.ogt_group.OGTGroup
         :return: An `Error` message is group exists, else `None`
         """
-        if ogtGroup.group_code in  self.groups:
-            return "Error: Group already exists in doc"
-        ogtGroup.parentDoc = self
-        self.groups[ogtGroup.group_code] = ogtGroup
+        #if ogtGroup.group_code in  self.groups:
+        #    return "Error: Group already exists in doc"
+
+        self.groups_list.append(ogtGroup)
         return None
 
     def deadgroups(self):
@@ -156,8 +156,11 @@ class OGTDocument:
         :type group_code: str
         :return: An instance of :class:`~ogt.ogt_group.OGTGroup` if exists, else `None`
         """
-
-        return self.groups.get(group_code)
+        for grp in self.groups_list:
+            print grp.group_code, group_code, grp.group_code == group_code
+            if grp.group_code == group_code:
+                return grp
+        return None
 
 
     def proj(self):
@@ -176,8 +179,8 @@ class OGTDocument:
         if not grpOb:
             return None
         #print grpOb.data[0]
-        if len(grpOb.data) > 0: # should always be project
-            return grpOb.data_row(0)
+        if grpOb.data_rows_count(): # should always oen project row
+            return grpOb.data_row_dict(0)
         return None
 
     def units(self):
@@ -757,27 +760,74 @@ class OGTDocument:
 
             # decode csv line
             reader = csv.reader( StringIO.StringIO(stripped) )
-            row = reader.next() # first row of reader
+            csv_row = reader.next() # first row of reader
 
             self.lines.append(line)
-            self.csv_rows.append(row)
+            self.csv_rows.append(csv_row)
 
-            rcells = []
-            for cidx, val in enumerate(row):
-                rcells.append( OGTCell(lidx=lidx, cidx=cidx, value=val))
-            self.cells.append(rcells)
+            row_cells = []
+            for cidx, val in enumerate(csv_row):
+                row_cells.append( OGTCell(lidx=lidx, cidx=cidx, value=val))
+            self.cells.append(row_cells)
 
         ###############################======================================================================
         # next walk and clean
+        loop_grp = None
         for lidx, row in enumerate(self.cells):
-            for cidx, cell in enumerate(row):
-                #print "is_descr", cell, cell.cidx
-                if cidx == 0:
-                    cell.to_upper()
+            #for cidx, cell in enumerate(row):
+            #print "is_descr", cell, cell.cidx
+            #if cidx == 0:
+            print lidx, row
+            lenny = len(row)
+            if lenny == 0:
+                continue
 
-                    errs = ags4.validate_descriptor(cell.value, lidx=lidx, cidx=cidx)
-                    self.add_errors(errs)
+            # validate its a descriptor
+            dcell = row[0]
+            dcell.value, ok, errs = ags4.validate_descriptor(dcell.value, lidx=lidx, cidx=cidx)
+            dcell.add_errors(errs)
+            if ok:
 
+                descriptor = dcell.value
+                xrow = row[0:]
+
+                if descriptor == ags4.AGS4.GROUP:
+
+                    gcell = row[1]
+                    # validate group code
+                    gcell.value, errs = ags4.validate_group_str(gcell.value)
+                    gcell.add_errors(errs)
+
+                    # create group object and add to doc
+                    loop_grp = OGTGroup(gcell.value, ogtDoc=self)
+                    loop_grp.line_start_index = lidx
+                    self.add_group(loop_grp)
+
+                elif descriptor == ags4.AGS4.HEADING:
+                    # Its a HEADING row
+                    loop_grp.headings_source_sort = []
+                    loop_grp.set_headings(xrow, lidx)
+
+                elif descriptor == ags4.AGS4.UNIT:
+                    # a UNIT row
+                    loop_grp.set_units(xrow, lidx)
+
+                elif descriptor == ags4.AGS4.TYPE:
+                    # a TYPE row
+                    loop_grp.set_types(xrow, lidx)
+
+                elif descriptor == ags4.AGS4.DATA:
+                    # a DATA row
+                    loop_grp.add_data_row(xrow)
+                    if loop_grp.data_start_lidx == None:
+                        loop_grp.data_start_lidx = lidx
+
+                    """
+                    dic = {}
+                    for didx, head_code in enumerate(loop_grp.headings_source_sort):
+                        dic[head_code] = xrow[didx]
+                    loop_grp.data.append( dic )
+                    """
         ## Step 2
         # walk the decoded rows, and recognise the groups
         # and mark the start_index and end index of group
@@ -787,7 +837,7 @@ class OGTDocument:
         print self.cells
 
         # walk the parsed cvs rows
-        for lidx, row in enumerate(self.csv_rows):
+        for lidx, row in []: #enumerate(self.csv_rows):
 
             #line_no = lidx + 1
             lenny = len(row)
@@ -818,8 +868,8 @@ class OGTDocument:
                 self.add_errors(errs)
 
                 # Check tis a valid descriptor
-                er = ags4.validate_descriptor(cleaned_code, lidx=lidx, cidx=0)
-                self.add_error(er)
+                clean, ok, er = ags4.validate_descriptor(cleaned_code, lidx=lidx, cidx=0)
+                #self.add_error(er)
 
 
                 if cleaned_code == ags4.AGS4.GROUP:
@@ -840,11 +890,11 @@ class OGTDocument:
 
         # thirdly
         # - we parse each group's csv rows into the parts
-
+        return None
         for group_code, grp in self.groups.iteritems():
             #print "========", group_code, grp, grp.csv_rows()
             #print grp.csv_rows()
-
+            ss
             # walk the csv rows in this group
             for iidx, row in enumerate(grp.csv_rows()):
 
@@ -1077,19 +1127,20 @@ def groups_sort(unsorted_groups):
 class OGTGroup:
     """Represents a Document's :term:`GROUP` and headings"""
 
-    def __init__(self, group_code):
+    def __init__(self, group_code, ogtDoc):
         """
 
         :param group_code: The four character group code to initialize with
         :type group_code: str
         """
-        self.parentDoc = None
+        self.ogtDoc = ogtDoc
         """Pointer to parent :class:`~ogt.ogt_doc.OGTDocument` instance"""
 
         self.group_code = group_code
         """The four character group code"""
 
         self.headings = {}
+        self.headings_list = []
         """A `dict` of head_code > ogtHeadings"""
 
         self.headings_sort = []
@@ -1105,15 +1156,20 @@ class OGTGroup:
         """A `dict` of `head_code:type` """
 
         self.data = []
-        """A `list` of `dict`s with `head_code:value`  """
+        """A `list` of `list`s with `head_code:value`  """
 
-        self.csv_start_index = None
+        self.line_start_index = None
         """The line index this groups start at"""
 
-        self.csv_end_index = None
+        #self.csv_end_index = None
         """The line index this groups ends at"""
 
         self._data_dict = None
+
+        self.headings_lidx = None
+        self.units_lidx = None
+        self.types_lidx = None
+        self.data_start_lidx = None
 
     @property
     def group_description(self):
@@ -1121,6 +1177,50 @@ class OGTGroup:
         if dic:
             return self.data_dict().group_description
         return None
+
+    def set_headings(self, row_cells, lidx):
+
+        self.headings_lidx = lidx
+        self.headings_source_sort = []
+
+        for cidx, hcell in enumerate(row_cells):
+
+            # validate the headings string
+            hcell.value, errs = ags4.validate_heading_str(hcell.value,  lidx=lidx, cidx=cidx + 1)
+            hcell.add_errors(errs)
+            self.headings_source_sort.append(hcell.value)
+
+            # create `OGTHeading objects` and add to group
+            oHead = OGTHeading(cell=hcell.value, ogtGroup=self)
+            #self.headings[hcell.value] = oHead
+            self.headings_list.append(oHead)
+
+    def set_units(self, row_cells, lidx):
+
+        self.units_lidx = lidx
+
+        for idx, cell in enumerate(row_cells):
+            self.headings_list[idx].set_unit(cell)
+
+    def set_types(self, row_cells, lidx):
+
+        self.types_lidx = lidx
+
+        for idx, cell in enumerate(row_cells):
+
+            #clean_str, errs = ags4.validate_clean_str(xrow[didx], lidx=lidx, cidx=didx + 1)
+            #self.add_errors(errs)
+
+            self.headings_list[idx].set_type(cell)
+            """
+            for didx, head_code in enumerate(grp.headings_source_sort):
+
+
+                ## Aae there custom types ??
+                errs = ags4.validate_type_ags(clean_str, lidx=lidx, cidx=didx + 1)
+                self.add_errors(errs)
+                grp.headings[head_code].set_type(clean_str, iidx, didx)
+            """
 
     def has_heading(self, head_code):
         return head_code in self.headings
@@ -1142,7 +1242,7 @@ class OGTGroup:
 
         return self._headings_sort
 
-    def headings_list(self):
+    def deheadings_list(self):
         """Return a list of heading dicts"""
         lst = []
         for hcode in self.headings_source_sort:
@@ -1153,16 +1253,38 @@ class OGTGroup:
     def headings_count(self):
         return len(self.headings.keys())
 
-    def csv_rows(self):
+    def cells(self):
         """Returns the csv rows used in this group, return data from parentDocument """
         return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
     def data_cell(self, ridx, cidx):
         #print self.data
-        return self.data[ridx][self.headings_source_sort[cidx]]
+        return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
+        #return self.data[ridx][self.headings_source_sort[cidx]]
 
-    def data_row(self, ridx):
+    def add_data_row(self, row_cells):
+        self.data.append(row_cells)
+
+    def data_row_cells(self, ridx):
+        #return dself.parentDoc.cells[self.csv_start_index + ridx + 4]
+        #return self.data[ridx]
         return self.data[ridx]
+
+    def data_rows_dict(self):
+        return ss
+
+    def data_row_dict(self, ridx):
+        dic  = {}
+        lst = self.data_row_cells(ridx)
+        for idx, head_code in enumerate(self.headings_source_sort):
+            dic[head_code] = lst[idx].value
+        return dic
+
+
+    def data_column_from_head_code(self, head_code):
+        if head_code in self.headings:
+            return [rec[head_code] for rec in self.data]
+        return None
 
     def data_rows_count(self):
         return len(self.data)
@@ -1219,10 +1341,6 @@ class OGTGroup:
         return dic
 
 
-    def data_column(self, head_code):
-        if head_code in self.headings:
-            return [rec[head_code] for rec in self.data]
-        return None
 
     def units_list(self):
 
@@ -1244,26 +1362,32 @@ class OGTGroup:
 class OGTCell:
 
     def __init__(self, lidx, cidx, value):
+        """Line and col index = value
+        """
 
         self.lidx = lidx
         self.cidx = cidx
+
         self.raw = value
 
         self.errors = []
-        self.value, errs = ags4.strip_string(self.raw,  cell=self)
+        self.value, errs = ags4.strip_string(self.raw)
         for e in errs:
             self.errors.append(e)
-            """if e.error:
-                self.errors.append(e)
-            else:
-                self.warnings.append(e)
-            """
-        self.descriptior = None
 
-    def to_upper(self):
+    def add_errors(self, errs):
+        if errs == None:
+            return
+        if isinstance(errs, OgtError):
+            self.errors.append(errs)
+        if len(errs) == 0:
+            return
+        self.errors.extend(errs)
+
+    def deadto_upper(self):
         sup = self.value.upper()
         if sup != self.value:
-            self.errors.append(OgtError("Lower space chars `%s`" % self.value, cell=self, type=OgtError.WARN))
+            self.errors.append(OgtError("Lower space chars `%s`" % self.value, cell=self, warn=True))
         self.value = sup
 
     def __repr__(self):
@@ -1271,14 +1395,14 @@ class OGTCell:
 
 class OGTHeading:
 
-    def __init__(self, ogtGroup=None, head_code=None):
+    def __init__(self,  cell=None, ogtGroup=None,):
 
         self.ogtGroup = ogtGroup
-        self.head_code = head_code
+        #self.head_code = head_code
         self.unit = None
         self.type = None
 
-        self.head_code_cell = None
+        self.head_code_cell = cell
         self.unit_cell = None
         self.type_cell = None
 
@@ -1287,7 +1411,6 @@ class OGTHeading:
 
     @property
     def head_description(self):
-
         dd = self.ogtGroup.data_dict()
         if dd:
             head, found = dd.heading(self.head_code)
@@ -1295,14 +1418,21 @@ class OGTHeading:
                 return head.get("head_description")
         return None
 
-    def set_head_code(self, head_code, row_idx, col_idx):
+    @property
+    def head_code(self):
+        return self.head_code_cell.value
+
+    def dead_set_head_code(self, head_code, row_idx, col_idx):
         self.head_code = head_code
         self.head_code_index = [row_idx, col_idx]
 
-    def set_unit(self, unit, row_idx, col_idx):
-        self.unit = unit
-        self.unit_index = [row_idx, col_idx]
+    def set_unit(self, cell):
+        cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
+        cell.add_errors(errs)
+        self.unit_cell = cell
 
-    def set_type(self, type, row_idx, col_idx):
-        self.type = type
-        self.type_index = [row_idx, col_idx]
+    def set_type(self, cell):
+        cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
+        cell.add_errors(errs)
+        self.type_cell = cell
+

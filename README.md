@@ -1,7 +1,7 @@
 ogt-ags-py
 ============================
 
-Circa 2017 this is WIP on a Python librar/toolkit for interpolation with AGS dataformat files.
+Its feb 2018 this is WIP on a Python librar/toolkit for interpolation with AGS dataformat files.
 
 The code has three fundamental goals:
 - Converting from AGS format to json+yaml (odf_xlsx is WIP)
