@@ -39,7 +39,31 @@ def vlayout(spacing=DEFAULT_SPACING, margin=DEFAULT_MARGIN):
     return lay
 
 
-def label(txt, align=Qt.AlignLeft, bold=False, style=None):
+class XLabel(QtGui.QLabel):
+    def __init__( self, parent=None, style=None,  align=None,
+                 text=None,  tooltip=None, bold=False, width=None):
+        QtGui.QLabel.__init__( self, parent )
+
+        self.set_bold(bold)
+
+        if text:
+            self.setText(text)
+
+        if tooltip:
+            self.setToolTip(tooltip)
+
+        if align != None:
+            self.setAlignment(align)
+
+        if style:
+            self.setStyleSheet(style)
+
+    def set_bold(self, state):
+        f = self.font()
+        f.setBold(state)
+        self.setFont(f)
+
+def deadlabel(txt, align=Qt.AlignLeft, bold=False, style=None):
     """Convenience function to create a QLabel"""
     lbl = QtGui.QLabel()
     lbl.setText(txt)
@@ -55,9 +79,9 @@ def label(txt, align=Qt.AlignLeft, bold=False, style=None):
 class XToolButton(QtGui.QToolButton):
     def __init__( self, parent=None, both=True,  ico=None,
                   popup=False, autoRaise=True, menu=False, disabled=False,
-                label=None, text=None, tooltip=None, bold=False,
+                text=None,  tooltip=None, bold=False,
                   callback=None, toggledCallback=None,
-                  checkable=False, checked=True,
+                  checkable=None, checked=None,
                 width=None):
         QtGui.QToolButton.__init__( self, parent )
 
@@ -75,10 +99,10 @@ class XToolButton(QtGui.QToolButton):
         else:
             self.setToolButtonStyle( Qt.ToolButtonIconOnly)
 
-        if checkable:
-            self.setCheckable(True)
-        if checked:
-            self.setChecked(True)
+        if checkable != None:
+            self.setCheckable(checkable)
+        if checked != None:
+            self.setChecked(checked)
 
         if callback:
             self.clicked.connect(callback)
@@ -88,8 +112,6 @@ class XToolButton(QtGui.QToolButton):
         if tooltip:
             self.setToolTip(tooltip)
 
-        if label:
-            self.setText(label)
         if text:
             self.setText(text)
 

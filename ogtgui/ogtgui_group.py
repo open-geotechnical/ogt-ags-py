@@ -33,10 +33,35 @@ class OGTHeaderWidget( QtGui.QWidget ):
         self.mainLayout.setContentsMargins(0,0,0,0)
         self.setLayout(self.mainLayout)
 
-        sty = "background-color: #dddddd; color: black; padding: 2px; font-size: 8pt;"
+        row = 0
+        ## So splits up tthe header into parts..
+        #self.headerWidget = QtGui.QWidget()
+        self.headerGridLay = QtGui.QHBoxLayout()
+        #self.headerWidget.setLayout(self.headerGridLay)
+        self.mainLayout.addLayout(self.headerGridLay, row, 0, 1, 3)
+
+        self.lblHeadCode = xwidgets.XLabel("-", bold=True)
+        self.headerGridLay.addWidget(self.lblHeadCode, 10)
+
+        #self.buttGroup = xwidgets.XToolButton(self, text="group")
+        #self.headerGridLay.addWidget(self.buttGroup)
+
+        self.buttHeadCode = xwidgets.XToolButton(self, ico=Ico.BulletDown,  bold=True, popup=True, menu=True)
+        self.buttHeadCode.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.headerGridLay.addWidget(self.buttHeadCode, 0)
+        #print "ss", self.buttHeadCode.isCheckable()
+
+        self.buttHeadCode.menu().addAction("Open Group TODO")
+        self.buttHeadCode.menu().addAction("Select another heading TODO")
+
+        #sp = self.buttHeadCode.sizePolicy()
+        #sp.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
+        #self.buttHeadCode.setSizePolicy(sp)
+
+        sty = "background-color: #dddddd; color: black; padding: 3px; font-size: 8pt;"
 
         # description
-        row = 0
+        row += 1
         self.lblHeadDescription = QtGui.QLabel()
         self.lblHeadDescription.setStyleSheet(sty)
         self.lblHeadDescription.setFixedHeight(60)
@@ -47,18 +72,18 @@ class OGTHeaderWidget( QtGui.QWidget ):
 
         # unit
         row += 1
-        lbl = xwidgets.label("Unit:", align=Qt.AlignRight, style=sty)
+        lbl = xwidgets.XLabel("Unit:", align=Qt.AlignRight, style=sty)
         self.mainLayout.addWidget(lbl, row, 0)
 
-        self.lblUnit = xwidgets.label("-", bold=True, style=sty + "color: #000099;")
+        self.lblUnit = xwidgets.XLabel("-", bold=True, style=sty + "color: #000099;")
         self.mainLayout.addWidget(self.lblUnit, row, 1, 1, 2)
 
         # Type
         row += 1
-        lbl = xwidgets.label("Type:", align=Qt.AlignRight, style=sty )
+        lbl = xwidgets.XLabel("Type:", align=Qt.AlignRight, style=sty )
         self.mainLayout.addWidget(lbl, row, 0)
 
-        self.lblType = xwidgets.label("-", bold=True, style=sty + "color: #000099;" )
+        self.lblType = xwidgets.XLabel("-", bold=True, style=sty + "color: #000099;" )
         self.mainLayout.addWidget(self.lblType, row, 1)
 
         self.buttLink = QtGui.QToolButton()
@@ -79,7 +104,11 @@ class OGTHeaderWidget( QtGui.QWidget ):
         self.ogtHeading = ogtHeading
 
         descr = self.ogtHeading.head_description
-        self.lblHeadDescription.setText("-" if descr == None else descr)
+        t = "-" if descr == None else descr
+        para = '<p style="line-height: 80%">' + t + '</p>'
+        self.lblHeadDescription.setText(para)
+
+        self.lblHeadCode.setText(ogtHeading.head_code)
 
         self.lblUnit.setText(self.ogtHeading.unit_label)
         #typ = "<a href="""
@@ -214,6 +243,7 @@ class OGTGroupWidget( QtGui.QWidget ):
 
         self.tableHeadings = QtGui.QTableWidget()
         self.mainLayout.addWidget(self.tableHeadings, 0)
+        self.tableHeadings.horizontalHeader().hide()
         self.tableHeadings.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tableHeadings.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -256,10 +286,10 @@ class OGTGroupWidget( QtGui.QWidget ):
         #v_labels = QtCore.QStringList() # vertical labels
 
         ## Populate header
-        HEADER_HEIGHT = 80
-        print "headings list", self.ogtGroup.headings_list()
+        HEADER_HEIGHT = 120
+        #print "headings list", self.ogtGroup.headings_list()
         for cidx, heading in enumerate(self.ogtGroup.headings_list()):
-            print cidx, heading, self
+            #print cidx, heading, self
             hitem = xwidgets.XTableWidgetItem()
             hitem.set(heading.head_code, bold=True)
             self.tableHeadings.setHorizontalHeaderItem(cidx, hitem)

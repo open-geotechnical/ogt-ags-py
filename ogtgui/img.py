@@ -62,6 +62,7 @@ class Ico:
     AgsNotes = "note.png"
 
     Busy = "arrow_in.png"
+    BulletDown = "bullet_arrow_down.png"
 
     Clear = "control.png"
 

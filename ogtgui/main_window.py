@@ -17,20 +17,31 @@ import www_client
 import settings
 import ogtgui_widgets
 import ogtgui_project
+import ogtgui_projects
 from img import Ico
 
 
 class MainWindow( QtGui.QMainWindow ):
     """Inherited by all other main windows"""
 
-    @staticmethod
-    def show_splash():
+    def on_after(self):
+        #self.examplesWidget.load()
+        #print "on_after", self, G.args.dev
+        #self.on_ags4_browse()
 
-        splashImage = QtGui.QPixmap( "../images/splash.png" )
-        splashScreen = QtGui.QSplashScreen( splashImage )
-        splashScreen.showMessage( "  Loading . . ." )
-        splashScreen.show()
-        return splashScreen
+        #G.Ags.load()
+        if G.args.dev:
+            #self.on_browse_ags4()
+            self.on_new_project()
+            pass
+
+
+        #fnn = "AGS4-Example.ags"
+        #self.load_ags4_example(fnn)
+        fn =  "/home/ogt/AGS4-example-wrd.ags"
+        if G.args.dev:
+            #fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
+            self.load_ags4_file(fn)
 
 
     def __init__( self, args ):
@@ -75,8 +86,32 @@ class MainWindow( QtGui.QMainWindow ):
         self.actionNewProject = self.menuFile.addAction(Ico.icon(Ico.Add), "New Project", self.on_new_project)
         self.menuFile.addSeparator()
 
-        self.actionQuit = self.menuFile.addAction(Ico.icon(Ico.Quit), "Quit", self.on_quit)
+        #self.actionQuit = self.menuFile.addAction(Ico.icon(Ico.Quit), "Quit", self.on_quit)
 
+
+        #=======
+        ## Projects
+        self.menuProjects = self.menuBar().addMenu("Projects")
+
+        self.widgetProjects = QtGui.QWidgetAction(self.menuProjects)
+        self.projectsWidget = ogtgui_projects.OgtProjectsWidget(self)
+        #self.projectsWidget.setMinimumHeight(600)
+        self.widgetProjects.setDefaultWidget(self.projectsWidget)
+        #self.examplesWidget.sigFileSelected.connect(self.load_ags4_example)
+
+        self.actionProjects = self.menuProjects.addAction(self.widgetProjects)
+
+
+        self.actionOpen = self.menuFile.addAction("Open Ags File", self.on_open_ags_file)
+        self.actionRecent = self.menuFile.addAction("Recent")
+        self.actionRecent.setMenu(QtGui.QMenu())
+        self.actionRecent.menu().triggered.connect(self.on_open_recent)
+        self.menuFile.addSeparator()
+
+        self.actionNewProject = self.menuProjects.addAction(Ico.icon(Ico.Add), "New Project", self.on_new_project)
+        self.menuProjects.addSeparator()
+
+        self.actionQuit = self.menuFile.addAction(Ico.icon(Ico.Quit), "Quit", self.on_quit)
 
         #=======
         ## View
@@ -174,25 +209,6 @@ class MainWindow( QtGui.QMainWindow ):
 
 
 
-
-    def on_after(self):
-        #self.examplesWidget.load()
-        #print "on_after", self, G.args.dev
-        #self.on_ags4_browse()
-
-        #G.Ags.load()
-        if G.args.dev:
-            #self.on_browse_ags4()
-            self.on_new_project()
-            pass
-
-
-        #fnn = "AGS4-Example.ags"
-        #self.load_ags4_example(fnn)
-        fn =  "/home/ogt/AGS4-example-wrd.ags"
-        if G.args.dev:
-            fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
-            self.load_ags4_file(fn)
 
 
 
@@ -340,3 +356,12 @@ class MainWindow( QtGui.QMainWindow ):
             self.load_ags4_file(fn)
 
 
+
+    @staticmethod
+    def show_splash():
+
+        splashImage = QtGui.QPixmap( "../images/splash.png" )
+        splashScreen = QtGui.QSplashScreen( splashImage )
+        splashScreen.showMessage( "  Loading . . ." )
+        splashScreen.show()
+        return splashScreen

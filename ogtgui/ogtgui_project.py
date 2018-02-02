@@ -42,21 +42,21 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.lblHeader.setStyleSheet("background-color: black; color: #dddddd; font-size: 14pt; padding: 3px 5px;")
         self.topLay.addWidget(self.lblHeader, 100)
 
-        self.buttActAdd = xwidgets.XToolButton(label="Add..", ico=Ico.Add, menu=True, popup=True)
+        self.buttActAdd = xwidgets.XToolButton(text="Add..", ico=Ico.Add, menu=True, popup=True)
         self.topLay.addWidget(self.buttActAdd)
 
-        self.buttImport = xwidgets.XToolButton(label="Import", ico=Ico.Import, menu=True, popup=True)
+        self.buttImport = xwidgets.XToolButton(text="Import", ico=Ico.Import, menu=True, popup=True)
         self.topLay.addWidget(self.buttImport)
 
         self.buttImport.menu().addAction("Add default PROJ, UNIT, etc groups", self.on_add_default_groups)
 
-        self.buttExport = xwidgets.XToolButton(label="Export", ico=Ico.Export, menu=True, popup=True)
+        self.buttExport = xwidgets.XToolButton(text="Export", ico=Ico.Export, menu=True, popup=True)
         self.topLay.addWidget(self.buttExport)
 
         for a in FORMATS:
             self.buttExport.menu().addAction("%s - TODO" % a)
 
-        self.buttReload = xwidgets.XToolButton(label="Reload", ico=Ico.Refresh, popup=True, callback=self.on_reload)
+        self.buttReload = xwidgets.XToolButton(text="Reload", ico=Ico.Refresh, popup=True, callback=self.on_reload)
         #self.buttReload.setText("Relaod")
         #self.buttReload.setIcon(Ico.icon(Ico.Refresh))
         #self.buttReload.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
@@ -404,5 +404,6 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
     def on_goto_source(self, lidx, cidx):
         self.sigGotoSource.emit(lidx, cidx)
+
 
 

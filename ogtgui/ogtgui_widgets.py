@@ -403,10 +403,10 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.buttGroupFilters = QtGui.QButtonGroup(self)
         self.buttGroupFilters.setExclusive(False)
 
-        self.buttWarnings = xwidgets.XToolButton(label="Show Warnings", checkable=True, checked=True)
+        self.buttWarnings = xwidgets.XToolButton(text="Show Warnings", checkable=True, checked=True)
         self.buttGroupFilters.addButton(self.buttWarnings)
 
-        self.buttErrors = xwidgets.XToolButton(label="Show Errors", checkable=True, checked=True)
+        self.buttErrors = xwidgets.XToolButton(text="Show Errors", checkable=True, checked=True)
         self.buttGroupFilters.addButton(self.buttErrors)
 
         self.buttGroupFilters.buttonClicked.connect(self.on_update_filter)
