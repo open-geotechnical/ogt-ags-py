@@ -247,7 +247,7 @@ class OGTDocument:
                 #self.error_rows[e.lidx] = []
             #self.error_rows[e.lidx].append(e)
 
-    def get_errors(self, lidx=None, cidx=None):
+    def errors(self, lidx=None, cidx=None):
 
         if lidx != None:
             recs = self.error_cells.get(lidx)
@@ -258,7 +258,7 @@ class OGTDocument:
             return recs.get(cidx)
         return None
 
-    def get_errors_list(self):
+    def errors_list(self):
 
         lst = []
         for ridx, row in enumerate(self.cells):
@@ -273,6 +273,13 @@ class OGTDocument:
             for cidx in sorted(self.error_cells[lidx].keys()):
                 lst.extend(self.error_cells[lidx][cidx])
         return lst
+
+    def errors_count(self):
+        ec = 0
+        for idx, grp in enumerate(self.groups_list):
+            ec += grp.errors_count()
+
+        return ec
 
     def write(self, ext="json", beside=False, file_path=None,
               zip=False, overwrite=False):
@@ -1195,32 +1202,7 @@ class OGTGroup:
             #self.headings[hcell.value] = oHead
             self._headings.append(oHead)
 
-    def set_units(self, row_cells, lidx):
 
-        self.units_lidx = lidx
-
-        for idx, cell in enumerate(row_cells):
-            self._headings[idx].set_unit(cell)
-
-    def set_types(self, row_cells, lidx):
-
-        self.types_lidx = lidx
-
-        for idx, cell in enumerate(row_cells):
-
-            #clean_str, errs = ags4.validate_clean_str(xrow[didx], lidx=lidx, cidx=didx + 1)
-            #self.add_errors(errs)
-
-            self._headings[idx].set_type(cell)
-            """
-            for didx, head_code in enumerate(grp.headings_source_sort):
-
-
-                ## Aae there custom types ??
-                errs = ags4.validate_type_ags(clean_str, lidx=lidx, cidx=didx + 1)
-                self.add_errors(errs)
-                grp.headings[head_code].set_type(clean_str, iidx, didx)
-            """
 
     def has_heading(self, head_code):
         return head_code in self.headings
@@ -1343,7 +1325,12 @@ class OGTGroup:
 
         return dic
 
+    def set_units(self, row_cells, lidx):
 
+        self.units_lidx = lidx
+
+        for idx, cell in enumerate(row_cells):
+            self._headings[idx].set_unit(cell)
 
     def units_list(self):
 
@@ -1353,6 +1340,13 @@ class OGTGroup:
 
         return lst
 
+    def set_types(self, row_cells, lidx):
+
+        self.types_lidx = lidx
+
+        for idx, cell in enumerate(row_cells):
+            self._headings[idx].set_type(cell)
+
     def types_list(self):
 
         lst = []
@@ -1360,6 +1354,15 @@ class OGTGroup:
             lst.append( self.types[ki] )
 
         return lst
+
+    def errors_count(self):
+        ec = 0
+        for h in self.headings_list():
+            #print h.errors_count()
+            ec += h.errors_count()
+        return ec
+
+
 
 
 class OGTCell:
@@ -1386,6 +1389,9 @@ class OGTCell:
         if len(errs) == 0:
             return
         self.errors.extend(errs)
+
+    def errors_count(self):
+        return len(self.errors)
 
     def get_bg(self):
         """Ok so its not really logic, but idea is to color cells in code, and acorss www, desktop, mobile,
@@ -1459,3 +1465,14 @@ class OGTHeading:
     @property
     def type_label(self):
         return "" if self.type_cell == None else self.type_cell.value
+
+
+    def errors_count(self):
+
+        ec = 0
+        print "hc=", [self.head_code_cell, self.unit_cell, self.type_cell]
+        for cell in [self.head_code_cell, self.unit_cell, self.type_cell]:
+            if cell != None:
+                ec += cell.errors_count()
+
+        return ec

@@ -372,6 +372,90 @@ class ExamplesWidget( QtGui.QWidget ):
         self.sigFileSelected.emit(file_name)
 
 
+
+class ErrorsListModel(QtCore.QAbstractTableModel):
+
+    class C:
+        err = 0
+        lidx = 1
+        cidx = 2
+        rule = 3
+        highlight = 4
+        description = 5
+        search = 6
+
+    def __init__(self):
+        QtCore.QAbstractTableModel.__init__(self)
+
+        self.ogtDoc = None
+        self._col_labels = ["Type", "Line", "Col", "Rule", "High", "Description", "search"]
+
+    def load_document(self, ogtDoc):
+        self.ogtDoc = ogtDoc
+        self.modelReset.emit()
+        #print self.ogtDoc, self
+
+    def columnCount(self, foo):
+        return len(self._col_labels)
+
+    def rowCount(self, midx):
+        if self.ogtDoc == None:
+            return 0
+        return self.ogtDoc.errors_count()
+
+    def data(self, midx, role=Qt.DisplayRole):
+        """Returns the data at the given index"""
+        row = midx.row()
+        col = midx.column()
+        errors = self.ogtDoc.errors_list()
+
+
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            grp = self.ogtDoc.group_by_index(row)
+            #print "grp=", grp
+            if midx.column() == self.C.err:
+                return "1"
+            if midx.column() == self.C.group_description:
+                return grp.group_description
+            if midx.column() == self.C.data_count:
+                return grp.data_rows_count()
+            return "?"
+
+        if role == Qt.DecorationRole:
+            if col == self.C.group_code:
+                return Ico.icon(Ico.Group)
+
+        if role == Qt.FontRole:
+            if col == self.C.group_code:
+                f = QtGui.QFont()
+                f.setBold(True)
+                return f
+
+        if role == Qt.TextAlignmentRole:
+            return Qt.AlignRight if col == 0 else Qt.AlignLeft
+
+        if False and role == Qt.BackgroundColorRole:
+            #print self.ogtGroup.data_cell(index.row(), index.column())
+            cell = self.ogtDoc.group_by_index(row)[col]
+            #bg = cell.get_bg()
+            if len(self.ogtGroup.data_cell(row, col).errors) > 0:
+                print bg, self.ogtGroup.data_cell(row, col).errors
+            return QtGui.QColor(bg)
+
+
+        return QtCore.QVariant()
+
+
+    def headerData(self, idx, orient, role=None):
+        if role == Qt.DisplayRole and orient == Qt.Horizontal:
+            return QtCore.QVariant(self._col_labels[idx])
+
+        if role == Qt.TextAlignmentRole and orient == Qt.Horizontal:
+            return Qt.AlignRight if idx == 0 else Qt.AlignLeft
+
+        return QtCore.QVariant()
+
+
 class C_ERR:
     """Columns for examples"""
     err = 0
@@ -416,13 +500,17 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
         #=============================
         ## Set up tree
-        self.tree = QtGui.QTreeWidget()
+        self.tree = QtGui.QTreeView()
         self.mainLayout.addWidget(self.tree, 30)
+
+        self.model = ErrorsListModel()
+        self.tree.setModel(self.model)
 
         self.tree.setRootIsDecorated(False)
         self.tree.header().setStretchLastSection(True)
-        self.tree.setSortingEnabled(True)
+        #self.tree.setSortingEnabled(True)
 
+        """
         hi = self.tree.headerItem()
         hi.setText(C_ERR.err, "Type")
         hi.setText(C_ERR.lidx, "Line")
@@ -431,6 +519,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
         hi.setText(C_ERR.highlight, "Rule")
         hi.setText(C_ERR.descr, "Description")
         hi.setText(C_ERR.search, "search")
+        """
 
         self.tree.setColumnHidden(C_ERR.err, True)
         self.tree.setColumnHidden(C_ERR.search, True)
@@ -439,12 +528,15 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.tree.setColumnWidth(C_ERR.rule, 50)
         self.tree.setColumnWidth(C_ERR.highlight, 8)
 
-        self.tree.itemClicked.connect(self.on_tree_item_clicked)
+        #self.tree.itemClicked.connect(self.on_tree_item_clicked)
 
     def clear(self):
-        self.tree.clear()
+        print "clear", self #self.tree.clear()
 
     def load_document(self, ogtDoc):
+
+        self.model.load_document(ogtDoc)
+        return
 
         errrs = ogtDoc.get_errors_list()
         if len(errrs) == 0:

@@ -319,6 +319,8 @@ class GroupListModel(QtCore.QAbstractTableModel):
 
     def rowCount(self, midx):
         #print "rc=", self.ogtDoc.groups_count()
+        if self.ogtDoc == None:
+            return 0
         return self.ogtDoc.groups_count()
 
     def data(self, midx, role=Qt.DisplayRole):
@@ -408,17 +410,16 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dockGroups)
 
 
-
-
-
         self.tree = QtGui.QTreeView()
-        #self.tree.setModel(self. model)
-        #self.tree = QtGui.QTreeWidget()
+        self.dockGroups.setWidget(self.tree)
+
+        self.tree.setMinimumWidth(300)
         self.tree.setRootIsDecorated(False)
         self.tree.header().setStretchLastSection(True)
-        self.setCentralWidget(self.tree)
+        #self.setCentralWidget(self.tree)
 
-
+        self.model = GroupListModel()
+        self.tree.setModel(self.model)
 
         """
         hi = self.tree.headerItem()
@@ -429,13 +430,10 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
         """
 
-        self.dockGroups.setWidget(self.tree)
+
 
         self.tree.setColumnWidth(CP.node, 40)
         self.tree.setColumnWidth(CP.group_code, 70)
-        self.tree.setMinimumWidth(300)
-        self.tree.header().show()
-
 
         centralWidget = QtGui.QWidget()
         centralLay = xwidgets.vlayout()
@@ -462,11 +460,10 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
        # self.model = OGTProjectsModel()
         #self.model.load_document(ogtDoc)
         self.ogtDoc = ogtDoc
-
-        self.model = GroupListModel()
         self.model.load_document(self.ogtDoc)
+        self.errorsWidget.load_document(self.ogtDoc)
 
-        self.tree.setModel(self.model)
+
         return
         for g in self.ogtDoc.groups_list:
             #print "===", g.group_description
@@ -481,9 +478,9 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
 
 
-        #self.errorsWidget.load_document(self.ogtDoc)
 
     def on_tree_double_clicked(self, item, cidx):
+        print "dbk", item, cidx
         item = self.tree.currentItem()
         if item == None:
             return
