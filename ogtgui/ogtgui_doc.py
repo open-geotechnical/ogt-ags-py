@@ -100,14 +100,14 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
     def load_group(self, ogtGrp):
         #print "load_group", ogtGrp, self
-        widget = ogtgui_group.OGTGroupWidget(self, doc=self.doc)
+        widget = ogtgui_group.OGTGroupWidget(self, ogtGroup=ogtGrp)
         idx = self.tabBar.addTab( "%s - %s " % (ogtGrp.group_code, ogtGrp.data_rows_count()) )
         if ogtGrp.data_dict():
             descr = ogtGrp.group_description
             self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)
 
         self.stackWidget.addWidget(widget)
-        widget.load_group(ogtGrp)
+        #widget.set_group(ogtGrp)
         widget.sigGoto.connect(self.on_goto)
 
         return widget

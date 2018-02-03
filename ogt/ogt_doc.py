@@ -132,7 +132,7 @@ class OGTDocument:
         """
         return len(self.groups_list)
 
-    def add_group(self, ogtGroup):
+    def add_group(self, gcell, lidx):
         """Appends an :class;`~ogt.ogt_group.OGTGroup` instance to this document
 
         : TODO:  decide what to do with dupes.. append or keep both says pedor ?
@@ -143,9 +143,15 @@ class OGTDocument:
         """
         #if ogtGroup.group_code in  self.groups:
         #    return "Error: Group already exists in doc"
+        gcell.value, errs = ags4.validate_group_str(gcell.value)
+        gcell.add_errors(errs)
+        self.add_errors(errs)
 
+        # create group object and add to doc
+        ogtGroup = OGTGroup(gcell.value, ogtDoc=self)
+        ogtGroup.line_start_index = lidx
         self.groups_list.append(ogtGroup)
-        return None
+        return ogtGroup
 
     def deadgroups(self):
         return self._groups
@@ -752,6 +758,7 @@ class OGTDocument:
         #  - split ags_string into lines
         #  - and parse `each line` into csv
         #  - and add to the doc
+        loopGroup = None
         for lidx, line in enumerate(self.source.split("\n")):
 
             # removing and trailing whitespace eg \r
@@ -773,62 +780,69 @@ class OGTDocument:
             self.csv_rows.append(csv_row)
 
             row_cells = []
+
             for cidx, val in enumerate(csv_row):
-                row_cells.append( OGTCell(lidx=lidx, cidx=cidx, value=val))
+                row_cells.append( OGTCell(lidx=lidx, cidx=cidx, value=val) )
             self.cells.append(row_cells)
 
-        ###############################======================================================================
+        #################################======================================================================
         # next walk and clean
-        loop_grp = None
-        for lidx, row in enumerate(self.cells):
+        loopGroup = None
+        for lidx, rrow in enumerate(self.cells):
             #for cidx, cell in enumerate(row):
             #print "is_descr", cell, cell.cidx
             #if cidx == 0:
             #print lidx, row
-            lenny = len(row)
+            lenny = len(rrow)
             if lenny == 0:
                 continue
 
-            # validate its a descriptor
-            dcell = row[0]
-            dcell.value, ok, errs = ags4.validate_descriptor(dcell.value, lidx=lidx, cidx=cidx)
-            dcell.add_errors(errs)
-            if ok:
+            # DO DO catch row == 1 and row == 2
 
+            # validate its a descriptor
+            dcell = rrow[0]
+            dcell.value, valid, errs = ags4.validate_descriptor(dcell.value, lidx=lidx, cidx=cidx)
+            dcell.add_errors(errs)
+            if valid:
                 descriptor = dcell.value
-                xrow = row[0:]
+                drow = rrow[1:] # data row
 
                 if descriptor == ags4.AGS4.GROUP:
-
-                    gcell = row[1]
-                    # validate group code
-                    gcell.value, errs = ags4.validate_group_str(gcell.value)
-                    gcell.add_errors(errs)
-
-                    # create group object and add to doc
-                    loop_grp = OGTGroup(gcell.value, ogtDoc=self)
-                    loop_grp.line_start_index = lidx
-                    self.add_group(loop_grp)
+                    if len(drow) == 0:
+                        # missing group descr
+                        ddd
+                        grp_cell = OGTCell(lidx=lidx, cidx=cidx, value="MISSING")
+                    elif len(drow) == 1:
+                        grp_cell = drow[0]
+                    else:
+                        # too many item for group
+                        print len(drow), drow
+                        sss
+                        grp_cell = drow[1]
+                    loopGroup = self.add_group(grp_cell, lidx)
 
                 elif descriptor == ags4.AGS4.HEADING:
                     # Its a HEADING row
-                    loop_grp.headings_source_sort = []
-                    loop_grp.set_headings(xrow, lidx)
+                    #loopGroup.headings_source_sort = []
+                    loopGroup.set_headings(drow, lidx)
 
                 elif descriptor == ags4.AGS4.UNIT:
                     # a UNIT row
-                    loop_grp.set_units(xrow, lidx)
+                    loopGroup.set_units(drow, lidx)
 
                 elif descriptor == ags4.AGS4.TYPE:
                     # a TYPE row
-                    loop_grp.set_types(xrow, lidx)
+                    loopGroup.set_types(drow, lidx)
 
                 elif descriptor == ags4.AGS4.DATA:
                     # a DATA row
-                    loop_grp.add_data_row(xrow)
-                    if loop_grp.data_start_lidx == None:
-                        loop_grp.data_start_lidx = lidx
+                    loopGroup.add_data_row(drow)
+                    if loopGroup.data_start_lidx == None:
+                        loopGroup.data_start_lidx = lidx
+                else:
 
+                    print "LOST row"
+                    loopGroup.add_lost(xrow)
                     """
                     dic = {}
                     for didx, head_code in enumerate(loop_grp.headings_source_sort):

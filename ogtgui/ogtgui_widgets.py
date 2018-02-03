@@ -392,7 +392,7 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
 
     def load_document(self, ogtDoc):
         self.ogtDoc = ogtDoc
-        self.modelReset.emit()
+        sself.modelReset.emit()
         #print self.ogtDoc, self
 
     def columnCount(self, foo):
@@ -401,6 +401,7 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
     def rowCount(self, midx):
         if self.ogtDoc == None:
             return 0
+        return 0
         return self.ogtDoc.errors_count()
 
     def data(self, midx, role=Qt.DisplayRole):
@@ -535,7 +536,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
 
     def load_document(self, ogtDoc):
 
-        self.model.load_document(ogtDoc)
+        #self.model.load_document(ogtDoc)
         return
 
         errrs = ogtDoc.get_errors_list()

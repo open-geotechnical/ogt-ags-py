@@ -44,7 +44,7 @@ class CL:
     lat = 1
     lon = 2
 
-class MapOverviewWidget(QtGui.QWidget):
+class xMapOverviewWidget(QtGui.QWidget):
     debug = True
 
     def __init__(self, parent=None):
