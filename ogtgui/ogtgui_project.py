@@ -105,7 +105,7 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.tabBar.currentChanged.connect(self.on_tab_changed)
 
         if G.args.dev:
-            self.tabBar.setCurrentIndex(1)
+            self.tabBar.setCurrentIndex(0)
             pass
 
     def init_load(self):
@@ -156,10 +156,12 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.lblHeader.setText(proj['PROJ_NAME'])
 
         self.ogtDocWidget.load_document(self.ogtDoc)
+        self.ogtProjSummaryWidget.load_document(self.ogtDoc)
+
         return
         self.ogtScheduleWidget.load_document(self.ogtDoc)
         self.ogtSourceViewWidget.load_document(self.ogtDoc)
-        self.ogtProjSummaryWidget.load_document(self.ogtDoc)
+
 
         ## HACK
         QtCore.QTimer.singleShot(4000, self.do_map_after)
@@ -290,6 +292,86 @@ class OGTProjectsModel(QtCore.QAbstractItemModel):
 
         return QtCore.QVariant()
 
+
+
+class GroupListModel(QtCore.QAbstractTableModel):
+
+    class C:
+        data_count = 0
+        group_code = 1
+        group_description = 2
+
+    def __init__(self):
+        QtCore.QAbstractTableModel.__init__(self)
+
+        self.ogtDoc = None
+
+        self._col_labels = ["Data", "Group Code", "Descripton"]
+
+    def load_document(self, ogtDoc):
+        self.ogtDoc = ogtDoc
+        #self.modelReset.emit()
+        #print self.ogtDoc, self
+
+    def columnCount(self, foo):
+        #print foo
+        return 3
+
+    def rowCount(self, midx):
+        #print "rc=", self.ogtDoc.groups_count()
+        return self.ogtDoc.groups_count()
+
+    def data(self, midx, role=Qt.DisplayRole):
+        """Returns the data at the given index"""
+        row = midx.row()
+        col = midx.column()
+
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            grp = self.ogtDoc.group_by_index(row)
+            #print "grp=", grp
+            if midx.column() == self.C.group_code:
+                return grp.group_code
+            if midx.column() == self.C.group_description:
+                return grp.group_description
+            if midx.column() == self.C.data_count:
+                return grp.data_rows_count()
+            return "?"
+
+        if role == Qt.DecorationRole:
+            if col == self.C.group_code:
+                return Ico.icon(Ico.Group)
+
+        if role == Qt.FontRole:
+            if col == self.C.group_code:
+                f = QtGui.QFont()
+                f.setBold(True)
+                return f
+
+        if role == Qt.TextAlignmentRole:
+            return Qt.AlignRight if col == 0 else Qt.AlignLeft
+
+        if False and role == Qt.BackgroundColorRole:
+            #print self.ogtGroup.data_cell(index.row(), index.column())
+            cell = self.ogtDoc.group_by_index(row)[col]
+            #bg = cell.get_bg()
+            if len(self.ogtGroup.data_cell(row, col).errors) > 0:
+                print bg, self.ogtGroup.data_cell(row, col).errors
+            return QtGui.QColor(bg)
+
+
+        return QtCore.QVariant()
+
+
+    def headerData(self, idx, orient, role=None):
+        if role == Qt.DisplayRole and orient == Qt.Horizontal:
+            return QtCore.QVariant(self._col_labels[idx])
+
+        if role == Qt.TextAlignmentRole and orient == Qt.Horizontal:
+            return Qt.AlignRight if idx == 0 else Qt.AlignLeft
+
+        return QtCore.QVariant()
+
+
 class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
     sigGoto = pyqtSignal(object)
@@ -327,31 +409,32 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
 
 
-        self.model = None
 
-        #self.tree = QtGui.QTreeView()
-        #self.tree.setModel(QtGui.QStandardItemModel())
-        self.tree = QtGui.QTreeWidget()
+
+        self.tree = QtGui.QTreeView()
+        #self.tree.setModel(self. model)
+        #self.tree = QtGui.QTreeWidget()
         self.tree.setRootIsDecorated(False)
         self.tree.header().setStretchLastSection(True)
         self.setCentralWidget(self.tree)
 
 
 
-
+        """
         hi = self.tree.headerItem()
         hi.setText(CP.group_code, "Group")
         hi.setText(CP.group_description, "Description")
         hi.setText(CP.node, "Rows")
         hi.setTextAlignment(CP.node, Qt.AlignRight)
         self.tree.itemDoubleClicked.connect(self.on_tree_double_clicked)
-
+        """
 
         self.dockGroups.setWidget(self.tree)
 
         self.tree.setColumnWidth(CP.node, 40)
         self.tree.setColumnWidth(CP.group_code, 70)
         self.tree.setMinimumWidth(300)
+        self.tree.header().show()
 
 
         centralWidget = QtGui.QWidget()
@@ -379,9 +462,13 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
        # self.model = OGTProjectsModel()
         #self.model.load_document(ogtDoc)
         self.ogtDoc = ogtDoc
-        #self.tree.setModel(self.model)
-        #return
-        for g in self.ogtDoc.groups_list():
+
+        self.model = GroupListModel()
+        self.model.load_document(self.ogtDoc)
+
+        self.tree.setModel(self.model)
+        return
+        for g in self.ogtDoc.groups_list:
             #print "===", g.group_description
             item = xwidgets.XTreeWidgetItem()
 
@@ -390,11 +477,11 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
             item.set(CP.group_description, g.group_description)
 
             item.set(CP.node, str(g.data_rows_count()), align=Qt.AlignRight)
-            self.tree.addTopLevelItem(item)
+            #self.tree.addTopLevelItem(item)
 
 
 
-        self.errorsWidget.load_document(self.ogtDoc)
+        #self.errorsWidget.load_document(self.ogtDoc)
 
     def on_tree_double_clicked(self, item, cidx):
         item = self.tree.currentItem()

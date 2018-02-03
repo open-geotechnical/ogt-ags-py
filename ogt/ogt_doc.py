@@ -121,8 +121,8 @@ class OGTDocument:
         return lst
 
     def group_by_index(self, ridx):
-        lst = self.groups_sort()
-        return self.groups.get(lst[ridx])
+        #lst = self.groups_sort()
+        return self.groups_list[ridx]
 
     def groups_count(self):
         """Returns no of groups in the document
@@ -130,7 +130,7 @@ class OGTDocument:
         :rtype: int
         :return: Groups count
         """
-        return len(self.groups.keys())
+        return len(self.groups_list)
 
     def add_group(self, ogtGroup):
         """Appends an :class;`~ogt.ogt_group.OGTGroup` instance to this document

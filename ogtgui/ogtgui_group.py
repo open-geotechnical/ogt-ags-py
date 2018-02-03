@@ -160,6 +160,8 @@ class GroupModel(QtCore.QAbstractTableModel):
             #print self.ogtGroup.data_cell(index.row(), index.column())
             cell = self.ogtGroup.data_cell(index.row(), index.column())
             bg = cell.get_bg()
+            if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
+                print bg, self.ogtGroup.data_cell(index.row(), index.column()).errors
             return QtGui.QColor(bg)
 
 
