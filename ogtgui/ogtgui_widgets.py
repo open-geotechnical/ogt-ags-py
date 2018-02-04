@@ -623,3 +623,298 @@ class OGTErrorsWidget( QtGui.QWidget ):
         return self.buttWarnings.isChecked(), self.buttErrors.isChecked()
 
 
+class HelpDialog(QtGui.QDialog):
+    debug = False
+
+    def __init__(self, parent=None, page=None):
+        QtGui.QDialog.__init__(self, parent)
+
+        self.setWindowTitle("Help")
+        self.setWindowIcon(dIco.icon(dIco.Help))
+
+        # self.setWindowFlags(QtCore.Qt.Popup)
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+
+        self.setMinimumWidth(900)
+        self.setMinimumHeight(700)
+
+        # self.setStyleSheet("border: 1px solid black;")
+
+        outerLayout = QtGui.QVBoxLayout()
+        outerLayout.setSpacing(0)
+        margarine = 0
+        outerLayout.setContentsMargins(margarine, margarine, margarine, margarine)
+        self.setLayout(outerLayout)
+
+        mainLayout = QtGui.QHBoxLayout()
+        mainLayout.setSpacing(0)
+        margarine = 0
+        mainLayout.setContentsMargins(margarine, margarine, margarine, margarine)
+        outerLayout.addLayout(mainLayout)
+
+        self.helpWidget = HelpWidget.HelpWidget(page=page)
+        mainLayout.addWidget(self.helpWidget)
+
+    # if page:
+    #	self.show_page(page)
+
+    def show_page(self, page):
+        self.helpWidget.load_page(page)
+        self.exec_()
+
+
+
+#import mistune
+#from help import DOCS_PATH, DOCS_CONTENT
+
+class C:
+    node = 0
+    page = 1
+
+
+class HelpWidget(QtGui.QWidget):
+    def __init__(self, parent=None, page=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.debug = False
+
+        outerLayout = QtGui.QVBoxLayout()
+        outerLayout.setSpacing(0)
+        margarine = 0
+        outerLayout.setContentsMargins(margarine, margarine, margarine, margarine)
+        self.setLayout(outerLayout)
+
+        self.lblTitle = QtGui.QLabel()
+        self.lblTitle.setText("Help")
+        self.lblTitle.setStyleSheet("background-color: #333333; color: #999999; font-size: 19pt; padding: 4px; ")
+        outerLayout.addWidget(self.lblTitle, 0)
+
+        outerLayout.addSpacing(5)
+
+        self.splitter = QtGui.QSplitter()
+        outerLayout.addWidget(self.splitter, 100)
+
+        ## Contents Tree
+        self.tree = QtGui.QTreeWidget()
+        self.splitter.addWidget(self.tree)
+        hi = self.tree.headerItem()
+        hi.setText(C.node, "File")
+        hi.setText(C.page, "Page")
+
+        self.tree.setColumnHidden(C.page, not self.debug)
+        self.tree.header().setStretchLastSection(True)
+        self.tree.setUniformRowHeights(True)
+
+        self.tree.setFixedWidth(200)
+        self.tree.itemSelectionChanged.connect(self.on_tree_selection)
+
+        ## Tab Widget
+        self.tabWidget = QtGui.QTabWidget()
+        self.splitter.addWidget(self.tabWidget)
+        self.tabWidget.setTabsClosable(True)
+        self.tabWidget.tabCloseRequested.connect(self.on_tab_close_requested)
+        self.tabWidget.currentChanged.connect(self.on_tab_changed)
+
+        self.splitter.setStretchFactor(0, 1)
+        self.splitter.setStretchFactor(1, 2)
+
+        self.load_content_tree()
+
+    def load_content_tree(self):
+
+        self.tree.clear()
+        self.tree.setUpdatesEnabled(False)
+
+        item = TreeWidgetItem()
+        item.set(C.node, "Index", ico=dIco.HelpPage)
+
+        item.setText(C.page, "index.md")
+        self.tree.addTopLevelItem(item)
+
+        rootNode = self.tree.invisibleRootItem()
+        self.load_dir_node(rootNode, DOCS_CONTENT)
+
+        self.tree.setUpdatesEnabled(True)
+
+    def load_dir_node(self, pItem, pth):
+
+        files = os.listdir(pth)
+
+        for f in sorted(files):
+            xpth = os.path.join(pth, f)[len(DOCS_CONTENT):]
+            # print f, xpth
+            if f == "index.md" and pth == DOCS_CONTENT:
+                continue
+            if os.path.isdir(f):
+                item = TreeWidgetItem(pItem)
+                item.set(C.node, f, ico=dIco.Folder)
+                item.setText(C.page, xpth)
+
+                self.load_dir_node(item, os.path.join(pth, f))
+                self.tree.setItemExpanded(item, True)
+
+            elif f.endswith(".md"):
+                item = TreeWidgetItem(pItem)
+                item.set(C.node, self.title_from_filename(f), ico=dIco.HelpPage)
+                item.setText(C.page, xpth)
+
+    def dpage_path_fn(self, page):
+        if page.endswith(".md"):
+            "%s.md" % page
+        read_fn = os.path.join(DOCS_CONTENT, page)
+        # if self.debug:
+        #	print "file_req=", read_fn, self.docs_root()
+        if not os.path.exists(read_fn):
+            print "ERROR: FILE not exits", read_fn
+            return
+
+    def title_from_filename(self, fn):
+        fn = os.path.basename(fn)
+        if fn.endswith(".md"):
+            fn = fn[0:-3]
+        return fn.replace("_", " ").title()
+
+    def select_page(self, page):
+        if self.debug:
+            print "select_page", page, self.tabWidget.count()
+        idx = None
+        if self.tabWidget.count() == 0:
+            return idx
+        ## check page is aleady loaded, and select
+        for i in range(0, self.tabWidget.count()):
+            if self.debug:
+                print "i=", i, self.tabWidget.widget(i).page, page, self.tabWidget.widget(i).page == page
+            if self.tabWidget.widget(i).page == page:
+                self.tabWidget.blockSignals(True)
+                self.tabWidget.setCurrentIndex(i)
+                self.tabWidget.blockSignals(False)
+                idx = i
+                if self.debug:
+                    print "idx=", idx
+                break
+        items = self.tree.findItems(page, Qt.MatchExactly | Qt.MatchRecursive, C.page)
+        if len(items) > 0:
+            self.tree.blockSignals(True)
+            self.tree.setCurrentItem(items[0])
+            self.tree.blockSignals(False)
+        if self.debug:
+            print "items=", idx, items
+        return idx
+
+    def load_page(self, page):
+        print "load_page=", page, type(page)
+        page = str(page)
+
+        full_path = DOCS_CONTENT + page
+        if self.debug:
+            print "------------------\nload_page=", page, full_path
+        if os.path.isdir(full_path):
+            return
+        elif not page.endswith(".md"):
+            full_path = full_path + ".md"
+
+        idx = self.select_page(page)
+        if idx != None:
+            return
+
+        if not os.path.exists(full_path):
+            # print "ERROR: FILE not exits", full_path
+            return
+
+        container = G.ut.read_file(os.path.join(DOCS_PATH, "templates", "help_container.html"))
+
+        txt = G.ut.read_file(full_path)
+        html = mistune.markdown(txt, escape=False)
+
+        out_html = container.replace("##++CONTENT++##", html)
+
+        self.tabWidget.blockSignals(True)
+        if self.debug:
+            print "## create view"
+        webView = HelpPageView()
+        nidx = self.tabWidget.addTab(webView, self.title_from_filename(page))
+        webView.set_data(page, out_html)
+        self.tabWidget.setTabIcon(nidx, dIco.icon(dIco.HelpPage))
+
+        webView.sigPageLinkClicked.connect(self.load_page)
+
+        self.tabWidget.setCurrentIndex(nidx)
+        self.select_tree_node(page)
+        if self.debug:
+            print "## view done"
+        self.tabWidget.blockSignals(False)
+
+    def on_tree_selection(self):
+        item = self.tree.currentItem()
+        if item == None:
+            return
+        self.load_page(item.s(C.page))
+
+    def on_tab_close_requested(self, idx):
+        if self.debug:
+            print "on_tab_close_requested", idx
+        self.tabWidget.removeTab(idx)
+
+    def on_tab_changed(self, nidx):
+        if nidx == -1:
+            self.tree.blockSignals(True)
+            self.tree.clearSelection()
+            self.tree.blockSignals(False)
+            return
+        page = self.tabWidget.widget(nidx).page
+        self.select_tree_node(page)
+
+    def select_tree_node(self, page, block=True):
+
+        self.tree.blockSignals(True)
+        items = self.tree.findItems(page, Qt.MatchExactly | Qt.MatchRecursive, C.page)
+        if self.debug:
+            print "select_tree_node", page, items
+        if len(items) > 0:
+            self.tree.setCurrentItem(items[0])
+        else:
+            # page not in menu
+            pass  # print ere
+        self.tree.blockSignals(False)
+
+
+class HelpPageView(QtGui.QWidget):
+    sigPageLinkClicked = pyqtSignal(str)
+
+    def __init__(self, parent=None, page=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.debug = False
+        self.page = None
+
+        lay = QtGui.QVBoxLayout()
+        lay.setSpacing(0)
+        lay.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(lay)
+
+        self.webView = QtWebKit.QWebView()
+        lay.addWidget(self.webView, 2)
+
+        if self.debug:
+            page = self.webView.page()
+            page.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
+            # elf.webView.settings().globalSettings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
+
+            self.webInspector = QtWebKit.QWebInspector(self)
+            self.webInspector.setPage(page)
+            lay.addWidget(self.webInspector, 3)
+
+        self.webView.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
+        self.webView.linkClicked.connect(self.on_link_clicked)
+
+    def set_data(self, page, html):
+        self.page = page
+        base_url = QtCore.QUrl.fromLocalFile(DOCS_PATH + "/")
+        # bu.setScheme("file")
+        # print "  > out stuff=", base_url.toString(), base_url.isValid()
+        self.webView.setHtml(html, base_url)
+
+    def on_link_clicked(self, url):
+        page = str(url.path())[1:]
+        # print url,  page, type(page)
+        self.sigPageLinkClicked.emit(page)

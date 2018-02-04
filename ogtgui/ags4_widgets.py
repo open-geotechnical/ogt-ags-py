@@ -438,9 +438,6 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.proxy.setFilterFixedString(SHOW_NONE)
 
 
-
-
-
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0,0,0,0)

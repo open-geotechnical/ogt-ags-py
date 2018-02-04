@@ -13,12 +13,92 @@ import ags4_widgets
 import xwidgets
 
 
+class HeadersListModel(QtCore.QAbstractTableModel):
+
+    class C:
+        node = 0
+        valid = 1
+        head_code = 2
+        source_group = 3
+        description = 4
+
+
+    def __init__(self):
+        QtCore.QAbstractTableModel.__init__(self)
+
+        self.ogtGroup = None
+
+        self._col_labels = ["Data", "Group Code", "Descripton"]
+
+    def set_group(self, ogtGroup):
+        self.ogtGroup = ogtGroup
+
+    def columnCount(self, foo):
+        #print foo
+        return 3
+
+    def rowCount(self, midx):
+        #print "rc=", self.ogtDoc.groups_count()
+        if self.ogtGroup == None:
+            return 0
+        return self.ogtGroup.headings_count
+
+    def data(self, midx, role=Qt.DisplayRole):
+        """Returns the data at the given index"""
+        row = midx.row()
+        col = midx.column()
+
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            grp = self.ogtDoc.group_by_index(row)
+            #print "grp=", grp
+            if midx.column() == self.C.group_code:
+                return grp.group_code
+            if midx.column() == self.C.group_description:
+                return grp.group_description
+            if midx.column() == self.C.data_count:
+                return grp.data_rows_count()
+            return "?"
+
+        if role == Qt.DecorationRole:
+            if col == self.C.group_code:
+                return Ico.icon(Ico.Group)
+
+        if role == Qt.FontRole:
+            if col == self.C.group_code:
+                f = QtGui.QFont()
+                f.setBold(True)
+                return f
+
+        if role == Qt.TextAlignmentRole:
+            return Qt.AlignRight if col == 0 else Qt.AlignLeft
+
+        if False and role == Qt.BackgroundColorRole:
+            #print self.ogtGroup.data_cell(index.row(), index.column())
+            cell = self.ogtDoc.group_by_index(row)[col]
+            #bg = cell.get_bg()
+            if len(self.ogtGroup.data_cell(row, col).errors) > 0:
+                print bg, self.ogtGroup.data_cell(row, col).errors
+            return QtGui.QColor(bg)
+
+
+        return QtCore.QVariant()
+
+
+    def headerData(self, idx, orient, role=None):
+        if role == Qt.DisplayRole and orient == Qt.Horizontal:
+            return QtCore.QVariant(self._col_labels[idx])
+
+        if role == Qt.TextAlignmentRole and orient == Qt.Horizontal:
+            return Qt.AlignRight if idx == 0 else Qt.AlignLeft
+
+        return QtCore.QVariant()
+
 class HeadersListWidget( QtGui.QWidget ):
 
 
     #sigGoto = pyqtSignal(str)
 
-    def __init__( self, parent):
+    def __init__( self, parent=None):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
@@ -33,10 +113,11 @@ class HeadersListWidget( QtGui.QWidget ):
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+        self.model = HeadersListModel()
+        self.table.setModel(self.model)
 
     def set_group(self, ogtGrp):
-
-        self.ogtGroup = ogtGrp
+        self.model.set_group(ogtGrp)
 
 
 class TableHeaderWidget( QtGui.QWidget ):
@@ -413,13 +494,22 @@ class GroupWidget( QtGui.QWidget ):
         topLay.addWidget(self.buttGroupCode, 0)
         self.buttGroupCode.clicked.connect(self.on_butt_group_code)
 
+        # mid splitter
+        self.splitter = QtGui.QSplitter()
+        self.mainLayout.addWidget(self.splitter)
 
+        self.stackWidget = QtGui.QStackedWidget()
+        self.splitter.addWidget(self.stackWidget)
 
         self.groupDataTableWidget = GroupDataTableWidget(self)
-        self.mainLayout.addWidget(self.groupDataTableWidget, 100)
+        self.stackWidget.addWidget(self.groupDataTableWidget)
+
+        self.headersListWidget = HeadersListWidget()
+        self.splitter.addWidget(self.headersListWidget)
 
         if ogtGroup:
             self.set_group(ogtGroup)
+
 
 
     def set_group(self, ogtGroup):
@@ -435,6 +525,7 @@ class GroupWidget( QtGui.QWidget ):
 
         #self.gro
         self.groupDataTableWidget.set_group(ogtGroup)
+        self.headersListWidget.set_group(ogtGroup)
         return
 
 

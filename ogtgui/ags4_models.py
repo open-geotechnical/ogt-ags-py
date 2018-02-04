@@ -309,7 +309,6 @@ class HeadingsModel(xobjects.XStandardItemModel):
 
     def append_headings(self, grp):
 
-
         for rec in grp['headings']:
             #print rec.keys()
             # print rec
