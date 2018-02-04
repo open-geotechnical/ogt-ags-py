@@ -72,6 +72,9 @@ class Ico:
 
     FavIcon = "user-worker-boss.png"
 
+    FilterOn = "bullet_yellow.png"
+    FilterOff = "bullet_blue.png"
+
     Folder = 'folder.png'
     FolderAdd = 'folder_add.png'
     FolderCopy = 'folder_page.png'

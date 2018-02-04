@@ -541,3 +541,136 @@ class LNTextEdit(QtGui.QFrame):
 
     def setLineWrapMode(self, mode):
         self.edit.setLineWrapMode(mode)
+
+
+class ToolBarGroup(QtGui.QWidget):
+    def __init__(self, parent=None, title=None, width=None, hide_labels=False,
+                 is_group=False, toggle_icons=False, toggle_callback=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        if width:
+            self.setFixedWidth(width)
+
+        self.icon_on = Ico.FilterOn
+        self.icon_off = Ico.FilterOff
+        self.toggle_icons = toggle_icons
+        self.toggle_callback = toggle_callback
+        self.hide_labels = hide_labels
+
+        self.buttonGroup = None
+        self.is_group = is_group
+        if self.is_group:
+            self.buttonGroup = QtGui.QButtonGroup()
+            self.buttonGroup.setExclusive(True)
+            if self.toggle_callback:
+                self.buttonGroup.buttonClicked.connect(self.on_button_clicked)
+
+        self.group_var = None
+        self.callback = None
+        self.show_icons = True
+        self.icon_size = 12
+        self.bg_color = '#333333'
+
+        ## Main Layout
+        mainLayout = QtGui.QVBoxLayout()
+        mainLayout.setContentsMargins(0, 0, 0, 0)
+        mainLayout.setSpacing(0)
+        self.setLayout(mainLayout)
+
+        ## Label
+        self.label = QtGui.QLabel()
+        bg = "#8F8F8F"  ##eeeeee"
+        fg = "#eeeeee"  ##333333"
+        lbl_sty = "background: %s; " % bg  # qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #fefefe, stop: 1 #CECECE);"
+        lbl_sty += " color: %s; font-size: 8pt; padding: 1px;" % fg  # border: 1px outset #cccccc;"
+        self.label.setStyleSheet(lbl_sty)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        mainLayout.addWidget(self.label)
+
+        ## Toolbar
+        self.toolbar = QtGui.QToolBar()
+        self.toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolbar.setFixedHeight(30)
+
+        mainLayout.addWidget(self.toolbar)
+
+        if title:
+            self.set_title(title)
+
+    def set_title(self, title):
+        self.label.setText("%s" % title)
+
+    def addWidget(self, widget):
+        self.toolbar.addWidget(widget)
+        return widget
+
+    def addAction(self, act):
+        self.toolbar.addAction(act)
+
+    def addButton(self, ico=None, text=None, callback=None, idx=None, toggle_callback=None, tooltip=None,
+                  ki=None, bold=False, checkable=False, checked=None, width=None, return_action=False):
+
+        butt = QtGui.QToolButton()
+
+        if self.is_group:
+            if idx != None:
+                self.buttonGroup.addButton(butt, idx)
+            else:
+                self.buttonGroup.addButton(butt)
+        if self.hide_labels == False:
+            if text != None:
+                butt.setText(text)
+        if text == None:
+            butt.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
+        else:
+            butt.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        if tooltip:
+            butt.setToolTip(tooltip)
+        if self.toggle_icons:
+            butt.setIconSize(QtCore.QSize(10, 10))
+            butt.setIcon(Ico.icon(self.icon_off))
+        if ico:
+            butt.setIcon(Ico.icon(ico))
+            butt.setIconSize(QtCore.QSize(10, 10))
+
+        butt.setCheckable(checkable)
+        if checked != None:
+            butt.setChecked(checked)
+
+
+        butt.setProperty("ki", ki)
+        nuAct = self.toolbar.addWidget(butt)
+        if callback:
+            self.connect(butt, QtCore.SIGNAL("clicked()"), callback)
+        #if toggle_callback:
+        #   self.connect(butt, QtCore.SIGNAL("toggled(bool)"), toggle_callback)
+        if bold:
+            self.set_bold(butt)
+        if width:
+            butt.setFixedWidth(width)
+
+        self.on_button_clicked(block=True)
+
+        if return_action:
+            return nuAct
+        return butt
+
+    def set_bold(self, w):
+        f = w.font()
+        f.setBold(True)
+        w.setFont(f)
+
+    def on_button_clicked(self, butt=None, block=False):
+        if self.is_group:
+            for b in self.buttonGroup.buttons():
+                b.setIcon( Ico.icon(self.icon_on if b.isChecked() else self.icon_off) )
+
+                if block == False and b.isChecked():
+                    if self.toggle_callback:
+                        self.toggle_callback(self.buttonGroup.id(b))
+
+    def get_id(self):
+        id = self.buttonGroup.checkedId()
+        if id == -1:
+            return None
+        return id

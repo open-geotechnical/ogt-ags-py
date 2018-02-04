@@ -809,34 +809,39 @@ class OGTDocument:
 
                 if descriptor == ags4.AGS4.GROUP:
                     if len(drow) == 0:
-                        # missing group descr
-                        ddd
+                        # TODO missing group descr
+                        fix_me
                         grp_cell = OGTCell(lidx=lidx, cidx=cidx, value="MISSING")
                     elif len(drow) == 1:
                         grp_cell = drow[0]
                     else:
-                        # too many item for group
+                        # TODO too many item for group
                         print len(drow), drow
                         sss
                         grp_cell = drow[1]
                     loopGroup = self.add_group(grp_cell, lidx)
+                    loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.HEADING:
                     # Its a HEADING row
                     #loopGroup.headings_source_sort = []
                     loopGroup.set_headings(drow, lidx)
+                    loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.UNIT:
                     # a UNIT row
                     loopGroup.set_units(drow, lidx)
+                    loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.TYPE:
                     # a TYPE row
                     loopGroup.set_types(drow, lidx)
+                    loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.DATA:
                     # a DATA row
                     loopGroup.add_data_row(drow)
+                    loopGroup.add_raw_row(rrow)
                     if loopGroup.data_start_lidx == None:
                         loopGroup.data_start_lidx = lidx
                 else:
@@ -1174,6 +1179,7 @@ class OGTGroup:
         """A `dict` of `head_code:unit`  """
 
         #self.types = {}
+        self.raw_rows = []
         """A `dict` of `head_code:type` """
 
         self.data = []
@@ -1191,6 +1197,11 @@ class OGTGroup:
         self.units_lidx = None
         self.types_lidx = None
         self.data_start_lidx = None
+
+    def __repr__(self):
+        return "<OGTGroup %s>" % self.group_code
+
+
 
     @property
     def group_description(self):
@@ -1240,7 +1251,7 @@ class OGTGroup:
 
     def headings_list(self):
         """Return a list of heading """
-        #return s
+        #print "headings_list", self._headings, self
         return self._headings
         lst = []
         for hcode in self.headings_source_sort:
@@ -1248,10 +1259,15 @@ class OGTGroup:
             lst.append( self.headings[hcode] )
         return lst
 
+    def heading_by_index(self, idx):
+        # TODO trap
+        return self._headings[idx]
+
+    @property
     def headings_count(self):
         return len(self._headings)
 
-    def cells(self):
+    def deadcells(self):
         """Returns the csv rows used in this group, return data from parentDocument """
         return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
@@ -1260,6 +1276,9 @@ class OGTGroup:
         #return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
         #return self.data[ridx][self.headings_source_sort[cidx]]
         return self.data[ridx][cidx]
+
+    def add_raw_row(self, raw_cells):
+        self.raw_rows.append(raw_cells)
 
     def add_data_row(self, row_cells):
         self.data.append(row_cells)
@@ -1440,7 +1459,7 @@ class OGTHeading:
         self.unit_cell = None
         self.type_cell = None
 
-    def dead__repr__(self):
+    def __repr__(self):
         return "OGTHeading `%s`>" % self.head_code
 
     @property
