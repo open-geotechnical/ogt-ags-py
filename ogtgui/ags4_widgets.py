@@ -367,6 +367,9 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
 
 
         g = G.ags.get_group(group_code)
+        if g == None:
+            # not found..
+            g = dict(group_code=group_code, group_description="`%s` group not found" % group_code)
 
         self.lblGroupCode.setText(g['group_code'])
         self.lblDescription.setText(g['group_description'])

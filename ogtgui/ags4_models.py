@@ -254,6 +254,9 @@ class GroupsModel(xobjects.XStandardItemModel):
     def get_group(self, code):
         items = self.findItems(code, Qt.MatchExactly, CG.code)
         #print "GET+", code
+        if len(items) == 0:
+            # not in ags data dict
+            return None
         ridx = items[0].index().row()
         return dict(	group_code=self.item(ridx, CG.code).s(),
                         group_description=self.item(ridx, CG.description).s(),

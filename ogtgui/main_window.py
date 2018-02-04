@@ -135,6 +135,11 @@ class MainWindow( QtGui.QMainWindow ):
 
         self.actionExamples = self.menuExamples.addAction(self.widgetActionExamples)
 
+        # help meniw (meniw = woman in welsh, eg a cafe.. U want the menu?  no food first ;-))
+        self.menuHelp = self.menuBar().addMenu("Help")
+
+        self.menuHelp.addAction("OpenGeotechnical.github.com/ogs-ags-py")
+
         ##===========================
         ## Top Bar
         self.toolBar = QtGui.QToolBar()

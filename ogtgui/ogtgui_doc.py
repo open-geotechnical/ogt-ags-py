@@ -100,7 +100,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
     def load_group(self, ogtGrp):
         #print "load_group", ogtGrp, self
-        widget = ogtgui_group.OGTGroupWidget(self, ogtGroup=ogtGrp)
+        widget = ogtgui_group.GroupWidget(self, ogtGroup=ogtGrp)
         idx = self.tabBar.addTab( "%s - %s " % (ogtGrp.group_code, ogtGrp.data_rows_count()) )
         if ogtGrp.data_dict():
             descr = ogtGrp.group_description

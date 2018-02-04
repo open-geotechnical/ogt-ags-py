@@ -13,9 +13,34 @@ import ags4_widgets
 import xwidgets
 
 
+class HeadersListWidget( QtGui.QWidget ):
 
-class OGTHeaderWidget( QtGui.QWidget ):
-    """The HEADER info which in row 0 """
+
+    #sigGoto = pyqtSignal(str)
+
+    def __init__( self, parent):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.debug = False
+        self.ogtGroup = None
+
+        self.mainLayout = xwidgets.vlayout()
+        self.setLayout(self.mainLayout)
+
+        self.table = QtGui.QTableView()
+        self.mainLayout.addWidget(self.table, 0)
+        self.table.horizontalHeader().hide()
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+
+    def set_group(self, ogtGrp):
+
+        self.ogtGroup = ogtGrp
+
+
+class TableHeaderWidget( QtGui.QWidget ):
+    """The HEADER info in tableWidget """
 
     sigGoto = pyqtSignal(str)
 
@@ -125,7 +150,7 @@ class OGTHeaderWidget( QtGui.QWidget ):
     def on_goto(self):
         self.sigGoto.emit(self.ogtHeading.head_code)
 
-class GroupModel(QtCore.QAbstractTableModel):
+class GroupDataModel(QtCore.QAbstractTableModel):
     """Model for groups
     """
     def __init__(self):
@@ -205,8 +230,36 @@ class GroupModel(QtCore.QAbstractTableModel):
             flags |= Qt.ItemIsEditable
         return flags
 
-class GroupTableWidget( QtGui.QWidget ):
-    """Shows a group with labels at top, and data table underneath"""
+
+class GroupSourceGridWidget( QtGui.QWidget ):
+
+
+    #sigGoto = pyqtSignal(str)
+
+    def __init__( self, parent):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.debug = False
+        self.ogtGroup = None
+
+        self.mainLayout = xwidgets.vlayout()
+        self.setLayout(self.mainLayout)
+
+        self.table = QtGui.QTableView()
+        self.mainLayout.addWidget(self.table, 0)
+        self.table.horizontalHeader().hide()
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+
+    def set_group(self, ogtGrp):
+
+        self.ogtGroup = ogtGrp
+
+
+
+class GroupDataTableWidget( QtGui.QWidget ):
+
 
     sigGoto = pyqtSignal(str)
 
@@ -241,12 +294,10 @@ class GroupTableWidget( QtGui.QWidget ):
     def on_tree_sched_v_scroll(self, x):
         self.treeSamples.verticalScrollBar().setValue(x)
 
-
-
     def set_group(self, ogtGroup):
 
         self.ogtGroup = ogtGroup
-        self.model = GroupModel()
+        self.model = GroupDataModel()
         self.model.load_group(self.ogtGroup)
         self.tableData.setModel(self.model)
 
@@ -266,7 +317,7 @@ class GroupTableWidget( QtGui.QWidget ):
             hitem.set(heading.head_code, bold=True)
             self.tableHeadings.setHorizontalHeaderItem(cidx, hitem)
 
-            header_widget = OGTHeaderWidget(ogtDoc=self.ogtGroup.ogtDoc)
+            header_widget = TableHeaderWidget(ogtDoc=self.ogtGroup.ogtDoc)
             header_widget.set_heading(heading)
 
             self.tableHeadings.setCellWidget(0, cidx, header_widget)
@@ -330,8 +381,8 @@ class GroupTableWidget( QtGui.QWidget ):
         print "on_goto", code, self
         self.sigGoto.emit(code)
 
-class OGTGroupWidget( QtGui.QWidget ):
-    """Shows a group with labels at top, and table underneath"""
+class GroupWidget( QtGui.QWidget ):
+
 
     sigGoto = pyqtSignal(str)
 
@@ -341,34 +392,31 @@ class OGTGroupWidget( QtGui.QWidget ):
         self.debug = False
         self.ogtGroup = None
 
-        self.mainLayout = QtGui.QVBoxLayout()
-        self.mainLayout.setSpacing(0)
-        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.mainLayout = xwidgets.vlayout()
         self.setLayout(self.mainLayout)
 
-        ## titles
+        ## titles and toolbar at top =========
         m = 3
-        topLay = QtGui.QHBoxLayout()
-        topLay.setSpacing(0)
-        topLay.setContentsMargins(m,m,m,m)
+        topLay = xwidgets.hlayout(margin=m)
         self.mainLayout.addLayout(topLay, 0)
 
+        # description
         sty = "background-color: #333333; color: #dddddd; padding: 2px;"
-
-        self.buttGroupCode = QtGui.QToolButton()
-        self.buttGroupCode.setText("-")
-        self.buttGroupCode.setIcon(Ico.icon(Ico.Ags4))
-        self.buttGroupCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        self.buttGroupCode.setStyleSheet( "font-weight: bold;")
-        topLay.addWidget(self.buttGroupCode, 0)
-        self.buttGroupCode.clicked.connect(self.on_butt_group_code)
-
         self.lblGroupDescription = QtGui.QLabel()
         self.lblGroupDescription.setStyleSheet(sty + "")
         topLay.addWidget(self.lblGroupDescription, 100)
 
-        self.groupTableWidget = GroupTableWidget(self)
-        self.mainLayout.addWidget(self.groupTableWidget, 100)
+
+        # The AGS group data
+        self.buttGroupCode = xwidgets.XToolButton(text="-", ico=Ico.Ags4, bold=True, width=80)
+        #self.buttGroupCode.setStyleSheet( "font-weight: bold;")
+        topLay.addWidget(self.buttGroupCode, 0)
+        self.buttGroupCode.clicked.connect(self.on_butt_group_code)
+
+
+
+        self.groupDataTableWidget = GroupDataTableWidget(self)
+        self.mainLayout.addWidget(self.groupDataTableWidget, 100)
 
         if ogtGroup:
             self.set_group(ogtGroup)
@@ -386,7 +434,7 @@ class OGTGroupWidget( QtGui.QWidget ):
         self.lblGroupDescription.setText( "-" if descr == None else descr )
 
         #self.gro
-        self.groupTableWidget.set_group(ogtGroup)
+        self.groupDataTableWidget.set_group(ogtGroup)
         return
 
 
