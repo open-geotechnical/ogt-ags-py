@@ -91,9 +91,10 @@ class OGTDocument:
 
         self.cells = []
 
+
+
     def deadcells(self):
         return self._csv_cells
-
 
     def hash(self):
         """Calculate the `sha1` hash
@@ -132,7 +133,7 @@ class OGTDocument:
         """
         return len(self.groups_list)
 
-    def add_group(self, gcell, lidx):
+    def add_group(self, rows, lidx):
         """Appends an :class;`~ogt.ogt_group.OGTGroup` instance to this document
 
         : TODO:  decide what to do with dupes.. append or keep both says pedor ?
@@ -143,13 +144,16 @@ class OGTDocument:
         """
         #if ogtGroup.group_code in  self.groups:
         #    return "Error: Group already exists in doc"
+
+        gcell = rows[1]
         gcell.value, errs = ags4.validate_group_str(gcell.value)
         gcell.add_errors(errs)
         self.add_errors(errs)
 
         # create group object and add to doc
-        ogtGroup = OGTGroup(gcell.value, ogtDoc=self)
-        ogtGroup.line_start_index = lidx
+        ogtGroup = OGTGroup(ogtDoc=self)
+        ogtGroup.set_group(rows, lidx)
+        #ogtGroup.line_start_index = lidx
         self.groups_list.append(ogtGroup)
         return ogtGroup
 
@@ -805,9 +809,10 @@ class OGTDocument:
             dcell.add_errors(errs)
             if valid:
                 descriptor = dcell.value
-                drow = rrow[1:] # data row
+                #drow = rrow[1:] # data row
 
                 if descriptor == ags4.AGS4.GROUP:
+                    """
                     if len(drow) == 0:
                         # TODO missing group descr
                         fix_me
@@ -819,31 +824,32 @@ class OGTDocument:
                         print len(drow), drow
                         sss
                         grp_cell = drow[1]
-                    loopGroup = self.add_group(grp_cell, lidx)
-                    loopGroup.add_raw_row(rrow)
+                    """
+                    loopGroup = self.add_group(rrow, lidx)
+                    #loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.HEADING:
                     # Its a HEADING row
                     #loopGroup.headings_source_sort = []
-                    loopGroup.set_headings(drow, lidx)
-                    loopGroup.add_raw_row(rrow)
+                    loopGroup.set_headings(rrow, lidx)
+                    #loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.UNIT:
                     # a UNIT row
-                    loopGroup.set_units(drow, lidx)
-                    loopGroup.add_raw_row(rrow)
+                    loopGroup.set_units(rrow, lidx)
+                    #loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.TYPE:
                     # a TYPE row
-                    loopGroup.set_types(drow, lidx)
-                    loopGroup.add_raw_row(rrow)
+                    loopGroup.set_types(rrow, lidx)
+                    #loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.DATA:
                     # a DATA row
-                    loopGroup.add_data_row(drow)
-                    loopGroup.add_raw_row(rrow)
-                    if loopGroup.data_start_lidx == None:
-                        loopGroup.data_start_lidx = lidx
+                    loopGroup.add_data_row(rrow, lidx)
+                    #loopGroup.add_raw_row(rrow)
+                    #if loopGroup.data_start_lidx == None:
+                    #    loopGroup.data_start_lidx = lidx
                 else:
 
                     print "LOST row"
@@ -1153,7 +1159,7 @@ def groups_sort(unsorted_groups):
 class OGTGroup:
     """Represents a Document's :term:`GROUP` and headings"""
 
-    def __init__(self, group_code, ogtDoc):
+    def __init__(self, ogtDoc):
         """
 
         :param group_code: The four character group code to initialize with
@@ -1162,7 +1168,7 @@ class OGTGroup:
         self.ogtDoc = ogtDoc
         """Pointer to parent :class:`~ogt.ogt_doc.OGTDocument` instance"""
 
-        self.group_code = group_code
+        self.group_code = None
         """The four character group code"""
 
         #self.headings = {}
@@ -1179,6 +1185,7 @@ class OGTGroup:
         """A `dict` of `head_code:unit`  """
 
         #self.types = {}
+        self.rows = []
         self.raw_rows = []
         """A `dict` of `head_code:type` """
 
@@ -1196,12 +1203,16 @@ class OGTGroup:
         self.headings_lidx = None
         self.units_lidx = None
         self.types_lidx = None
-        self.data_start_lidx = None
+        self.data_start_lidx = None#
+
+        self.column_count = 0
 
     def __repr__(self):
         return "<OGTGroup %s>" % self.group_code
 
-
+    def _update_col_count(self, rows):
+        if len(rows) > self.column_count:
+            self.column_count = len(rows)
 
     @property
     def group_description(self):
@@ -1210,10 +1221,21 @@ class OGTGroup:
             return self.data_dict().group_description
         return None
 
+    def set_group(self, row_cells, lidx):
+
+        # validate
+        self.group_code = row_cells[1].value
+        self.rows.append(row_cells)
+        self.line_start_index = lidx
+        self._update_col_count(row_cells)
+
     def set_headings(self, row_cells, lidx):
 
         self.headings_lidx = lidx
         self.headings_source_sort = []
+
+        self.rows.append(row_cells)
+        self._update_col_count(row_cells)
 
         for cidx, hcell in enumerate(row_cells):
 
@@ -1271,6 +1293,13 @@ class OGTGroup:
         """Returns the csv rows used in this group, return data from parentDocument """
         return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
+    def cell(self, ridx, cidx):
+        row = self.rows[ridx]
+        print len(row), cidx, row
+        if len(row) < cidx:
+            return None
+        return row[cidx]
+
     def data_cell(self, ridx, cidx):
         #print self.data
         #return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
@@ -1280,8 +1309,11 @@ class OGTGroup:
     def add_raw_row(self, raw_cells):
         self.raw_rows.append(raw_cells)
 
-    def add_data_row(self, row_cells):
-        self.data.append(row_cells)
+    def add_data_row(self, row_cells, lidx):
+        if self.data_start_lidx == None:
+            self.data_start_lidx = lidx
+        #self.dsata.append(row_cells)
+        self.rows.append(row_cells)
 
     def data_row_cells(self, ridx):
         #return dself.parentDoc.cells[self.csv_start_index + ridx + 4]
@@ -1306,6 +1338,9 @@ class OGTGroup:
 
     def data_rows_count(self):
         return len(self.data)
+
+    def row_count(self):
+        return len(self.rows)
 
     def data_dict(self):
         """Returns the data dictionary for this group, if it exists
@@ -1361,6 +1396,8 @@ class OGTGroup:
     def set_units(self, row_cells, lidx):
 
         self.units_lidx = lidx
+        self.rows.append(row_cells)
+        self._update_col_count(row_cells)
 
         for idx, cell in enumerate(row_cells):
             self._headings[idx].set_unit(cell)
@@ -1376,6 +1413,8 @@ class OGTGroup:
     def set_types(self, row_cells, lidx):
 
         self.types_lidx = lidx
+        self.rows.append(row_cells)
+        self._update_col_count(row_cells)
 
         for idx, cell in enumerate(row_cells):
             self._headings[idx].set_type(cell)

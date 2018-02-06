@@ -257,6 +257,7 @@ class GroupDataModel(QtCore.QAbstractTableModel):
 
         self.ogtGroup = ogtGroup
 
+
     def rowCount(self, parent=None, *args):
         """Returns the number of rows of the model"""
         if self.ogtGroup == None:
@@ -341,15 +342,100 @@ class GroupSourceTableWidget( QtGui.QWidget ):
         self.table = QtGui.QTableView()
         self.mainLayout.addWidget(self.table, 0)
 
-        self.model = GroupDataModel()
+        self.model = GroupSourceModel()
         self.table.setModel(self.model)
 
 
     def set_group(self, ogtGroup):
+        ## SourceTable
+        print "set_group", self
+        self.model = GroupSourceModel()
+        self.model.set_group(ogtGroup)
+        self.table.setModel(self.model)
 
+class GroupSourceModel(QtCore.QAbstractTableModel):
+    """Model for groups
+    """
+    def __init__(self):
+        QtCore.QAbstractTableModel.__init__(self)
+
+        self.ogtGroup = None
+
+    def set_group(self, ogtGroup):
+        print "set_group", ogtGroup, self
         self.ogtGroup = ogtGroup
-        self.model.set_group(self.ogtGroup)
 
+    def rowCount(self, parent=None, *args):
+        """Returns the number of rows of the model"""
+        print "rowCount", self.ogtGroup, self
+        if self.ogtGroup == None:
+            return 0
+        return self.ogtGroup.row_count()
+
+    def columnCount(self, parent=None, *args):
+        """Returns the number of columns of the model"""
+        if self.ogtGroup == None:
+            return 0
+        return self.ogtGroup.column_count
+
+    def data(self, index, role=Qt.DisplayRole):
+        """Returns the data at the given index"""
+        #rint index, index.row(), index.column()
+        row = index.row()
+        col = index.column()
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            cell =  self.ogtGroup.cell(row, col)
+            if cell:
+                return cell.value
+            return "?"
+
+        if False and role == Qt.BackgroundColorRole:
+            cell = self.ogtGroup.data_cell(index.row(), index.column())
+            bg = cell.get_bg()
+            if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
+                pass
+            return QtGui.QColor(bg)
+
+
+        return None
+
+    def headerData(self, idx, orientation, role=Qt.DisplayRole):
+        """Returns the headers to display"""
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return str(idx + 1) #self.ogtGroup.headings_source_sort[idx]
+
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return str(idx + 1)
+
+        return None
+
+    def dead_setData(self, index, value, role=None):
+        """Updates data when modified in the view"""
+        if role == Qt.EditRole:
+            if index.column() == 1:
+                self._editor.trains[index.row()].serviceCode = value
+            elif index.column() == 2:
+                self._editor.trains[index.row()].trainTypeCode = value
+            elif index.column() == 3:
+                self._editor.trains[index.row()].appearTimeStr = value
+            elif index.column() == 4:
+                self._editor.trains[index.row()].trainHeadStr = value
+            elif index.column() == 5:
+                self._editor.trains[index.row()].initialSpeed = value
+            elif index.column() == 6:
+                self._editor.trains[index.row()].initialDelayStr = value
+            else:
+                return False
+            self.dataChanged.emit(index, index)
+            return True
+        return False
+
+    def dead_flags(self, index):
+        """Returns the flags of the model"""
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        if index.column() != 0:
+            flags |= Qt.ItemIsEditable
+        return flags
 
 
 

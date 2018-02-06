@@ -154,7 +154,8 @@ class OGTProjectWidget( QtGui.QWidget ):
     def load_document(self):
         proj = self.ogtDoc.proj_dict()
         print "proj=", proj, self
-        self.lblHeader.setText(proj['PROJ_NAME'])
+        if proj:
+            self.lblHeader.setText(proj['PROJ_NAME'])
 
         self.ogtDocWidget.load_document(self.ogtDoc)
         self.ogtProjSummaryWidget.load_document(self.ogtDoc)

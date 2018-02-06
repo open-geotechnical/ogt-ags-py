@@ -98,12 +98,12 @@ class OGTDocumentWidget( QtGui.QWidget ):
             self.load_group( grpOb )
         self.tabBar.setCurrentIndex(1)
 
-    def load_group(self, ogtGrp):
+    def load_group(self, ogtGroup):
         #print "load_group", ogtGrp, self
-        widget = ogtgui_group.GroupWidget(self, ogtGroup=ogtGrp)
-        idx = self.tabBar.addTab( "%s - %s " % (ogtGrp.group_code, ogtGrp.data_rows_count()) )
-        if ogtGrp.data_dict():
-            descr = ogtGrp.group_description
+        widget = ogtgui_group.GroupWidget(self, ogtGroup=ogtGroup)
+        idx = self.tabBar.addTab( "%s - %s " % (ogtGroup.group_code, ogtGroup.data_rows_count()) )
+        if ogtGroup.data_dict():
+            descr = ogtGroup.group_description
             self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)
 
         self.stackWidget.addWidget(widget)
