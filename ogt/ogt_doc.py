@@ -1465,7 +1465,7 @@ class OGTCell:
     def errors_count(self):
         return len(self.errors)
 
-    def get_bg(self):
+    def get_bg(self, errors_only=False):
         """Ok so its not really logic, but idea is to color cells in code, and acorss www, desktop, mobile,
         - no erros its white
         - an data dic violation = dd vilolation
@@ -1475,9 +1475,10 @@ class OGTCell:
         for err in self.errors:
             if err.type == OgtError.ERR: # found an error
                 return err.bg
-        for err in self.errors:
-            if err.type == OgtError.WARN: # found a warning
-                return err.bg
+        if not errors_only:
+            for err in self.errors:
+                if err.type == OgtError.WARN: # found a warning
+                    return err.bg
         return "white" # cool and dandy
 
     def __repr__(self):

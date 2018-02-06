@@ -368,7 +368,7 @@ class GroupSourceGridTableWidget( QtGui.QWidget ):
 
     def on_raw_fixed_clicked(self, butt):
         print "dds", butt, self.buttGroup.id(butt)
-        self.model.set_fixed_raw(self.buttGroup.id(butt))
+        self.model.set_view_raw(self.buttGroup.id(butt))
 
     def set_group(self, ogtGroup):
         ## SourceTable
@@ -388,7 +388,7 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self)
 
         self.ogtGroup = None
-        self.fixed_raw = self.FIXED
+        self.view_raw = self.FIXED
 
     def set_group(self, ogtGroup):
         print "set_group", ogtGroup, self
@@ -407,8 +407,8 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
             return 0
         return self.ogtGroup.column_count
 
-    def set_fixed_raw(self, fr):
-        self.fixed_raw = fr
+    def set_view_raw(self, fr):
+        self.view_raw = fr
         self.layoutChanged.emit()
 
 
@@ -420,14 +420,14 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole or role == Qt.EditRole:
             cell =  self.ogtGroup.cell(row, col)
             if cell:
-                return cell.raw if self.fixed_raw == self.RAW else cell.value
+                return cell.raw if self.view_raw == self.RAW else cell.value
             return "?"
 
         if role == Qt.BackgroundColorRole:
             cell = self.ogtGroup.cell(row, col)
             bg = "white"
             if cell:
-                bg = cell.get_bg()
+                bg = cell.get_bg(self.view_raw == self.FIXED)
                 #if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
                 #pass
             return QtGui.QColor(bg)
@@ -636,7 +636,7 @@ class GroupWidget( QtGui.QWidget ):
         topLay.addWidget(self.buttGroupCode, 0)
         self.buttGroupCode.clicked.connect(self.on_butt_group_code)
 
-        # mid splitter
+        # mid splitter with stack widget
         self.splitter = QtGui.QSplitter()
         self.mainLayout.addWidget(self.splitter)
 
@@ -649,9 +649,21 @@ class GroupWidget( QtGui.QWidget ):
         self.groupSourceTableWidget = GroupSourceGridTableWidget(self)
         self.stackWidget.addWidget(self.groupSourceTableWidget)
 
+        # Right LAyout
+        self.rightWidget = QtGui.QWidget()
+        self.rightLay = xwidgets.vlayout()
+        self.rightWidget.setLayout(self.rightLay)
+        self.splitter.addWidget(self.rightWidget)
+
+
+
+
         self.headersListWidget = HeadersListWidget()
         self.headersListWidget.setMinimumWidth(300)
-        self.splitter.addWidget(self.headersListWidget)
+        self.rightLay.addWidget(self.headersListWidget)
+
+
+
 
         self.splitter.setStretchFactor(0, 10)
         self.splitter.setStretchFactor(1, 0)
