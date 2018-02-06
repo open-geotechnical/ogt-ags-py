@@ -5,12 +5,13 @@
 
 from Qt import QtGui, QtCore, Qt, pyqtSignal
 
-from ogt import ags4
+from ogt import ags4, CELL_COLORS
 
 import app_globals as G
 from img import Ico
 import ags4_widgets
 import xwidgets
+import ogtgui_widgets
 
 
 class HeadersListModel(QtCore.QAbstractTableModel):
@@ -357,7 +358,7 @@ class GroupSourceGridTableWidget( QtGui.QWidget ):
         self.buttGroup.addButton(self.radRaw, GroupSourceGridModel.RAW)
 
         self.topLay.addStretch(30)
-        self.buttGroup.buttonClicked.connect(self.on_raw_fixed_clicked)
+        self.buttGroup.buttonClicked.connect(self.on_view_raw_clicked)
 
         ## Main Table
         self.table = QtGui.QTableView()
@@ -366,13 +367,11 @@ class GroupSourceGridTableWidget( QtGui.QWidget ):
         self.model = QtGui.QStandardItemModel()
         self.table.setModel(self.model)
 
-    def on_raw_fixed_clicked(self, butt):
-        print "dds", butt, self.buttGroup.id(butt)
+    def on_view_raw_clicked(self, butt):
         self.model.set_view_raw(self.buttGroup.id(butt))
 
     def set_group(self, ogtGroup):
         ## SourceTable
-        print "set_group", self
         self.model = GroupSourceGridModel()
         self.model.set_group(ogtGroup)
         self.table.setModel(self.model)
@@ -391,12 +390,10 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
         self.view_raw = self.FIXED
 
     def set_group(self, ogtGroup):
-        print "set_group", ogtGroup, self
         self.ogtGroup = ogtGroup
 
     def rowCount(self, parent=None, *args):
         """Returns the number of rows of the model"""
-        print "rowCount", self.ogtGroup, self
         if self.ogtGroup == None:
             return 0
         return self.ogtGroup.row_count()
@@ -421,15 +418,16 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
             cell =  self.ogtGroup.cell(row, col)
             if cell:
                 return cell.raw if self.view_raw == self.RAW else cell.value
-            return "?"
+            return "-"
 
         if role == Qt.BackgroundColorRole:
             cell = self.ogtGroup.cell(row, col)
-            bg = "white"
+            #bg = "white"
             if cell:
                 bg = cell.get_bg(self.view_raw == self.FIXED)
-                #if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
-                #pass
+            else:
+                bg = CELL_COLORS.empty_bg
+            #print row, col, bg, cell
             return QtGui.QColor(bg)
 
 
@@ -655,12 +653,13 @@ class GroupWidget( QtGui.QWidget ):
         self.rightWidget.setLayout(self.rightLay)
         self.splitter.addWidget(self.rightWidget)
 
-
+        self.errorsWidget = ogtgui_widgets.OGTErrorsWidget(mode=ogtgui_widgets.ERR_MODE.group)
+        self.rightLay.addWidget(self.errorsWidget, 1)
 
 
         self.headersListWidget = HeadersListWidget()
         self.headersListWidget.setMinimumWidth(300)
-        self.rightLay.addWidget(self.headersListWidget)
+        self.rightLay.addWidget(self.headersListWidget, 1)
 
 
 

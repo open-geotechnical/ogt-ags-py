@@ -11,7 +11,7 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 import xwidgets
 from img import Ico
 from ogt import ags4
-from ogt import ERR_COLORS
+from ogt import CELL_COLORS
 
 import app_globals as G
 
@@ -76,7 +76,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.tableWidget.itemSelectionChanged.connect(self.on_select_changed)
         self.tableWidget.horizontalHeader().sectionClicked.connect(self.on_row_clicked)
 
-        self.errorsWidget = OGTErrorsWidget()
+        self.errorsWidget = OGTErrorsWidget(mode=ERR_MODE.document)
         self.errorsWidget.setMinimumWidth(300)
         self.splitter.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.select_cell)
@@ -384,11 +384,16 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
         description = 5
         search = 6
 
-    def __init__(self):
+    def __init__(self, mode):
         QtCore.QAbstractTableModel.__init__(self)
 
+        self.mode = mode
         self.ogtDoc = None
+        self.ogtGroup = None
         self._col_labels = ["Type", "Line", "Col", "Rule", "High", "Description", "search"]
+
+    def set_group(self, ogtGroup):
+        self.ogtGroup = ogtGroup
 
     def load_document(self, ogtDoc):
         self.ogtDoc = ogtDoc
@@ -467,15 +472,25 @@ class C_ERR:
     descr = 5
     search = 6
 
+class ERR_MODE:
+    document = "document"
+    group = "group"
+    #heading = "heading"
+
 class OGTErrorsWidget( QtGui.QWidget ):
 
     sigGotoSource = pyqtSignal(int, int)
     sigErrorsFilter = pyqtSignal(bool, bool)
 
-    def __init__( self, parent=None):
+
+
+    def __init__( self, parent=None, mode=None):
         QtGui.QWidget.__init__( self, parent )
 
         self.debug = False
+        self.mode = mode
+        if self.mode == None:
+            freak_out()
 
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -504,7 +519,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.tree = QtGui.QTreeView()
         self.mainLayout.addWidget(self.tree, 30)
 
-        self.model = ErrorsListModel()
+        self.model = ErrorsListModel(mode=self.mode)
         self.tree.setModel(self.model)
 
         self.tree.setRootIsDecorated(False)
@@ -534,8 +549,12 @@ class OGTErrorsWidget( QtGui.QWidget ):
     def clear(self):
         print "clear", self #self.tree.clear()
 
-    def load_document(self, ogtDoc):
+    def set_group(self, ogtGroup):
 
+        self.model.set_group(ogtGroup)
+
+    def load_document(self, ogtDoc):
+        print "load_codument", self
         #self.model.load_document(ogtDoc)
         return
 

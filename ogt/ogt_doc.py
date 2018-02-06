@@ -13,7 +13,7 @@ if HAVE_GEOJSON:
 if HAVE_BNG_LATLON:
     import bng_to_latlon # https://github.com/fmalina/bng_latlon
 
-from . import FORMATS, OgtError
+from . import FORMATS, OgtError, CELL_COLORS
 import ags4
 import ogt.utils
 
@@ -1295,8 +1295,8 @@ class OGTGroup:
 
     def cell(self, ridx, cidx):
         row = self.rows[ridx]
-        print len(row), cidx, row
-        if len(row) < cidx:
+        #print len(row), cidx, row, "cell()", self
+        if cidx > len(row) - 1 : # < cidx:
             return None
         return row[cidx]
 
@@ -1479,7 +1479,7 @@ class OGTCell:
             for err in self.errors:
                 if err.type == OgtError.WARN: # found a warning
                     return err.bg
-        return "white" # cool and dandy
+        return CELL_COLORS.ok_bg
 
     def __repr__(self):
         return "<Cell [%s,%s] `%s`>" % (self.lidx, self.cidx, self.raw)

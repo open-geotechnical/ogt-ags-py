@@ -103,8 +103,9 @@ try:
 except ImportError as e:
     pass
 
-class ERR_COLORS:
-    noerr_bg = "#D8FFC5"
+class CELL_COLORS:
+    empty_bg = "#eeeeee"
+    ok_bg = "#E7FFDC"
     err_bg = "#FFC5C5"
     warn_bg = "#FFEDC5"
 
@@ -112,7 +113,7 @@ class OgtError:
 
     WARN = 0
     ERR = 1
-
+    OK = 5
 
     def __init__(self, message, warn=False, lidx=None, cidx=None, rule=None, cell=None):
 
@@ -154,4 +155,4 @@ class OgtError:
     @property
     def bg(self):
         """Background color of error/warning"""
-        return ERR_COLORS.err_bg if self.type else ERR_COLORS.warn_bg
+        return CELL_COLORS.err_bg if self.type == OgtError.ERR else CELL_COLORS.warn_bg
