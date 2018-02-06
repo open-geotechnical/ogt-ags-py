@@ -325,7 +325,8 @@ class GroupDataModel(QtCore.QAbstractTableModel):
         return flags
 
 
-class GroupSourceTableWidget( QtGui.QWidget ):
+class GroupSourceGridTableWidget( QtGui.QWidget ):
+
 
 
     #sigGoto = pyqtSignal(str)
@@ -339,27 +340,55 @@ class GroupSourceTableWidget( QtGui.QWidget ):
         self.mainLayout = xwidgets.vlayout()
         self.setLayout(self.mainLayout)
 
+        ## View Checkboxes
+        self.topLay = xwidgets.hlayout(margin=5, spacing=5)
+        self.mainLayout.addLayout(self.topLay)
+
+        self.buttGroup = QtGui.QButtonGroup(self)
+        self.buttGroup.setExclusive(True)
+
+        self.radFixed = QtGui.QRadioButton("Show Fixed Values")
+        self.radFixed.setChecked(True)
+        self.topLay.addWidget(self.radFixed)
+        self.buttGroup.addButton(self.radFixed, GroupSourceGridModel.FIXED)
+
+        self.radRaw = QtGui.QRadioButton("Show Raw Values")
+        self.topLay.addWidget(self.radRaw)
+        self.buttGroup.addButton(self.radRaw, GroupSourceGridModel.RAW)
+
+        self.topLay.addStretch(30)
+        self.buttGroup.buttonClicked.connect(self.on_raw_fixed_clicked)
+
+        ## Main Table
         self.table = QtGui.QTableView()
         self.mainLayout.addWidget(self.table, 0)
 
-        self.model = GroupSourceModel()
+        self.model = QtGui.QStandardItemModel()
         self.table.setModel(self.model)
 
+    def on_raw_fixed_clicked(self, butt):
+        print "dds", butt, self.buttGroup.id(butt)
+        self.model.set_fixed_raw(self.buttGroup.id(butt))
 
     def set_group(self, ogtGroup):
         ## SourceTable
         print "set_group", self
-        self.model = GroupSourceModel()
+        self.model = GroupSourceGridModel()
         self.model.set_group(ogtGroup)
         self.table.setModel(self.model)
 
-class GroupSourceModel(QtCore.QAbstractTableModel):
-    """Model for groups
+class GroupSourceGridModel(QtCore.QAbstractTableModel):
+    """Model for groups raw View
     """
+
+    FIXED = 0
+    RAW = 1
+
     def __init__(self):
         QtCore.QAbstractTableModel.__init__(self)
 
         self.ogtGroup = None
+        self.fixed_raw = self.FIXED
 
     def set_group(self, ogtGroup):
         print "set_group", ogtGroup, self
@@ -378,6 +407,11 @@ class GroupSourceModel(QtCore.QAbstractTableModel):
             return 0
         return self.ogtGroup.column_count
 
+    def set_fixed_raw(self, fr):
+        self.fixed_raw = fr
+        self.layoutChanged.emit()
+
+
     def data(self, index, role=Qt.DisplayRole):
         """Returns the data at the given index"""
         #rint index, index.row(), index.column()
@@ -386,14 +420,16 @@ class GroupSourceModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole or role == Qt.EditRole:
             cell =  self.ogtGroup.cell(row, col)
             if cell:
-                return cell.value
+                return cell.raw if self.fixed_raw == self.RAW else cell.value
             return "?"
 
-        if False and role == Qt.BackgroundColorRole:
-            cell = self.ogtGroup.data_cell(index.row(), index.column())
-            bg = cell.get_bg()
-            if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
-                pass
+        if role == Qt.BackgroundColorRole:
+            cell = self.ogtGroup.cell(row, col)
+            bg = "white"
+            if cell:
+                bg = cell.get_bg()
+                #if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
+                #pass
             return QtGui.QColor(bg)
 
 
@@ -610,7 +646,7 @@ class GroupWidget( QtGui.QWidget ):
         self.groupDataTableWidget = GroupDataTableWidget(self)
         self.stackWidget.addWidget(self.groupDataTableWidget)
 
-        self.groupSourceTableWidget = GroupSourceTableWidget(self)
+        self.groupSourceTableWidget = GroupSourceGridTableWidget(self)
         self.stackWidget.addWidget(self.groupSourceTableWidget)
 
         self.headersListWidget = HeadersListWidget()
