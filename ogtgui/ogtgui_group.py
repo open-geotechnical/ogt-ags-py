@@ -653,7 +653,7 @@ class GroupWidget( QtGui.QWidget ):
         self.rightWidget.setLayout(self.rightLay)
         self.splitter.addWidget(self.rightWidget)
 
-        self.errorsWidget = ogtgui_widgets.OGTErrorsWidget(mode=ogtgui_widgets.ERR_MODE.group)
+        self.errorsWidget = ogtgui_widgets.OGTErrorsWidget(mode=ogtgui_widgets.VIEW_ERR_MODE.group)
         self.rightLay.addWidget(self.errorsWidget, 1)
 
 
@@ -685,10 +685,11 @@ class GroupWidget( QtGui.QWidget ):
             descr = self.ogtGroup.group_description
         self.lblGroupDescription.setText( "-" if descr == None else descr )
 
-        #self.gro
+        # load into widgets
         self.groupDataTableWidget.set_group(ogtGroup)
-        self.headersListWidget.set_group(ogtGroup)
         self.groupSourceTableWidget.set_group(ogtGroup)
+        self.headersListWidget.set_group(ogtGroup)
+        self.errorsWidget.set_group(ogtGroup)
         return
 
 

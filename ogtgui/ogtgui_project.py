@@ -369,7 +369,7 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
         lbl.setStyleSheet("font-weight: bold; padding: 3px; background-color: #eeeeee;")
         centralLay.addWidget(lbl)
 
-        self.errorsWidget = ogtgui_widgets.OGTErrorsWidget(mode=ogtgui_widgets.ERR_MODE.group)
+        self.errorsWidget = ogtgui_widgets.OGTErrorsWidget(mode=ogtgui_widgets.VIEW_ERR_MODE.group)
         centralLay.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.on_goto_source)
 

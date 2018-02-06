@@ -76,7 +76,7 @@ class OGTSourceViewWidget( QtGui.QWidget ):
         self.tableWidget.itemSelectionChanged.connect(self.on_select_changed)
         self.tableWidget.horizontalHeader().sectionClicked.connect(self.on_row_clicked)
 
-        self.errorsWidget = OGTErrorsWidget(mode=ERR_MODE.document)
+        self.errorsWidget = OGTErrorsWidget(mode=VIEW_ERR_MODE.document)
         self.errorsWidget.setMinimumWidth(300)
         self.splitter.addWidget(self.errorsWidget)
         self.errorsWidget.sigGotoSource.connect(self.select_cell)
@@ -400,21 +400,34 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
         sself.modelReset.emit()
         #print self.ogtDoc, self
 
+
+
     def columnCount(self, foo):
         return len(self._col_labels)
 
     def rowCount(self, midx):
-        if self.ogtDoc == None:
-            return 0
-        return 0
-        return self.ogtDoc.errors_count()
+        if self.mode == VIEW_ERR_MODE.document:
+            if self.ogtDoc == None:
+                return 0
+            return self.ogtDoc.errors_count()
+
+        if self.mode == VIEW_ERR_MODE.group:
+            if self.ogtGroup == None:
+                return 0
+            return self.ogtGroup.errors_count()
+        panic____()
 
     def data(self, midx, role=Qt.DisplayRole):
         """Returns the data at the given index"""
         row = midx.row()
         col = midx.column()
-        errors = self.ogtDoc.errors_list()
 
+        if self.mode == VIEW_ERR_MODE.document:
+            errors = self.ogtDoc.errors_list()
+        elif self.mode == VIEW_ERR_MODE.group:
+            errors = self.ogtGroup.errors_list()
+        else:
+            pamnic___()
 
         if role == Qt.DisplayRole or role == Qt.EditRole:
             grp = self.ogtDoc.group_by_index(row)
@@ -472,7 +485,7 @@ class C_ERR:
     descr = 5
     search = 6
 
-class ERR_MODE:
+class VIEW_ERR_MODE:
     document = "document"
     group = "group"
     #heading = "heading"
