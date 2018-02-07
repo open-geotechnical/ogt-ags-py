@@ -419,38 +419,55 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
 
     def data(self, midx, role=Qt.DisplayRole):
         """Returns the data at the given index"""
-        row = midx.row()
-        col = midx.column()
-
+        ridx = midx.row()
+        cidx = midx.column()
+        print "--------------"
+        ## Get a list of errors (to do is generator)
         if self.mode == VIEW_ERR_MODE.document:
             errors = self.ogtDoc.errors_list()
         elif self.mode == VIEW_ERR_MODE.group:
+            #print "group_errors"
             errors = self.ogtGroup.errors_list()
         else:
             pamnic___()
 
-        if role == Qt.DisplayRole or role == Qt.EditRole:
-            grp = self.ogtDoc.group_by_index(row)
+        #print "type=", type(errors), errors
+        #print ridx, cidx, err_row, self
+        """
+        if cidx + 1 < len(err_row):
+            err = err_row[cidx]
+        else:
+            err = None
+        """
+        err = errors[ridx]
+        print "err=", err
+        if role == Qt.DisplayRole:
+            #grp = self.ogtDoc.group_by_index(row)
             #print "grp=", grp
-            if midx.column() == self.C.err:
+            if err == None:
+                return "None"
+            if cidx == self.C.err:
                 return "1"
-            if midx.column() == self.C.group_description:
-                return grp.group_description
-            if midx.column() == self.C.data_count:
-                return grp.data_rows_count()
-            return "?"
+            if cidx == self.C.description:
+                print "m-=", err.message
+                return err.message if err.message else "MISS"
+            if cidx == self.C.rule:
+                return err.rule if err.rule else "-"
+            #if col == self.C.data_count:
+            #    return grp.data_rows_count()
+            return "?%s/%s?" % (ridx, cidx)
 
-        if role == Qt.DecorationRole:
-            if col == self.C.group_code:
+        if False and role == Qt.DecorationRole:
+            if cidx == self.C.group_code:
                 return Ico.icon(Ico.Group)
 
-        if role == Qt.FontRole:
-            if col == self.C.group_code:
+        if False and role == Qt.FontRole:
+            if cidx == self.C.group_code:
                 f = QtGui.QFont()
                 f.setBold(True)
                 return f
 
-        if role == Qt.TextAlignmentRole:
+        if False and role == Qt.TextAlignmentRole:
             return Qt.AlignRight if col == 0 else Qt.AlignLeft
 
         if False and role == Qt.BackgroundColorRole:
@@ -462,7 +479,7 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
             return QtGui.QColor(bg)
 
 
-        return QtCore.QVariant()
+        return None # QtCore.QVariant()
 
 
     def headerData(self, idx, orient, role=None):
@@ -627,6 +644,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
         self.emit_filters_sig()
 
     def on_show_warnings(self, sig=True):
+        return
         hidden = self.buttWarnings.isChecked() == False
         root = self.tree.invisibleRootItem()
         self.tree.setUpdatesEnabled(False)
@@ -638,6 +656,7 @@ class OGTErrorsWidget( QtGui.QWidget ):
             self.emit_filters_sig()
 
     def on_show_errors(self, sig=True):
+        return
         hidden = self.buttErrors.isChecked() == False
         root = self.tree.invisibleRootItem()
         self.tree.setUpdatesEnabled(False)

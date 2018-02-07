@@ -1434,8 +1434,12 @@ class OGTGroup:
             ec += h.errors_count()
         return ec
 
-
-
+    def errors_list(self):
+        errs = []
+        for ridx, row in enumerate(self.rows):
+            for cidx, cell in enumerate(row):
+                errs.extend(cell.errors)
+        return errs
 
 class OGTCell:
 
@@ -1543,7 +1547,7 @@ class OGTHeading:
     def errors_count(self):
 
         ec = 0
-        print "hc=", [self.head_code_cell, self.unit_cell, self.type_cell]
+        #print "hc=", [self.head_code_cell, self.unit_cell, self.type_cell]
         for cell in [self.head_code_cell, self.unit_cell, self.type_cell]:
             if cell != None:
                 ec += cell.errors_count()
