@@ -1337,7 +1337,7 @@ class OGTGroup:
         return None
 
     def data_rows_count(self):
-        return len(self.data)
+        return len(self.rows)
 
     def row_count(self):
         return len(self.rows)

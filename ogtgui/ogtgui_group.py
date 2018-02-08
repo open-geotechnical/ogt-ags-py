@@ -257,27 +257,35 @@ class GroupDataModel(QtCore.QAbstractTableModel):
     def set_group(self, ogtGroup):
 
         self.ogtGroup = ogtGroup
+        #print "set_grsoup", self
+        self.layoutChanged.emit()
 
-
-    def rowCount(self, parent=None, *args):
-        """Returns the number of rows of the model"""
-        if self.ogtGroup == None:
-            return 0
-        return self.ogtGroup.data_rows_count()
-
-    def columnCount(self, parent=None, *args):
+    def columnCount(self, parent=None):
         """Returns the number of columns of the model"""
         if self.ogtGroup == None:
             return 0
-        return self.ogtGroup.headings_count
+        #print "cc=", self.ogtGroup.headings_count, self
+        return self.ogtGroup.headings_count + 1
+
+    def rowCount(self, parent=None):
+        """Returns the number of rows of the model"""
+        if self.ogtGroup == None:
+            return 0
+        print "rc=", self.ogtGroup.data_rows_count(), self
+        return self.ogtGroup.data_rows_count()
+
+
 
     def data(self, index, role=Qt.DisplayRole):
         """Returns the data at the given index"""
-        #rint index, index.row(), index.column()
+        row = index.row()
+        col = index.column()
+        last_col = col == self.columnCount() - 1
+        print "r/c=", row, col
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            return self.ogtGroup.data_cell(index.row(), index.column()).value
+            return self.ogtGroup.cell(index.row(), index.column()).value
 
-        if role == Qt.BackgroundColorRole:
+        if False and role == Qt.BackgroundColorRole:
             cell = self.ogtGroup.data_cell(index.row(), index.column())
             bg = cell.get_bg()
             if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
@@ -289,7 +297,10 @@ class GroupDataModel(QtCore.QAbstractTableModel):
 
     def headerData(self, idx, orientation, role=Qt.DisplayRole):
         """Returns the headers to display"""
+        #print "headerData", idx, self
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            if idx == self.columnCount() - 1:
+                return "_idx"
             return self.ogtGroup.headings_source_sort[idx]
 
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
@@ -495,7 +506,7 @@ class GroupDataTableWidget( QtGui.QWidget ):
 
         self.tableData = QtGui.QTableView()
         self.mainLayout.addWidget(self.tableData, 200)
-        self.tableData.horizontalHeader().hide()
+        #self.tableData.horizontalHeader().hide()
         self.tableData.setModel(QtGui.QStandardItemModel()) # empty model
 
         self.tableData.horizontalScrollBar().valueChanged.connect(self.on_table_data_h_scroll)
@@ -515,7 +526,6 @@ class GroupDataTableWidget( QtGui.QWidget ):
         self.model = GroupDataModel()
         self.model.set_group(self.ogtGroup)
         self.tableData.setModel(self.model)
-
         # Init table, first row = 0 is headings (cos we cant embed widgets in a header on pyqt4)
         # headings = self.ogtGroup.headings()
         self.tableHeadings.setRowCount(1)
@@ -543,6 +553,7 @@ class GroupDataTableWidget( QtGui.QWidget ):
         v_labels = QtCore.QStringList()
 
         # Load the data
+        return
         for ridx, row in enumerate(self.ogtGroup.data):
 
             # self.tableData.setRowCount( self.tableData.rowCount() + 1)

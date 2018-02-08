@@ -421,7 +421,7 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
         """Returns the data at the given index"""
         ridx = midx.row()
         cidx = midx.column()
-        print "--------------"
+        #print "--------------"
         ## Get a list of errors (to do is generator)
         if self.mode == VIEW_ERR_MODE.document:
             errors = self.ogtDoc.errors_list()
@@ -440,7 +440,7 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
             err = None
         """
         err = errors[ridx]
-        print "err=", err
+        #print "err=", err
         if role == Qt.DisplayRole:
             #grp = self.ogtDoc.group_by_index(row)
             #print "grp=", grp
@@ -449,7 +449,7 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
             if cidx == self.C.err:
                 return "1"
             if cidx == self.C.description:
-                print "m-=", err.message
+                #print "m-=", err.message
                 return err.message if err.message else "MISS"
             if cidx == self.C.rule:
                 return err.rule if err.rule else "-"
