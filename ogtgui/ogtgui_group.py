@@ -638,14 +638,21 @@ class GroupWidget( QtGui.QWidget ):
         self.splitter = QtGui.QSplitter()
         self.mainLayout.addWidget(self.splitter)
 
-        self.stackWidget = QtGui.QStackedWidget()
-        self.splitter.addWidget(self.stackWidget)
+        #self.stackWidget = QtGui.QStackedWidget()
+        #self.splitter.addWidget(self.stackWidget)
 
-        self.groupDataTableWidget = GroupDataTableWidget(self)
-        self.stackWidget.addWidget(self.groupDataTableWidget)
+        # Left LAyout
+        if True:
+            self.leftWidget = QtGui.QWidget()
+            self.leftLay = xwidgets.vlayout()
+            self.leftWidget.setLayout(self.leftLay)
+            self.splitter.addWidget(self.leftWidget)
 
-        self.groupSourceTableWidget = GroupSourceGridTableWidget(self)
-        self.stackWidget.addWidget(self.groupSourceTableWidget)
+            self.groupDataTableWidget = GroupDataTableWidget(self)
+            self.leftLay.addWidget(self.groupDataTableWidget)
+
+            self.groupSourceTableWidget = GroupSourceGridTableWidget(self)
+            self.leftLay.addWidget(self.groupSourceTableWidget)
 
         # Right LAyout
         self.rightWidget = QtGui.QWidget()
@@ -663,9 +670,10 @@ class GroupWidget( QtGui.QWidget ):
 
 
 
-
         self.splitter.setStretchFactor(0, 10)
         self.splitter.setStretchFactor(1, 0)
+        #self.splitter.setStretchFactor(0, 10)
+        #self.splitter.setStretchFactor(1, 0)
 
         if ogtGroup:
             self.set_group(ogtGroup)
@@ -686,6 +694,7 @@ class GroupWidget( QtGui.QWidget ):
         self.lblGroupDescription.setText( "-" if descr == None else descr )
 
         # load into widgets
+
         self.groupDataTableWidget.set_group(ogtGroup)
         self.groupSourceTableWidget.set_group(ogtGroup)
         self.headersListWidget.set_group(ogtGroup)
@@ -701,4 +710,5 @@ class GroupWidget( QtGui.QWidget ):
         d.exec_()
 
     def on_view_change(self, idx):
+        return
         self.stackWidget.setCurrentIndex(idx)

@@ -1439,6 +1439,8 @@ class OGTGroup:
         for ridx, row in enumerate(self.rows):
             for cidx, cell in enumerate(row):
                 errs.extend(cell.errors)
+                #for e in cell.errors:
+                #    yield e
         return errs
 
 class OGTCell:
