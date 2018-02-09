@@ -265,13 +265,13 @@ class GroupDataModel(QtCore.QAbstractTableModel):
         if self.ogtGroup == None:
             return 0
         #print "cc=", self.ogtGroup.headings_count, self
-        return self.ogtGroup.headings_count + 1
+        return self.ogtGroup.headings_count
 
     def rowCount(self, parent=None):
         """Returns the number of rows of the model"""
         if self.ogtGroup == None:
             return 0
-        print "rc=", self.ogtGroup.data_rows_count(), self
+        #print "rc=", self.ogtGroup.data_rows_count(), self
         return self.ogtGroup.data_rows_count()
 
 
@@ -280,15 +280,20 @@ class GroupDataModel(QtCore.QAbstractTableModel):
         """Returns the data at the given index"""
         row = index.row()
         col = index.column()
-        last_col = col == self.columnCount() - 1
-        print "r/c=", row, col
+        #last_col = col == self.columnCount() - 1
+        #print "r/c=", row, col
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            return self.ogtGroup.cell(index.row(), index.column()).value
+            #if last_col:
+            #    return "last"
+            cell = self.ogtGroup.data_cell(row, col)
+            if cell:
+                return cell.value
+            return "_NOCELL_"
 
         if False and role == Qt.BackgroundColorRole:
-            cell = self.ogtGroup.data_cell(index.row(), index.column())
+            cell = self.ogtGroup.data_cell(row, col)
             bg = cell.get_bg()
-            if len(self.ogtGroup.data_cell(index.row(), index.column()).errors) > 0:
+            if len(self.ogtGroup.data_cell(row, col).errors) > 0:
                 pass
             return QtGui.QColor(bg)
 

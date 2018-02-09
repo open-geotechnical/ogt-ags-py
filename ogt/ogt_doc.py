@@ -1192,7 +1192,7 @@ class OGTGroup:
         self.data = []
         """A `list` of `list`s with `head_code:value`  """
 
-        self.line_start_index = None
+        self.group_start_lidx = None
         """The line index this groups start at"""
 
         #self.csv_end_index = None
@@ -1226,7 +1226,7 @@ class OGTGroup:
         # validate
         self.group_code = row_cells[1].value
         self.rows.append(row_cells)
-        self.line_start_index = lidx
+        self.group_start_lidx = lidx
         self._update_col_count(row_cells)
 
     def set_headings(self, row_cells, lidx):
@@ -1304,14 +1304,16 @@ class OGTGroup:
         #print self.data
         #return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
         #return self.data[ridx][self.headings_source_sort[cidx]]
-        return self.data[ridx][cidx]
+        #print self.data_start_lidx
+        re_idx = self.data_start_lidx + ridx
+        return self.rows[re_idx][cidx]
 
     def add_raw_row(self, raw_cells):
         self.raw_rows.append(raw_cells)
 
     def add_data_row(self, row_cells, lidx):
         if self.data_start_lidx == None:
-            self.data_start_lidx = lidx
+            self.data_start_lidx = lidx - self.group_start_lidx - 1
         #self.dsata.append(row_cells)
         self.rows.append(row_cells)
 
@@ -1337,7 +1339,7 @@ class OGTGroup:
         return None
 
     def data_rows_count(self):
-        return len(self.rows)
+        return len(self.rows) - self.data_start_lidx
 
     def row_count(self):
         return len(self.rows)

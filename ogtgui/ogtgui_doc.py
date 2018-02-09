@@ -105,7 +105,8 @@ class OGTDocumentWidget( QtGui.QWidget ):
         if ogtGroup.data_dict():
             descr = ogtGroup.group_description
             self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)
-
+        print "gidx", ogtGroup.group_start_lidx
+        print "didx", ogtGroup.data_start_lidx
         self.stackWidget.addWidget(widget)
         #widget.set_group(ogtGrp)
         widget.sigGoto.connect(self.on_goto)
