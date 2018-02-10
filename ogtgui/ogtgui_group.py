@@ -49,7 +49,7 @@ class HeadersListModel(QtCore.QAbstractTableModel):
         col = midx.column()
 
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            print "==", row, col, self
+            #print "==", row, col, self
             hd = self.ogtGroup.heading_by_index(row)
             if col == self.C.head_code:
                 return hd.head_code
@@ -305,9 +305,8 @@ class GroupDataModel(QtCore.QAbstractTableModel):
         """Returns the headers to display"""
         #print "headerData", idx, self
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            if idx == self.columnCount() - 1:
-                return "_idx"
-            return self.ogtGroup.headings_source_sort[idx]
+            #print "hd=", idx, self.ogtGroup.heading_by_index(idx)
+            return self.ogtGroup.heading_by_index(idx).head_code
 
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             return str(idx + 1)
@@ -694,9 +693,11 @@ class GroupWidget( QtGui.QWidget ):
         for model in [self.groupSourceTableWidget.model,
                   self.groupDataTableWidget.model]:
             if model == self.sender():
-                print "ignores"
+                print "ignore", model
             else:
                 model.modelReset.emit()
+
+        self.headersListWidget.model.layoutChanged.emit()
 
     def set_group(self, ogtGroup):
 
@@ -714,7 +715,7 @@ class GroupWidget( QtGui.QWidget ):
         self.groupDataTableWidget.set_group(ogtGroup)
         self.groupSourceTableWidget.set_group(ogtGroup)
         self.headersListWidget.set_group(ogtGroup)
-        self.errorsWidget.set_group(ogtGroup)
+        #self.errorsWidget.set_group(ogtGroup)
         return
 
 

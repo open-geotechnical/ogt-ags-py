@@ -7,7 +7,7 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 
 import app_globals as G
 
-from ogt import ogt_doc
+from ogt import ogt_doc, OgtError
 import ogtgui_group
 from img import Ico
 
@@ -90,6 +90,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
     def load_document(self, ogtdoc):
 
+
         self.ogtDoc = ogtdoc
         #print "doc=", self.ogtDoc
         #data = doc.to_dict()
@@ -100,17 +101,25 @@ class OGTDocumentWidget( QtGui.QWidget ):
 
     def load_group(self, ogtGroup):
         #print "load_group", ogtGrp, self
+
+
+
+
         widget = ogtgui_group.GroupWidget(self, ogtGroup=ogtGroup)
         idx = self.tabBar.addTab( "%s - %s " % (ogtGroup.group_code, ogtGroup.data_rows_count()) )
         if ogtGroup.data_dict():
             descr = ogtGroup.group_description
             self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)
-        print "---------"
-        print "star", ogtGroup.group_start_lidx
-        print "hidx", ogtGroup.headings_idx
-        print "uidx", ogtGroup.units_idx
-        print "tidx", ogtGroup.types_idx
-        print "didx", ogtGroup.data_start_idx
+        if False:
+            print "---------"
+            print "star", ogtGroup.group_start_lidx
+            print "hidx", ogtGroup.headings_idx
+            print "uidx", ogtGroup.units_idx
+            print "tidx", ogtGroup.types_idx
+            print "didx", ogtGroup.data_start_idx
+
+
+
         self.stackWidget.addWidget(widget)
         #widget.set_group(ogtGrp)
         widget.sigGoto.connect(self.on_goto)

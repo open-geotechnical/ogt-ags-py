@@ -167,7 +167,7 @@ class OGTDocument:
         :return: An instance of :class:`~ogt.ogt_group.OGTGroup` if exists, else `None`
         """
         for grp in self.groups_list:
-            print grp.group_code, group_code, grp.group_code == group_code
+            #print grp.group_code, group_code, grp.group_code == group_code
             if grp.group_code == group_code:
                 return grp
         return None
@@ -214,7 +214,7 @@ class OGTDocument:
         return self.group("TYPE")
 
     def ddtype(self, code):
-        print self.group("TYPE").types
+        #print self.group("TYPE").types
         return "rrr"
 
 
@@ -831,17 +831,17 @@ class OGTDocument:
                 elif descriptor == ags4.AGS4.HEADING:
                     # Its a HEADING row
                     #loopGroup.headings_source_sort = []
-                    loopGroup.set_headings(rrow, lidx)
+                    loopGroup.set_headings_row(rrow, lidx)
                     #loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.UNIT:
                     # a UNIT row
-                    loopGroup.set_units(rrow, lidx)
+                    loopGroup.set_units_row(rrow, lidx)
                     #loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.TYPE:
                     # a TYPE row
-                    loopGroup.set_types(rrow, lidx)
+                    loopGroup.set_types_row(rrow, lidx)
                     #loopGroup.add_raw_row(rrow)
 
                 elif descriptor == ags4.AGS4.DATA:
@@ -1225,26 +1225,27 @@ class OGTGroup:
         self.group_start_lidx = lidx
         self._update_col_count(row_cells)
 
-    def set_headings(self, row_cells, lidx):
-
+    def set_headings_row(self, row_cells, lidx):
+        print "----------------------------"
+        print "set_headings", row_cells
         self.headings_idx = lidx - self.group_start_lidx
-        self.headings_source_sort = []
-
         self.rows.append(row_cells)
         self._update_col_count(row_cells)
 
-        for cidx, hcell in enumerate(row_cells):
+        self.headings_source_sort = []
 
+        for cidx, hcell in enumerate(row_cells[1:]):
+            print "ll=", cidx, hcell
             # validate the headings string
             hcell.value, errs = ags4.validate_heading_str(hcell.value,  lidx=lidx, cidx=cidx + 1)
             hcell.add_errors(errs)
-            self.headings_source_sort.append(hcell.value)
+            #self.headings_source_sort.append(hcell.value)
 
             # create `OGTHeading objects` and add to group
             oHead = OGTHeading(ogtGroup=self, cidx=cidx)
             #self.headings[hcell.value] = oHead
             self._headings.append(oHead)
-
+        print "done-", self._headings
 
 
     def has_heading(self, head_code):
@@ -1277,11 +1278,12 @@ class OGTGroup:
             lst.append( self.headings[hcode] )
         return lst
 
-    def heading_by_index(self, col_idx):
+    def heading_by_index(self, idx):
         # TODO trap
         #cidx = col_idx + 1
-        return self._headings[col_idx + 1]
-        hcell = self.cell(self.headings_idx, cidx)
+        #print self._headings
+        return self._headings[idx]
+        """hcell = self.cell(self.headings_idx, cidx)
         if hcell:
             head = OGTHead(hcell.value)
 
@@ -1301,7 +1303,7 @@ class OGTGroup:
 
             return head
         return None
-
+        """
     @property
     def headings_count(self):
         # its the total columns minux the descriptor
@@ -1314,7 +1316,6 @@ class OGTGroup:
     def cell(self, ridx, cidx):
         if ridx == None:
             return None
-        print len(self.rows), ridx, cidx, "cell()", self
         row = self.rows[ridx]
 
         if cidx > len(row) - 1 : # < cidx:
@@ -1341,7 +1342,8 @@ class OGTGroup:
         #return self.data[ridx][self.headings_source_sort[cidx]]
         #print self.data_start_lidx
         re_idx = self.data_start_idx + ridx
-        return self.rows[re_idx][cidx]
+        ce_idx = cidx + 1
+        return self.rows[re_idx][ce_idx]
 
     def add_raw_row(self, raw_cells):
         self.raw_rows.append(raw_cells)
@@ -1433,7 +1435,7 @@ class OGTGroup:
 
         return dic
 
-    def set_units(self, row_cells, lidx):
+    def set_units_row(self, row_cells, lidx):
 
         self.units_idx = lidx - self.group_start_lidx
         self.rows.append(row_cells)
@@ -1450,13 +1452,12 @@ class OGTGroup:
 
         return lst
 
-    def set_types(self, row_cells, lidx):
+    def set_types_row(self, row_cells, lidx):
 
         self.types_idx = lidx - self.group_start_lidx
         self.rows.append(row_cells)
         self._update_col_count(row_cells)
-        return
-        for idx, cell in enumerate(row_cells):
+        for idx, cell in enumerate(row_cells[1:]):
             self._headings[idx].set_type(cell)
 
     def types_list(self):
@@ -1567,7 +1568,7 @@ class OGTHeading:
 
     @property
     def head_code(self):
-        cell = self.ogtGroup.cell(self.ogtGroup.headings_idx, self.cidx)
+        cell = self.ogtGroup.cell(self.ogtGroup.headings_idx, self.cidx + 1)
         if cell:
             return cell.value
         return "???"
@@ -1577,7 +1578,7 @@ class OGTHeading:
         self.deadhead_code_index = [row_idx, col_idx]
 
 
-    def deadset_unit(self, cell):
+    def set_unit(self, cell):
         cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
         cell.add_errors(errs)
         self.unit_cell = cell
@@ -1598,7 +1599,7 @@ class OGTHeading:
         return ""
 
 
-    def deadset_type(self, cell):
+    def set_type(self, cell):
         cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
         cell.add_errors(errs)
         self.type_cell = cell
