@@ -850,16 +850,11 @@ class OGTDocument:
                     #loopGroup.add_raw_row(rrow)
                     #if loopGroup.data_start_lidx == None:
                     #    loopGroup.data_start_lidx = lidx
-                else:
+            else:
 
-                    print "LOST row"
-                    loopGroup.add_lost(xrow)
-                    """
-                    dic = {}
-                    for didx, head_code in enumerate(loop_grp.headings_source_sort):
-                        dic[head_code] = xrow[didx]
-                    loop_grp.data.append( dic )
-                    """
+                print "LOST row"
+                loopGroup.add_lost_row(rrow, lidx)
+
         ## Step 2
         # walk the decoded rows, and recognise the groups
         # and mark the start_index and end index of group
@@ -1192,7 +1187,7 @@ class OGTGroup:
         self.data = []
         """A `list` of `list`s with `head_code:value`  """
 
-        self.group_start_lidx = None
+        #self.group_start_lidx = None
         """The line index this groups start at"""
 
         #self.csv_end_index = None
@@ -1200,10 +1195,11 @@ class OGTGroup:
 
         self._data_dict = None
 
-        self.headings_lidx = None
-        self.units_lidx = None
-        self.types_lidx = None
-        self.data_start_lidx = None#
+        self.headings_idx = None
+        self.units_idx = None
+        self.types_idx = None
+        self.data_start_idx = None
+        self.lost_idxs = []
 
         self.column_count = 0
 
@@ -1305,17 +1301,20 @@ class OGTGroup:
         #return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
         #return self.data[ridx][self.headings_source_sort[cidx]]
         #print self.data_start_lidx
-        re_idx = self.data_start_lidx + ridx
+        re_idx = self.data_start_idx + ridx
         return self.rows[re_idx][cidx]
 
     def add_raw_row(self, raw_cells):
         self.raw_rows.append(raw_cells)
 
     def add_data_row(self, row_cells, lidx):
-        if self.data_start_lidx == None:
-            self.data_start_lidx = lidx - self.group_start_lidx - 1
-        #self.dsata.append(row_cells)
+        if self.data_start_idx == None:
+            self.data_start_idx = len(self.rows)
         self.rows.append(row_cells)
+
+    def add_lost_row(self, row_cells, lidx):
+        self.rows.append(row_cells)
+        self.lost_idxs.append(lidx)
 
     def data_row_cells(self, ridx):
         #return dself.parentDoc.cells[self.csv_start_index + ridx + 4]
@@ -1339,7 +1338,7 @@ class OGTGroup:
         return None
 
     def data_rows_count(self):
-        return len(self.rows) - self.data_start_lidx
+        return len(self.rows) - 4
 
     def row_count(self):
         return len(self.rows)
