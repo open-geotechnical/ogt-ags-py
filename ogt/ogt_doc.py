@@ -1331,13 +1331,15 @@ class OGTGroup:
         cell = self.cell(ridx, cidx)
         if cell:
             cell.value = value
+            self.validate()
             return True
         return False
 
-    def set_data_cell_value(self, ridx, cidx, value):
+    def sset_data_cell_value(self, ridx, cidx, value):
         cell = self.data_cell(ridx, cidx)
         if cell:
             cell.value = value
+            self.validate()
             return True
         return False
 
@@ -1507,6 +1509,7 @@ class OGTGroup:
 
     def validate(self):
         print "VALIDATE-------------------", self.group_code
+        self.errors = []
         for ridx, row in enumerate(self.rows):
 
 
