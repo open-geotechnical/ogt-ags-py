@@ -11,7 +11,10 @@ from Qt import QtGui, QtCore, Qt, pyqtSignal
 import xwidgets
 from img import Ico
 from ogt import ags4
-from ogt import CELL_COLORS
+from ogt import CELL_COLORS, HAVE_EXCEL
+import ogtgui_excel
+
+
 
 import app_globals as G
 
@@ -970,3 +973,159 @@ class HelpPageView(QtGui.QWidget):
         page = str(url.path())[1:]
         # print url,  page, type(page)
         self.sigPageLinkClicked.emit(page)
+
+
+
+
+class ExpPortalWidget( QtGui.QWidget ):
+    """The SourceViewWidget info which in row 0 """
+
+
+
+    def __init__( self, parent=None):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.debug = False
+        self.setObjectName("OGTSourceViewWidget")
+
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.mainLayout)
+
+
+        self.tabWidget = QtGui.QTabWidget()
+        self.mainLayout.addWidget(self.tabWidget)
+
+        self.excelBrowse = ogtgui_excel.ExpExcelBrowserWidget()
+        self.tabWidget.addTab(self.excelBrowse, "Excel Browse")
+
+        self.pasteText = ExpPasteWidget()
+        self.tabWidget.addTab(self.pasteText, "Paste clipboard from Excel")
+
+
+    def init_load(self):
+        pass
+
+TEST_TXT = """
+SAMP_TOP	SAMP_REF	SAMP_TYPE
+m		
+2DP	X	PA
+4.50		U
+"""
+
+
+
+class ExpPasteWidget( QtGui.QWidget ):
+    """The SourceViewWidget info which in row 0 """
+
+
+
+    def __init__( self, parent=None):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.debug = False
+        self.setObjectName("OGTSourceViewWidget")
+
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.mainLayout)
+
+
+        #self.tabWidget = QtGui.QTabWidget()
+        #self.mainLayout.addWidget(self.tabWidget)
+
+        self.txtSrc = QtGui.QPlainTextEdit()
+        self.mainLayout.addWidget(self.txtSrc)
+        self.txtSrc.textChanged.connect(self.on_text_changed)
+
+        self.table = QtGui.QTableWidget()
+        self.mainLayout.addWidget(self.table)
+        self.txtSrc.setPlainText(TEST_TXT)
+
+
+    def init_load(self):
+        pass
+
+    def on_text_changed(self):
+        s = str(self.txtSrc.toPlainText())
+        lines = s.split("\n")
+
+        ridx = 0
+        for rridx, rline in enumerate(lines):
+            line = rline.strip()
+            if line == "":
+                continue
+            if self.table.rowCount() < ridx + 1:
+                self.table.setRowCount(ridx + 1)
+            cols = line.split("\t")
+            if self.table.columnCount() < len(cols):
+                self.table.setColumnCount(len(cols))
+            for cidx, cell in enumerate(cols):
+
+
+                item = QtGui.QTableWidgetItem()
+                item.setText(cell)
+                self.table.setItem(ridx, cidx, item)
+            ridx += 1
+
+
+
+class ExpPathBrowseWidget( QtGui.QWidget ):
+    """The SourceViewWidget info which in row 0 """
+
+    sigOpenFile = pyqtSignal(str)
+
+    def __init__( self, parent=None):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.debug = False
+        self.setObjectName("ExcelBrowserWidget")
+
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.setLayout(self.mainLayout)
+
+        self.toolbar = QtGui.QToolBar()
+        self.mainLayout.addWidget(self.toolbar, 0)
+
+        tbg = xwidgets.ToolBarGroup(title="Selected Dir")
+        self.toolbar.addWidget(tbg)
+
+        buttSel = xwidgets.XToolButton(text="Select")
+        self.toolbar.addWidget(buttSel)
+
+        self.txtPath = QtGui.QLineEdit()
+        tbg.addWidget(self.txtPath)
+        if G.args.dev:
+            self.txtPath.setText("/home/ogt/gstl_examples/35579")
+
+        self.tree = QtGui.QTreeView()
+        self.mainLayout.addWidget(self.tree, 30)
+
+        self.dirModel = QtGui.QFileSystemModel()
+        self.dirModel.setRootPath(self.txtPath.text())
+        self.dirModel.setNameFilters(["*.xlsx"])
+
+        self.tree.setModel(self.dirModel)
+        self.tree.setRootIndex( self.dirModel.index(self.txtPath.text()) )
+        #print self.txtPath.text()
+
+        if G.args.dev:
+            ed = os.path.join(str(self.txtPath.text()), "ATTS")
+            self.tree.expand( self.dirModel.index(ed ) )
+
+        self.tree.setColumnWidth(0, 400)
+
+        self.tree.doubleClicked.connect(self.on_tree_double_clicked)
+
+
+
+    def on_tree_double_clicked(self, midx):
+        filename = str(self.dirModel.filePath(midx))
+        self.sigOpenFile.emit(filename)
+
+
+

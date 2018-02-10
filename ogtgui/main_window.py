@@ -32,7 +32,7 @@ class MainWindow( QtGui.QMainWindow ):
         #G.Ags.load()
         if G.args.dev:
             #self.on_browse_ags4()
-            self.on_new_project()
+            #self.on_new_project()
             pass
 
 
@@ -41,8 +41,10 @@ class MainWindow( QtGui.QMainWindow ):
         fn =  "/home/ogt/AGS4-example-wrd.ags"
         if G.args.dev:
             fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
-            self.load_ags4_file(fn)
+            #self.load_ags4_file(fn)
 
+        w = ogtgui_widgets.ExpPortalWidget()
+        self.load_widget(w, "Experiments")
 
     def __init__( self, args ):
         QtGui.QMainWindow.__init__( self )
