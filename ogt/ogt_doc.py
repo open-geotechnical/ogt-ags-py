@@ -153,7 +153,7 @@ class OGTDocument:
         # create group object and add to doc
         ogtGroup = OGTGroup(ogtDoc=self)
         ogtGroup.set_group(rows, lidx)
-        #ogtGroup.line_start_index = lidx
+        ogtGroup.group_start_lidx = lidx
         self.groups_list.append(ogtGroup)
         return ogtGroup
 
@@ -1227,7 +1227,7 @@ class OGTGroup:
 
     def set_headings(self, row_cells, lidx):
 
-        self.headings_lidx = lidx
+        self.headings_idx = lidx - self.group_start_lidx
         self.headings_source_sort = []
 
         self.rows.append(row_cells)
@@ -1241,7 +1241,7 @@ class OGTGroup:
             self.headings_source_sort.append(hcell.value)
 
             # create `OGTHeading objects` and add to group
-            oHead = OGTHeading(cell=hcell, ogtGroup=self)
+            oHead = OGTHeading(ogtGroup=self, cidx=cidx)
             #self.headings[hcell.value] = oHead
             self._headings.append(oHead)
 
@@ -1277,21 +1277,46 @@ class OGTGroup:
             lst.append( self.headings[hcode] )
         return lst
 
-    def heading_by_index(self, idx):
+    def heading_by_index(self, col_idx):
         # TODO trap
-        return self._headings[idx]
+        #cidx = col_idx + 1
+        return self._headings[col_idx + 1]
+        hcell = self.cell(self.headings_idx, cidx)
+        if hcell:
+            head = OGTHead(hcell.value)
+
+            unitcell = self.cell(self.units_idx, cidx)
+            if unitcell:
+                head.unit = unitcell.value
+
+            typecell =  self.cell(self.types_idx, cidx)
+            if typecell:
+                head.type = typecell.value
+
+            dd = self.data_dict()
+            if dd:
+                headDD, found = dd.heading(head.head_code)
+                if found:
+                    head.head_description = headDD.get("head_description")
+
+            return head
+        return None
 
     @property
     def headings_count(self):
-        return len(self._headings)
+        # its the total columns minux the descriptor
+        return self.column_count - 1
 
     def deadcells(self):
         """Returns the csv rows used in this group, return data from parentDocument """
         return self.parentDoc.csv_rows[self.csv_start_index:self.csv_end_index]
 
     def cell(self, ridx, cidx):
+        if ridx == None:
+            return None
+        print len(self.rows), ridx, cidx, "cell()", self
         row = self.rows[ridx]
-        #print len(row), cidx, row, "cell()", self
+
         if cidx > len(row) - 1 : # < cidx:
             return None
         return row[cidx]
@@ -1410,10 +1435,10 @@ class OGTGroup:
 
     def set_units(self, row_cells, lidx):
 
-        self.units_lidx = lidx
+        self.units_idx = lidx - self.group_start_lidx
         self.rows.append(row_cells)
         self._update_col_count(row_cells)
-
+        return
         for idx, cell in enumerate(row_cells):
             self._headings[idx].set_unit(cell)
 
@@ -1427,10 +1452,10 @@ class OGTGroup:
 
     def set_types(self, row_cells, lidx):
 
-        self.types_lidx = lidx
+        self.types_idx = lidx - self.group_start_lidx
         self.rows.append(row_cells)
         self._update_col_count(row_cells)
-
+        return
         for idx, cell in enumerate(row_cells):
             self._headings[idx].set_type(cell)
 
@@ -1505,20 +1530,28 @@ class OGTCell:
     def __repr__(self):
         return "<Cell [%s,%s] `%s`>" % (self.lidx, self.cidx, self.raw)
 
-class OGTHeading:
-
-    def __init__(self,  cell=None, ogtGroup=None,):
-
-        self.ogtGroup = ogtGroup
-        #self.head_code = head_code
+class deadOGTHead:
+    def __init__(self, head_code):
+        self.head_code = head_code
         self.unit = None
         self.type = None
+        self.head_description = None
 
-        self.head_code_cell = cell
-        if isinstance( self.head_code_cell, str):
-            stopppp
-        self.unit_cell = None
-        self.type_cell = None
+class OGTHeading:
+
+    def __init__(self,  ogtGroup=None, cidx=None):
+
+        self.ogtGroup = ogtGroup
+        self.cidx = cidx
+        #self.head_code = head_code
+        #self.unit = None
+        #self.type = None
+
+        #self.head_code_cell = cell
+        #if isinstance( self.head_code_cell, str):
+        #    stopppp
+        #self.unit_cell = None
+        #self.type_cell = None
 
     def __repr__(self):
         return "OGTHeading `%s`>" % self.head_code
@@ -1534,31 +1567,55 @@ class OGTHeading:
 
     @property
     def head_code(self):
-        return self.head_code_cell.value
+        cell = self.ogtGroup.cell(self.ogtGroup.headings_idx, self.cidx)
+        if cell:
+            return cell.value
+        return "???"
 
     def dead_set_head_code(self, head_code, row_idx, col_idx):
         self.deadhead_code = head_code
         self.deadhead_code_index = [row_idx, col_idx]
 
 
-    def set_unit(self, cell):
+    def deadset_unit(self, cell):
         cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
         cell.add_errors(errs)
         self.unit_cell = cell
 
     @property
+    def unit(self):
+        cell = self.ogtGroup.cell(self.ogtGroup.units_idx, self.cidx)
+        if cell:
+            return cell.value
+        return None
+
+
+    @property
     def unit_label(self):
-        return "" if self.unit_cell == None else self.unit_cell.value
+        v = self.unit
+        if v:
+            return v
+        return ""
 
 
-    def set_type(self, cell):
+    def deadset_type(self, cell):
         cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
         cell.add_errors(errs)
         self.type_cell = cell
 
     @property
+    def type(self):
+        cell = self.ogtGroup.cell(self.ogtGroup.types_idx, self.cidx)
+        if cell:
+            return cell.value
+        return None
+
+    @property
     def type_label(self):
-        return "" if self.type_cell == None else self.type_cell.value
+        v = self.type
+        if v:
+            return v
+        return ""
 
 
     def errors_count(self):

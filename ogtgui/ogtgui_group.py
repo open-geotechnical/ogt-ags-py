@@ -49,6 +49,7 @@ class HeadersListModel(QtCore.QAbstractTableModel):
         col = midx.column()
 
         if role == Qt.DisplayRole or role == Qt.EditRole:
+            print "==", row, col, self
             hd = self.ogtGroup.heading_by_index(row)
             if col == self.C.head_code:
                 return hd.head_code
@@ -234,7 +235,7 @@ class TableHeaderWidget( QtGui.QWidget ):
 
         self.lblUnit.setText(self.ogtHeading.unit_label)
         #typ = "<a href="""
-        self.lblType.setText(self.ogtHeading.unit_label)
+        self.lblType.setText(self.ogtHeading.type_label)
         #self.lblType.setToolTip(hrec['type'])
 
         typ = ags4.AGS4.type(self.ogtHeading.type)
@@ -665,7 +666,7 @@ class GroupWidget( QtGui.QWidget ):
 
 
         self.splitter.setStretchFactor(0, 10)
-        self.splitter.setStretchFactor(1, 0)
+        self.splitter.setStretchFactor(1, 4)
         #self.splitter.setStretchFactor(0, 10)
         #self.splitter.setStretchFactor(1, 0)
 

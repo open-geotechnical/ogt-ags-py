@@ -105,6 +105,10 @@ class OGTDocumentWidget( QtGui.QWidget ):
         if ogtGroup.data_dict():
             descr = ogtGroup.group_description
             self.tabBar.setTabToolTip(idx, "-" if descr == None else descr)
+        print "---------"
+        print "star", ogtGroup.group_start_lidx
+        print "hidx", ogtGroup.headings_idx
+        print "uidx", ogtGroup.units_idx
         print "tidx", ogtGroup.types_idx
         print "didx", ogtGroup.data_start_idx
         self.stackWidget.addWidget(widget)
