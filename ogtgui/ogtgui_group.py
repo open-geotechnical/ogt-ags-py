@@ -313,32 +313,21 @@ class GroupDataModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def dead_setData(self, index, value, role=None):
-        """Updates data when modified in the view"""
+    def setData(self, index, value, role=None):
+        """Updates DATA when modified in the view"""
         if role == Qt.EditRole:
-            if index.column() == 1:
-                self._editor.trains[index.row()].serviceCode = value
-            elif index.column() == 2:
-                self._editor.trains[index.row()].trainTypeCode = value
-            elif index.column() == 3:
-                self._editor.trains[index.row()].appearTimeStr = value
-            elif index.column() == 4:
-                self._editor.trains[index.row()].trainHeadStr = value
-            elif index.column() == 5:
-                self._editor.trains[index.row()].initialSpeed = value
-            elif index.column() == 6:
-                self._editor.trains[index.row()].initialDelayStr = value
-            else:
-                return False
-            self.dataChanged.emit(index, index)
-            return True
+            success = self.ogtGroup.set_data_cell_value(index.row(), index.column(), value)
+            self.layoutChanged.emit()
+            return success
+            #self.dataChanged.emit(index, index)
+            #return True
         return False
 
-    def dead_flags(self, index):
+    def flags(self, index):
         """Returns the flags of the model"""
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        if index.column() != 0:
-            flags |= Qt.ItemIsEditable
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+        #if index.column() != 0:
+        #    flags |= Qt.ItemIsEditable
         return flags
 
 
@@ -459,32 +448,21 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def dead_setData(self, index, value, role=None):
+    def setData(self, index, value, role=None):
         """Updates data when modified in the view"""
         if role == Qt.EditRole:
-            if index.column() == 1:
-                self._editor.trains[index.row()].serviceCode = value
-            elif index.column() == 2:
-                self._editor.trains[index.row()].trainTypeCode = value
-            elif index.column() == 3:
-                self._editor.trains[index.row()].appearTimeStr = value
-            elif index.column() == 4:
-                self._editor.trains[index.row()].trainHeadStr = value
-            elif index.column() == 5:
-                self._editor.trains[index.row()].initialSpeed = value
-            elif index.column() == 6:
-                self._editor.trains[index.row()].initialDelayStr = value
-            else:
-                return False
-            self.dataChanged.emit(index, index)
-            return True
+
+            success = self.ogtGroup.set_cell_value(index.row(), index.column(), value)
+            #self.dataChanged.emit(index, index)
+            self.layoutChanged.emit()
+            return success
         return False
 
-    def dead_flags(self, index):
+    def flags(self, index):
         """Returns the flags of the model"""
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        if index.column() != 0:
-            flags |= Qt.ItemIsEditable
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled |  Qt.ItemIsEditable
+        #if index.column() != 0:
+        #    flags |= Qt.ItemIsEditable
         return flags
 
 
@@ -694,9 +672,30 @@ class GroupWidget( QtGui.QWidget ):
         if ogtGroup:
             self.set_group(ogtGroup)
 
+        self.groupSourceTableWidget.model.layoutChanged.connect(self.on_data_changed)
+        self.groupDataTableWidget.model.layoutChanged.connect(self.on_data_changed)
 
         self.on_view_change(self.tbgView.get_id())
 
+    def on_data_changed(self):
+        print "on_data_changes", self, self.sender()
+        if False:
+            for ww in [self.groupSourceTableWidget,
+                      self.groupDataTableWidget]:
+                ww.table.update()
+                """
+                if model == self.sender():
+                    print "ignores"
+                else:
+                    model.layoutChanged.emit()
+                """
+
+        for model in [self.groupSourceTableWidget.model,
+                  self.groupDataTableWidget.model]:
+            if model == self.sender():
+                print "ignores"
+            else:
+                model.modelReset.emit()
 
     def set_group(self, ogtGroup):
 

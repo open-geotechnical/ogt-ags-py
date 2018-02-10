@@ -1296,6 +1296,20 @@ class OGTGroup:
             return None
         return row[cidx]
 
+    def set_cell_value(self, ridx, cidx, value):
+        cell = self.cell(ridx, cidx)
+        if cell:
+            cell.value = value
+            return True
+        return False
+
+    def set_data_cell_value(self, ridx, cidx, value):
+        cell = self.data_cell(ridx, cidx)
+        if cell:
+            cell.value = value
+            return True
+        return False
+
     def data_cell(self, ridx, cidx):
         #print self.data
         #return self.parentDoc.cells[self.csv_start_index + ridx + 4][cidx+1]
