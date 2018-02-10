@@ -771,14 +771,18 @@ def validate_group_str(group_code, lidx=None, cidx=None):
 
 
 def validate_heading_str(head_code, lidx=None, cidx=None):
-    """Checks the heading is valid"""
+    """Checks the heading is valid
+    - cleaned code
+    - whether fatal
+    - errors list
+    """
 
     head_code, errs = validate_upper(head_code)
 
     if not "_" in head_code:
         errs.append( OgtError("Invalid HEADING requires a _ `%s` not found" % head_code, cidx=cidx, lidx=lidx))
         # cannot continue ??
-        return head_code, errs
+        return head_code, True, errs
 
     ## split the heading into group + remainder
     group_code, head_part = head_code.split("_")
@@ -787,14 +791,15 @@ def validate_heading_str(head_code, lidx=None, cidx=None):
     group_code, errs = validate_group_str(group_code, lidx=lidx, cidx=cidx)
     if len(errs) > 0:
         # assume we cannot continue
-        return group_code, errs
+        return group_code, True, errs
 
     if len(head_code) > 9:
         errs.append(OgtError("Invalid HEADING > 9 chars `%s`" % head_code, cidx=cidx, lidx=lidx, rule="19a"))
-    if len(head_code) == 0:
-        errs.append(OgtError("Invalid HEADING needs at least onc char `%s`" % head_code,  cidx=cidx, lidx=lidx, rule="19a"))
 
-    return head_code, errs
+    if len(head_code) == 0:
+        errs.append(OgtError("Invalid HEADING needs at least one char `%s`" % head_code,  cidx=cidx, lidx=lidx, rule="19a"))
+
+    return head_code, False, errs
 
 def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
     """Check the heading is in ags data dict. This is done by
@@ -816,6 +821,7 @@ def validate_heading_ags(head_code, group_code_in, lidx=None, cidx=None):
             return None
 
     # split the head code amd check source group + heading i that group
+
     sgroup_code, _ = head_code.split("_")
 
     # check group exists

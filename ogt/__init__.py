@@ -134,8 +134,8 @@ class OgtError:
 
         self.cell = cell
 
-    def d__repr__(self):
-        return "<Ogt %s - %s [%s,%s]>" % ("ERR" if self.type else "WARN", self.message, self.lidx, self.cidx)
+    def __repr__(self):
+        return "<Ogt %s: %s [%s,%s]>" % ("ERR" if self.type else "WARN", self.message, self.lidx, self.cidx)
 
     @property
     def line_no(self):

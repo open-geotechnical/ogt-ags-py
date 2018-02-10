@@ -424,10 +424,10 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
         #print "--------------"
         ## Get a list of errors (to do is generator)
         if self.mode == VIEW_ERR_MODE.document:
-            errors = self.ogtDoc.errors_list()
+            erssrors = self.ogtDoc.errors_list()
         elif self.mode == VIEW_ERR_MODE.group:
             #print "group_errors"
-            errors = self.ogtGroup.errors_list()
+            errors = self.ogtGroup.errors
         else:
             pamnic___()
 
@@ -440,7 +440,8 @@ class ErrorsListModel(QtCore.QAbstractTableModel):
             err = None
         """
         err = errors[ridx]
-        #print "err=", err
+        #print "err=", err, errors
+        #sdsad()
         if role == Qt.DisplayRole:
             #grp = self.ogtDoc.group_by_index(row)
             #print "grp=", grp

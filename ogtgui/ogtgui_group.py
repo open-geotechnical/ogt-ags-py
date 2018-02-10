@@ -910,6 +910,7 @@ class GroupWidget( QtGui.QWidget ):
                 model.modelReset.emit()
 
         self.headersListWidget.model.layoutChanged.emit()
+        self.errorsWidget.model.layoutChanged.emit()
 
         self.groupDataTableWidget.update_headings()
 
@@ -929,7 +930,7 @@ class GroupWidget( QtGui.QWidget ):
         self.groupDataTableWidget.set_group(ogtGroup)
         self.groupSourceTableWidget.set_group(ogtGroup)
         self.headersListWidget.set_group(ogtGroup)
-        #self.errorsWidget.set_group(ogtGroup)
+        self.errorsWidget.set_group(ogtGroup)
         return
 
 

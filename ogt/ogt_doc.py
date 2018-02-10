@@ -252,10 +252,8 @@ class OGTDocument:
         if len(errs) == 0:
             return
         for e in errs:
-            #if not e.lidx in self.error_rows:
             self.add_error(e)
-                #self.error_rows[e.lidx] = []
-            #self.error_rows[e.lidx].append(e)
+
 
     def errors(self, lidx=None, cidx=None):
 
@@ -855,6 +853,11 @@ class OGTDocument:
                 print "LOST row"
                 loopGroup.add_lost_row(rrow, lidx)
 
+
+        for g in self.groups_list:
+            g.validate()
+
+
         ## Step 2
         # walk the decoded rows, and recognise the groups
         # and mark the start_index and end index of group
@@ -1202,6 +1205,7 @@ class OGTGroup:
         self.lost_idxs = []
 
         self.column_count = 0
+        self.errors = []
 
     def __repr__(self):
         return "<OGTGroup %s>" % self.group_code
@@ -1237,15 +1241,16 @@ class OGTGroup:
         for cidx, hcell in enumerate(row_cells[1:]):
             print "ll=", cidx, hcell
             # validate the headings string
-            hcell.value, errs = ags4.validate_heading_str(hcell.value,  lidx=lidx, cidx=cidx + 1)
-            hcell.add_errors(errs)
-            #self.headings_source_sort.append(hcell.value)
+            hcell.value, fatal, errs = ags4.validate_heading_str(hcell.value, lidx=lidx, cidx=cidx + 1)
+            #hcell.add_errors(errs)
+            #self.add_errors(errs)
+            #self.headings_source_sort.append(hcell.value)self.headersListWidget.model.layoutChanged.emit()vla
 
             # create `OGTHeading objects` and add to group
             oHead = OGTHeading(ogtGroup=self, cidx=cidx)
             #self.headings[hcell.value] = oHead
             self._headings.append(oHead)
-        print "done-", self._headings
+            #print "done-", self._headings
 
 
     def has_heading(self, head_code):
@@ -1316,9 +1321,9 @@ class OGTGroup:
     def cell(self, ridx, cidx):
         if ridx == None:
             return None
-        row = self.rows[ridx]
 
-        if cidx > len(row) - 1 : # < cidx:
+        row = self.rows[ridx]
+        if cidx > len(row) - 1 :
             return None
         return row[cidx]
 
@@ -1469,13 +1474,14 @@ class OGTGroup:
         return lst
 
     def errors_count(self):
+        return len(self.errors)
         ec = 0
         for h in self.headings_list():
             #print h.errors_count()
             ec += h.errors_count()
         return ec
 
-    def errors_list(self):
+    def deaderrors_list(self):
         errs = []
         for ridx, row in enumerate(self.rows):
             for cidx, cell in enumerate(row):
@@ -1483,6 +1489,51 @@ class OGTGroup:
                 #for e in cell.errors:
                 #    yield e
         return errs
+
+    def add_errors(self, errs):
+        if errs == None:
+            return
+        if isinstance(errs, OgtError):
+            self.add_error(errs)
+            return
+        if len(errs) == 0:
+            return
+        for e in errs:
+            self.add_error(e)
+
+    def add_error(self, err):
+        self.errors.append(err)
+
+
+    def validate(self):
+        print "VALIDATE-------------------", self.group_code
+        for ridx, row in enumerate(self.rows):
+
+
+            for cidx, cell in enumerate(row):
+
+                # validate descriptor
+                if cidx == 0:
+                    cell.value, ok, errs = ags4.validate_descriptor(cell.value)
+                    self.add_errors(errs)
+                else:
+
+                    if ridx == self.headings_idx:
+                        # validate headings
+                        cell.value, fatal, errs = ags4.validate_heading_str(cell.value, cidx=cidx, lidx=ridx)
+                        self.add_errors(errs)
+                        print errs, cell.value
+                        if not fatal:
+                            errs = ags4.validate_heading_ags(cell.value, self.group_code, cidx=cidx, lidx=ridx)
+                            print "RRRRR", errs
+                            self.add_errors(errs)
+
+                    if ridx == self.types_idx:
+                        pass
+
+        print "afterVALID", len(self.errors), self.errors
+
+
 
 class OGTCell:
 
@@ -1620,7 +1671,7 @@ class OGTHeading:
 
 
     def errors_count(self):
-
+        return self.errors
         ec = 0
         #print "hc=", [self.head_code_cell, self.unit_cell, self.type_cell]
         for cell in [self.head_code_cell, self.unit_cell, self.type_cell]:
