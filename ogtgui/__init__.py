@@ -12,4 +12,4 @@ PROJECT_ROOT_PATH = os.path.join(HERE_PATH, "..")
 
 ICONS_PATH = os.path.join(PROJECT_ROOT_PATH, "static", "icons")
 
-
+DEFAULT_ROW_HEIGHT = 25

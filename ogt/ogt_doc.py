@@ -1572,15 +1572,15 @@ class OGTHeading:
         if cell:
             return cell.value
         return "???"
-
+    """
     def dead_set_head_code(self, head_code, row_idx, col_idx):
         self.deadhead_code = head_code
         self.deadhead_code_index = [row_idx, col_idx]
-
+    """
 
     def set_unit(self, cell):
-        cell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
-        cell.add_errors(errs)
+        scell.value, errs = ags4.validate_clean_str(cell.value, upper=True)
+        self.ogtGroup.add_errors(errs)
         self.unit_cell = cell
 
     @property

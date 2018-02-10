@@ -137,6 +137,61 @@ class HeadersListWidget( QtGui.QWidget ):
         self.model.set_group(ogtGrp)
 
 
+class HeadCodeWidget( QtGui.QWidget ):
+    """The info in tableWidget """
+
+    #sigGoto = pyqtSignal(str)
+
+    def __init__( self, parent=None, ogtDoc=None):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.ogtDoc = ogtDoc
+        self.ogtHeading = None
+
+        self.debug = False
+        self.setAutoFillBackground(True)
+
+        self.mainLayout = xwidgets.vlayout()
+        self.setLayout(self.mainLayout)
+
+
+        ## So splits up tthe header into parts..
+        #self.headerWidget = QtGui.QWidget()
+        self.headerCodeLay = xwidgets.hlayout()
+        #self.headerWidget.setLayout(self.headerGridLay)
+        self.mainLayout.addLayout(self.headerCodeLay)
+
+        self.lblHeadCode = xwidgets.XLabel("-", bold=True)
+        self.headerCodeLay.addWidget(self.lblHeadCode, 10)
+
+        #self.buttGroup = xwidgets.XToolButton(self, text="group")
+        #self.headerGridLay.addWidget(self.buttGroup)
+
+        self.buttHeadCode = xwidgets.XToolButton(self, ico=Ico.BulletDown,  bold=True, popup=True, menu=True)
+        self.buttHeadCode.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        self.headerCodeLay.addWidget(self.buttHeadCode, 0)
+
+        self.buttHeadCode.menu().addAction("Open Group TODO")
+        self.buttHeadCode.menu().addAction("Select another heading TODO")
+
+        #sp = self.buttHeadCode.sizePolicy()
+        #sp.setHorizontalPolicy(QtGui.QSizePolicy.Expanding)
+        #self.buttHeadCode.setSizePolicy(sp)
+        """
+        sty = "background-color: #dddddd; color: black; padding: 3px; font-size: 8pt;"
+
+        # description
+        self.lblHeadDescription = QtGui.QLabel()
+        self.lblHeadDescription.setStyleSheet(sty)
+        self.lblHeadDescription.setFixedHeight(60)
+        self.lblHeadDescription.setWordWrap(True)
+        self.lblHeadDescription.setAlignment(Qt.AlignTop|Qt.AlignLeft)
+        self.mainLayout.addWidget(self.lblHeadDescription)
+        """
+
+    def set_head_code(self, x):
+        self.lblHeadCode.setText(x)
+
 
 class TableHeaderWidget( QtGui.QWidget ):
     """The HEADER info in tableWidget """
@@ -247,11 +302,109 @@ class TableHeaderWidget( QtGui.QWidget ):
     def on_goto(self):
         self.sigGoto.emit(self.ogtHeading.head_code)
 
+
+
+
+class GroupHeadingsModel(QtCore.QAbstractTableModel):
+    """Model for groups
+    """
+    def __init__(self, parent):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+
+        self.ogtGroup = None
+
+    def set_group(self, ogtGroup):
+
+        self.ogtGroup = ogtGroup
+        #print "set_grsoup", self
+        self.layoutChanged.emit()
+
+    def columnCount(self, parent=None):
+        """Returns the number of columns of the model"""
+        if self.ogtGroup == None:
+            return 0
+        #print "cc=", self.ogtGroup.headings_count, self
+        return self.ogtGroup.headings_count
+
+    def rowCount(self, parent=None):
+        """Returns the number of rows of the model"""
+        return 4
+        #if self.ogtGroup == None:
+        #    return 0
+        #print "rc=", self.ogtGroup.data_rows_count(), self
+        #return self.ogtGroup.data_rows_count()
+
+
+    def data(self, index, role=Qt.DisplayRole):
+        """Returns the data at the given index"""
+        row = index.row()
+        col = index.column()
+        #last_col = col == self.columnCount() - 1
+        #print "r/c=", row, col
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            #if last_col:
+            #    return "last"
+            head = self.ogtGroup.heading_by_index(col)
+            if row == 0:
+                return head.head_code
+            if row == 1:
+                return head.head_description
+            if row == 2:
+                return head.unit
+            if row == 3:
+                return head.type
+            return "_NOCELL_"
+            """
+            cell = self.ogtGroup.data_cell(row, col)
+            if cell:
+                return cell.value
+            
+            """
+        if False and role == Qt.BackgroundColorRole:
+            cell = self.ogtGroup.data_cell(row, col)
+            bg = cell.get_bg()
+            if len(self.ogtGroup.data_cell(row, col).errors) > 0:
+                pass
+            return QtGui.QColor(bg)
+
+
+        return None
+
+    def headerData(self, idx, orientation, role=Qt.DisplayRole):
+        """Returns the headers to display"""
+        #print "headerData", idx, self
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            #print "hd=", idx, self.ogtGroup.heading_by_index(idx)
+            return self.ogtGroup.heading_by_index(idx).head_code
+
+        if orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return str(idx + 1)
+
+        return None
+
+    def setData(self, index, value, role=None):
+        """Updates DATA when modified in the view"""
+        if role == Qt.EditRole:
+            success = self.ogtGroup.set_data_cell_value(index.row(), index.column(), value)
+            self.layoutChanged.emit()
+            return success
+            #self.dataChanged.emit(index, index)
+            #return True
+        return False
+
+    def flags(self, index):
+        """Returns the flags of the model"""
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled #| Qt.ItemIsEditable
+        #if index.column() != 0:
+        #    flags |= Qt.ItemIsEditable
+        return flags
+
+
 class GroupDataModel(QtCore.QAbstractTableModel):
     """Model for groups
     """
-    def __init__(self):
-        QtCore.QAbstractTableModel.__init__(self)
+    def __init__(self, parent):
+        QtCore.QAbstractTableModel.__init__(self, parent)
 
         self.ogtGroup = None
 
@@ -274,7 +427,6 @@ class GroupDataModel(QtCore.QAbstractTableModel):
             return 0
         #print "rc=", self.ogtGroup.data_rows_count(), self
         return self.ogtGroup.data_rows_count()
-
 
 
     def data(self, index, role=Qt.DisplayRole):
@@ -451,8 +603,8 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
     def setData(self, index, value, role=None):
         """Updates data when modified in the view"""
         if role == Qt.EditRole:
-
-            success = self.ogtGroup.set_cell_value(index.row(), index.column(), value)
+            v = str(value.toString())
+            success = self.ogtGroup.set_cell_value(index.row(), index.column(), v)
             #self.dataChanged.emit(index, index)
             self.layoutChanged.emit()
             return success
@@ -464,8 +616,28 @@ class GroupSourceGridModel(QtCore.QAbstractTableModel):
         #if index.column() != 0:
         #    flags |= Qt.ItemIsEditable
         return flags
+"""
+class HeadCodeDelegate(QtGui.QItemDelegate):
+    def __init__(self):
+        QtGui.QItemDelegate.__init__(self)
 
 
+    def paint(self, painter, option, index):
+
+        button = QtGui.QStyleOptionButton()
+        r = option.rect
+
+        x = r.left() + r.width() - 30 # ; // the        X coordinate
+
+        y = r.top() #; // the       Y        coordinate
+        w = 30 #; // button        width
+        h = 30 #; // button        height
+        button.rect = QtCore.QRect(x, y, w, h);
+        button.text = "=^.^=";
+        button.state = QtGui.QStyle.State_Enabled;
+
+        QtGui.QApplication.style().drawControl(QtGui.QStyle.CE_ItemViewItem, button, painter)
+"""
 
 class GroupDataTableWidget( QtGui.QWidget ):
 
@@ -481,39 +653,78 @@ class GroupDataTableWidget( QtGui.QWidget ):
         self.mainLayout = xwidgets.vlayout()
         self.setLayout(self.mainLayout)
 
-        self.tableHeadings = QtGui.QTableWidget()
+        #== Headings
+        self.tableHeadings = QtGui.QTableView()
         self.mainLayout.addWidget(self.tableHeadings, 0)
+
+        self.headingsModel = GroupHeadingsModel(self)
+        self.tableHeadings.setModel(self.headingsModel)
+
         self.tableHeadings.horizontalHeader().hide()
         self.tableHeadings.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tableHeadings.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+        #== Data
         self.tableData = QtGui.QTableView()
         self.mainLayout.addWidget(self.tableData, 200)
-        #self.tableData.horizontalHeader().hide()
-        self.tableData.setModel(QtGui.QStandardItemModel()) # empty model
 
+        self.dataModel =  GroupDataModel(self)
+        self.tableData.setModel(self.dataModel)
+
+        self.tableData.horizontalHeader().hide()
         self.tableData.horizontalScrollBar().valueChanged.connect(self.on_table_data_h_scroll)
-        #self.tableData.verticalScrollBar().valueChanged.connect(self.on_tree_sched_v_scroll)
 
-        self.model = None
+        HEADER_HEIGHT = 120
+        self.tableHeadings.setRowHeight(1, 60)
+        self.tableHeadings.setFixedHeight(HEADER_HEIGHT + 30)
+
+        #self.headCodeDelegeate = HeadCodeDelegate()
+        #self.tableHeadings.setItemDelegateForRow(0, self.headCodeDelegeate)
+        #HeadCodeWidget
+
+
+
+        self.headingsModel.dataChanged.connect(self.on_header_data_changed)
+
+    def on_header_data_changed(self, tl, tr):
+        print "on_header_data_changed", tl, tr
+        dssdsa()
+
+    def update_headings(self):
+
+        for cidx in range(0, self.headingsModel.columnCount()):
+            idx = self.headingsModel.index(0, cidx)
+            widget = self.tableHeadings.indexWidget(idx)
+            if widget == None:
+                widget = HeadCodeWidget()
+                self.tableHeadings.setIndexWidget(idx, widget)
+            widget.set_head_code( self.headingsModel.data(idx, Qt.DisplayRole))
 
     def on_table_data_h_scroll(self, x):
         self.tableHeadings.horizontalScrollBar().setValue(x)
 
-    def on_tree_sched_v_scroll(self, x):
+    def deadon_tree_sched_v_scroll(self, x):
         self.treeSamples.verticalScrollBar().setValue(x)
 
     def set_group(self, ogtGroup):
 
         self.ogtGroup = ogtGroup
-        self.model = GroupDataModel()
-        self.model.set_group(self.ogtGroup)
-        self.tableData.setModel(self.model)
+
+        #self.headingsModel =
+        self.headingsModel.set_group(self.ogtGroup)
+
+
+        #self.dataModel =
+        self.dataModel.set_group(self.ogtGroup)
+
+
+
+
         # Init table, first row = 0 is headings (cos we cant embed widgets in a header on pyqt4)
         # headings = self.ogtGroup.headings()
-        self.tableHeadings.setRowCount(1)
-        self.tableHeadings.setColumnCount(self.ogtGroup.headings_count)
-
+        #self.tableHeadings.setRowCount(1)
+        #self.tableHeadings.setColumnCount(self.ogtGroup.headings_count)
+        return
         # v_labels = QtCore.QStringList() # vertical labels
 
         ## Populate header
@@ -673,31 +884,34 @@ class GroupWidget( QtGui.QWidget ):
             self.set_group(ogtGroup)
 
         self.groupSourceTableWidget.model.layoutChanged.connect(self.on_data_changed)
-        self.groupDataTableWidget.model.layoutChanged.connect(self.on_data_changed)
+        self.groupDataTableWidget.headingsModel.layoutChanged.connect(self.on_data_changed)
+        self.groupDataTableWidget.dataModel.layoutChanged.connect(self.on_data_changed)
 
         self.on_view_change(self.tbgView.get_id())
 
-    def on_data_changed(self):
-        print "on_data_changes", self, self.sender()
-        if False:
-            for ww in [self.groupSourceTableWidget,
-                      self.groupDataTableWidget]:
-                ww.table.update()
-                """
-                if model == self.sender():
-                    print "ignores"
-                else:
-                    model.layoutChanged.emit()
-                """
+        #self.groupDataTableWidget.headingsModel.dataChanged.connect(self.on_headings_data_changed)
 
-        for model in [self.groupSourceTableWidget.model,
-                  self.groupDataTableWidget.model]:
+        self.on_data_changed()
+
+    def on_headings_data_changed(self):
+        print "on_headings_data_changed"
+
+    def on_data_changed(self):
+        print "on_data_changed", self, self.sender()
+
+
+        for model in [
+                    self.groupSourceTableWidget.model,
+                    self.groupDataTableWidget.headingsModel,
+                    self.groupDataTableWidget.dataModel    ]:
             if model == self.sender():
                 print "ignore", model
             else:
                 model.modelReset.emit()
 
         self.headersListWidget.model.layoutChanged.emit()
+
+        self.groupDataTableWidget.update_headings()
 
     def set_group(self, ogtGroup):
 
