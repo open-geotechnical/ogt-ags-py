@@ -41,10 +41,10 @@ class MainWindow( QtGui.QMainWindow ):
         fn =  "/home/ogt/AGS4-example-wrd.ags"
         if G.args.dev:
             fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
-            #self.load_ags4_file(fn)
+            self.load_ags4_file(fn)
 
-        w = ogtgui_widgets.ExpPortalWidget()
-        self.load_widget(w, "Experiments")
+        #w = ogtgui_widgets.ExpPortalWidget()
+        #self.load_widget(w, "Experiments")
 
     def __init__( self, args ):
         QtGui.QMainWindow.__init__( self )
@@ -118,7 +118,7 @@ class MainWindow( QtGui.QMainWindow ):
         #=======
         ## View
         self.menuViews = self.menuBar().addMenu("View")
-        self.actionAgs4Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS4 data dict", self.on_browse_ags4)
+        self.actionAgs4Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS4", self.on_browse_ags4)
         self.actionAgs4Browse.setCheckable(True)
 
         #self.actionAgs3Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS 3: data dict", self.on_ags3_browse)

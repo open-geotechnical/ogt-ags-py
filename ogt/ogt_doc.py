@@ -1335,7 +1335,7 @@ class OGTGroup:
             return True
         return False
 
-    def sset_data_cell_value(self, ridx, cidx, value):
+    def set_data_cell_value(self, ridx, cidx, value):
         cell = self.data_cell(ridx, cidx)
         if cell:
             cell.value = value
@@ -1356,11 +1356,17 @@ class OGTGroup:
         self.raw_rows.append(raw_cells)
 
     def add_data_row(self, row_cells, lidx):
+        """Adds a DATA Row
+
+        TODO check lidx is valid
+        """
         if self.data_start_idx == None:
+
             self.data_start_idx = len(self.rows)
         self.rows.append(row_cells)
 
     def add_lost_row(self, row_cells, lidx):
+        """Not sure, but we need add rows with no descriptors, or merge erors"""
         self.rows.append(row_cells)
         self.lost_idxs.append(lidx)
 
