@@ -33,8 +33,6 @@ class AGS4DataDictBrowser( QtGui.QWidget ):
         self.mainLayout.addWidget(self.tabWidget)
 
 
-
-
         ##=============================================================
         self.agsGroupsWidget = AGS4GroupsBrowser(self)
         self.tabWidget.addTab(self.agsGroupsWidget, Ico.icon(Ico.AgsGroups), "Groups")
