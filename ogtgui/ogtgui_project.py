@@ -35,66 +35,69 @@ class OGTProjectWidget( QtGui.QWidget ):
         self.mainLayout = xwidgets.vlayout()
         self.setLayout(self.mainLayout)
 
+        ##====== Top Bar ===
         self.topLay = xwidgets.hlayout()
         self.mainLayout.addLayout(self.topLay)
 
-
+        ## Header Label
         self.lblHeader = QtGui.QLabel()
-        self.lblHeader.setStyleSheet("background-color: black; color: #dddddd; font-size: 14pt; padding: 3px 5px;")
+        self.lblHeader.setStyleSheet("background-color: #444444; color: #dddddd; font-size: 14pt; padding: 3px 5px;")
         self.topLay.addWidget(self.lblHeader, 100)
 
+        ## Add button
         self.buttActAdd = xwidgets.XToolButton(text="Add..", ico=Ico.Add, menu=True, popup=True)
         self.topLay.addWidget(self.buttActAdd)
 
+        ## Import button
         self.buttImport = xwidgets.XToolButton(text="Import", ico=Ico.Import, menu=True, popup=True)
         self.topLay.addWidget(self.buttImport)
-
         self.buttImport.menu().addAction("Add default PROJ, UNIT, etc groups", self.on_add_default_groups)
 
+        ## Export button
         self.buttExport = xwidgets.XToolButton(text="Export", ico=Ico.Export, menu=True, popup=True)
         self.topLay.addWidget(self.buttExport)
-
         for a in FORMATS:
             self.buttExport.menu().addAction("%s - TODO" % a)
 
+        ## Reload button
         self.buttReload = xwidgets.XToolButton(text="Reload", ico=Ico.Refresh, popup=True, callback=self.on_reload)
-        #self.buttReload.setText("Relaod")
-        #self.buttReload.setIcon(Ico.icon(Ico.Refresh))
-        #self.buttReload.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        #self.buttReload.setPopupMode(QtGui.QToolButton.InstantPopup)
         self.topLay.addWidget(self.buttReload)
 
         self.mainLayout.addSpacing(5)
 
+        ##========= Content ===============
+
+        ## tabar + Stack
         self.tabBar = QtGui.QTabBar()
         f = self.tabBar.font()
         f.setBold(True)
         self.tabBar.setFont(f)
         self.mainLayout.addWidget(self.tabBar)
 
-        self.stackWidget = QtGui.QStackedWidget()
+        self.stackWidget = XStackedWidget() #QtGui.QStackedWidget()
         self.mainLayout.addWidget(self.stackWidget)
 
+        ## Summary Tab
         self.tabBar.addTab(Ico.icon(Ico.Summary), "Summary")
         self.ogtProjSummaryWidget = OGTProjectSummaryWidget()
-        self.stackWidget.addWidget(self.ogtProjSummaryWidget)
+        self.stackWidget.addWidget(self.ogtProjSummaryWidget, "Project Summary")
         self.ogtProjSummaryWidget.sigGoto.connect(self.on_goto)
         self.ogtProjSummaryWidget.sigGotoSource.connect(self.on_goto_source)
 
-        ## add tables tab
+        ## Groups Tab
         self.tabBar.addTab(Ico.icon(Ico.Groups), "Groups")
         self.ogtDocWidget = ogtgui_doc.OGTDocumentWidget()
-        self.stackWidget.addWidget(self.ogtDocWidget)
+        self.stackWidget.addWidget(self.ogtDocWidget, "Groups")
 
+        ## Schedule Tab
         self.tabBar.addTab(Ico.icon(Ico.Schedule), "Schedule")
         self.ogtScheduleWidget = ogtgui_widgets.OGTScheduleWidget()
-        self.stackWidget.addWidget(self.ogtScheduleWidget)
+        self.stackWidget.addWidget(self.ogtScheduleWidget, "Schedule")
 
-        ## add Sources tab
+        ## Source tab
         self.tabBar.addTab(Ico.icon(Ico.Source), "Source")
         self.ogtSourceViewWidget = ogtgui_widgets.OGTSourceViewWidget()
-        self.stackWidget.addWidget(self.ogtSourceViewWidget)
-
+        self.stackWidget.addWidget(self.ogtSourceViewWidget, "Sources")
 
 
         if False:
@@ -414,3 +417,42 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
 
 
+
+class XStackedWidget( QtGui.QWidget ):
+
+    #sigGoto = pyqtSignal(object)
+    #sigGotoSource = pyqtSignal(int, int)
+
+    def __init__( self, parent=None):
+        QtGui.QWidget.__init__( self, parent )
+
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.setContentsMargins(0,0,0,0)
+        self.mainLayout.setSpacing(4)
+        self.setLayout(self.mainLayout)
+
+        self.headerStack = QtGui.QStackedWidget()
+        self.mainLayout.addWidget(self.headerStack, 0)
+
+        self.contentStack = QtGui.QStackedWidget()
+        self.mainLayout.addWidget(self.contentStack, 100)
+
+    def addWidget(self, widget, header_text, bg="#dddddd"):
+
+        lbl = QtGui.QLabel()
+        lbl.setText(header_text)
+        sty = " color: #666666; font-size: 14pt; padding: 2px 5px;"
+        sty += "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, "
+        sty += "stop: 0 #efefef "
+        sty += ", stop: 0.3 #efefef "
+        sty += "stop: 1 %s" % bg
+        sty += ");"
+        lbl.setStyleSheet(sty)
+
+        self.headerStack.addWidget(lbl)
+
+        self.contentStack.addWidget(widget)
+
+    def setCurrentIndex(self, idx):
+        self.headerStack.setCurrentIndex(idx)
+        self.contentStack.setCurrentIndex(idx)

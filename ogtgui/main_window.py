@@ -161,16 +161,17 @@ class MainWindow( QtGui.QMainWindow ):
         ### add a Banner for coolnees...
         self.lblBanner = QtGui.QLabel()
         self.lblBanner.setText("Open GeoTechnical")
-        self.lblBanner.setAlignment(Qt.AlignRight)
+        self.lblBanner.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
         self.lblBanner.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)
 
-        sty = "font-style:italic; font-weight: bold;  color: white; margin: 0; font-size: 16pt; font-family: arial;"
-        sty += "padding: 5px;"
-        sty += "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, "
-        sty += "stop: 0 #eeeeee "
-        sty += ", stop: 0.3 #F7FB93 "
-        sty += "stop: 1 #B1751B"
-        sty += ");"
+        sty = "font-style:italic; font-weight: bold;  color: #444444; margin: 0; font-size: 10pt; font-family: arial;"
+        sty += "padding: 2px;"
+        if False:
+            sty += "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, "
+            sty += "stop: 0 #FFE8CB "
+            sty += ", stop: 0.3 #FFD7A4 "
+            sty += "stop: 1 #C48C45"
+            sty += ");"
         self.lblBanner.setStyleSheet(sty)
         self.toolBar.addWidget(self.lblBanner)
 
