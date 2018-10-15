@@ -69,16 +69,16 @@ class OGTDocumentWidget( QtGui.QWidget ):
     #         widget = self.load_group(dic)
 
 
-    def deadload_ags4_file(self, file_path):
-
-        self.file_path = None
-
-        doc = ogt_doc.OGTDocument()
-        #doc.opts.edit_mode = True
-        err = doc.load_ags4_file(file_path)
-
-
-        self.load_document(doc)
+    # def deadload_ags4_file(self, file_path):
+    #
+    #     self.file_path = None
+    #
+    #     doc = ogt_doc.OGTDocument()
+    #     #doc.opts.edit_mode = True
+    #     err = doc.load_ags4_file(file_path)
+    #
+    #
+    #     self.load_document(doc)
 
     def clear(self):
 
@@ -97,6 +97,7 @@ class OGTDocumentWidget( QtGui.QWidget ):
         for grpOb in self.ogtDoc.groups_list:
             #print "here", grpOb
             self.load_group( grpOb )
+
         self.tabBar.setCurrentIndex(1)
 
     def load_group(self, ogtGroup):

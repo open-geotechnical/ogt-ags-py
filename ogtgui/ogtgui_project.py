@@ -87,7 +87,11 @@ class OGTProjectWidget( QtGui.QWidget ):
         ## Groups Tab
         self.tabBar.addTab(Ico.icon(Ico.Groups), "Groups")
         self.ogtDocWidget = ogtgui_doc.OGTDocumentWidget()
-        self.stackWidget.addWidget(self.ogtDocWidget, "Groups")
+        nidx = self.stackWidget.addWidget(self.ogtDocWidget, "Groups")
+
+        chk = QtGui.QCheckBox()
+        chk.setText("Show Data Count")
+        self.stackWidget.addHeaderWidget(nidx, chk)
 
         ## Schedule Tab
         self.tabBar.addTab(Ico.icon(Ico.Schedule), "Schedule")
@@ -420,9 +424,7 @@ class OGTProjectSummaryWidget( QtGui.QMainWindow ):
 
 class XStackedWidget( QtGui.QWidget ):
 
-    #sigGoto = pyqtSignal(object)
-    #sigGotoSource = pyqtSignal(int, int)
-
+    """Psuedo Stack as it containes a header/label and widget"""
     def __init__( self, parent=None):
         QtGui.QWidget.__init__( self, parent )
 
@@ -439,6 +441,12 @@ class XStackedWidget( QtGui.QWidget ):
 
     def addWidget(self, widget, header_text, bg="#dddddd"):
 
+        tbar = QtGui.QWidget()
+        tlay = QtGui.QHBoxLayout()
+        tlay.setContentsMargins(0,0,0,0)
+        tlay.setSpacing(0)
+        tbar.setLayout(tlay)
+
         lbl = QtGui.QLabel()
         lbl.setText(header_text)
         sty = " color: #666666; font-size: 14pt; padding: 2px 5px;"
@@ -448,11 +456,19 @@ class XStackedWidget( QtGui.QWidget ):
         sty += "stop: 1 %s" % bg
         sty += ");"
         lbl.setStyleSheet(sty)
+        tlay.addWidget(lbl, 10)
 
-        self.headerStack.addWidget(lbl)
+        self.headerStack.addWidget(tbar)
 
-        self.contentStack.addWidget(widget)
+        nidx = self.contentStack.addWidget(widget)
+
+        return nidx
 
     def setCurrentIndex(self, idx):
         self.headerStack.setCurrentIndex(idx)
         self.contentStack.setCurrentIndex(idx)
+
+    def addHeaderWidget(self, idx, widget):
+
+        wid = self.headerStack.widget(idx)
+        wid.layout().addWidget(widget, 0)

@@ -27,7 +27,7 @@ class MainWindow( QtGui.QMainWindow ):
     def on_after(self):
         #self.examplesWidget.load()
         #print "on_after", self, G.args.dev
-        #self.on_ags4_browse()
+        self.on_browse_ags4()
 
         #G.Ags.load()
         if G.args.dev:
@@ -41,7 +41,8 @@ class MainWindow( QtGui.QMainWindow ):
         fn =  "/home/ogt/AGS4-example-wrd.ags"
         if G.args.dev:
             fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
-            self.load_ags4_file(fn)
+            fn = "/home/geo2lab/z_drive/jobs/40101-40200/40153/AGS/40153 AGS.ags"
+            #self.load_ags4_file(fn)
 
         #w = ogtgui_widgets.ExpPortalWidget()
         #self.load_widget(w, "Experiments")
@@ -338,8 +339,11 @@ class MainWindow( QtGui.QMainWindow ):
 
     def on_browse_ags4(self):
         """Opens or switches to the :ref:`ags4_data_dict`"""
+
+        ## Check it not already there
         for idx in range(0, self.stackWidget.count()):
             if isinstance(self.stackWidget.widget(idx), ags4_widgets.AGS4DataDictBrowser):
+                ## its there so switch to
                 self.stackWidget.setCurrentIndex(idx)
                 self.tabBar.setCurrentIndex(idx)
                 self.set_action_checked(self.actionAgs4Browse, True)
@@ -348,6 +352,7 @@ class MainWindow( QtGui.QMainWindow ):
         # create new instance
         browseWidget = ags4_widgets.AGS4DataDictBrowser()
         self.load_widget(browseWidget, "AGS4 Data Dict", ico=Ico.Ags4)
+        ## set the menu/tbar actions checked
         self.set_action_checked(self.actionAgs4Browse, True)
 
 

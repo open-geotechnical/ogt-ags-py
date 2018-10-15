@@ -47,7 +47,7 @@ class GroupListModel(QtCore.QAbstractTableModel):
         col = midx.column()
 
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            grp = self.ogtDoc.group_by_index(row)
+            grp = self.ogtDoc.group_from_index(row)
             #print "grp=", grp
             if midx.column() == self.C.group_code:
                 return grp.group_code
@@ -72,7 +72,7 @@ class GroupListModel(QtCore.QAbstractTableModel):
 
         if False and role == Qt.BackgroundColorRole:
             #print self.ogtGroup.data_cell(index.row(), index.column())
-            cell = self.ogtDoc.group_by_index(row)[col]
+            cell = self.ogtDoc.group_from_index(row)[col]
             #bg = cell.get_bg()
             if len(self.ogtGroup.data_cell(row, col).errors) > 0:
                 print bg, self.ogtGroup.data_cell(row, col).errors

@@ -93,8 +93,8 @@ class OGTDocument:
 
 
 
-    def deadcells(self):
-        return self._csv_cells
+    #def deadcells(self):
+    #    return self._csv_cells
 
     def hash(self):
         """Calculate the `sha1` hash
@@ -117,12 +117,11 @@ class OGTDocument:
 
     def groups_list(self):
         lst = []
-        for g in self.groups_sort():
-            lst.append(self.groups.get(g))
+        for grp_code in self.groups_sort():
+            lst.append(self.groups.get(grp_code))
         return lst
 
-    def group_by_index(self, ridx):
-        #lst = self.groups_sort()
+    def group_from_index(self, ridx):
         return self.groups_list[ridx]
 
     def groups_count(self):

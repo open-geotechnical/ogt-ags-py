@@ -3,7 +3,6 @@
 @author: Peter Morgan <pete@daffodil.uk.com>
 """
 
-import os
 from Qt import QtGui, QtCore, Qt, pyqtSignal
 
 from ogt import ags4
