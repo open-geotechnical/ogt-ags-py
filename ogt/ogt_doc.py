@@ -1099,20 +1099,21 @@ def create_doc_from_json_file( json_file_path):
     return doc, None
 
 GROUPS_FIRST_CODES  = ["PROJ", "TRAN", "LOCA", "HDPH", "GEOL", "SAMP"]
-"""The groups we want to appear first"""
+"""The groups to appear first"""
 
 GROUPS_LAST_CODES = ["ABBR", "DICT", "FILE", "TYPE", "UNIT"]
-"""The groups we want to appear last"""
+"""The groups to appear last"""
 
-GROUPS_REQUIRED = ["PROJ", "TRAN", "UNIT", "TYPE"]
+GROUPS_REQUIRED = ["PROJ", "TRAN", "TYPE", "UNIT"]
+"""Mandatory groups"""
 
 def groups_sort(unsorted_groups):
-    """Returns a preferred order for the group keys
+    """Returns a 'preferred' order for the group keys
 
     .. note::
 
         This is a bit hacky as the ags spec does not define
-        any groups order, however PROJ does sensibly tend to come first etc.
+        any group order, however PROJ does sensibly tend to come first etc.
 
 
         So this return a list with
@@ -1145,13 +1146,11 @@ def groups_sort(unsorted_groups):
     ret_end = []
     for gc in GROUPS_LAST_CODES:
         if gc in grps:
-             # exists so add to end, and remove from list
+            # exists so add to end, and remove from list
             ret_end.append(gc)
             grps.remove(gc)
 
-    return_list = ret_start + sorted(grps) + ret_end
-    # print return_list
-    return return_list
+    return ret_start + sorted(grps) + ret_end
 
 
 class OGTGroup:

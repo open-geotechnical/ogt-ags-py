@@ -2,8 +2,8 @@
 import os
 import io
 from operator import itemgetter
-import urllib, urllib2
-import json
+#import urllib, urllib2
+#import json
 
 from ogt import PROJECT_ROOT_PATH, OgtError
 import ogt.ogt_doc
