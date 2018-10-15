@@ -143,7 +143,10 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.tree.setRootIsDecorated(False)
         self.tree.setAlternatingRowColors(True)
         self.tree.setSortingEnabled(True)
-        self.tree.setModel(self.proxy)
+
+        #self.tree.setModel(self.proxy)
+        self.tree.setModel(G.ags.modelGroups)
+
         self.tree.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
         self.tree.header().setStretchLastSection(True)

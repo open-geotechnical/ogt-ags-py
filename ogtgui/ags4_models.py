@@ -107,7 +107,7 @@ class Ags4Object(QtCore.QObject):
     def load(self):
 
         self.modelAbbrItems.load_data(ags4.AGS4.abbrs())
-        self.modelGroups.load_data(ags4.AGS4.groups())
+        self.modelGroups.set_ags4(ags4.AGS4)
 
         self.modelUnits.load_data(ags4.AGS4.units_list())
         self.modelTypes.load_data(ags4.AGS4.types_list())
@@ -187,8 +187,8 @@ class NotesModel():
         self.words = {}
         print "TODO words", self
         #self.add_words( G.Ags.modelAbbrevs.get_words() )
-        self.add_words( G.ags.modelGroups.get_words() )
-        self.add_words( G.ags.modelHeadings.get_words() )
+        #self.add_words( G.ags.modelGroups.get_words() )
+        #self.add_words( G.ags.modelHeadings.get_words() )
         #print self.words
 
     def get_words(self):
@@ -209,19 +209,74 @@ class CG:
 
 
 
-class GroupsModel(xobjects.XStandardItemModel):
-
+#class GroupsModel(xobjects.XStandardItemModel):
+class GroupsModel(QtCore.QAbstractItemModel):
     sigClasses = pyqtSignal(list)
 
     def __init__( self, parent=None):
-        xobjects.XStandardItemModel.__init__( self, parent)
+        QtCore.QAbstractItemModel.__init__( self, parent)
+
+        self.ags4dd = None
 
 
-        self.set_header(CG.code, "Group")
-        self.set_header(CG.description, "Description")
-        self.set_header(CG.cls, "Class")
-        #self.set_header(CG.x_id, "xid")
-        self.set_header(CG.search, "Search")
+        #self.set_header(CG.code, "Group")
+        #self.set_header(CG.description, "Description")
+        #self.set_header(CG.cls, "Class")
+        #self.set_header(CG.search, "Search")
+
+    def set_ags4(self, ags4dd):
+        self.ags4dd = ags4dd
+
+    def columnCount(self, midx):
+        return 4
+
+    def rowCount(self, midx):
+        if self.ags4dd == None:
+            return 0
+        return len(self.ags4dd.groups())
+
+    def index(self, row, col, parent=None):
+        return self.createIndex(row, col)
+
+    def parent(self, pidx=None):
+        return QtCore.QModelIndex()
+
+    def data(self, midxx, role):
+
+        col = midxx.column()
+
+        if role == Qt.DisplayRole:
+            # the the ags grp
+            grp = self.ags4dd.group_by_row_index(midxx.row())
+
+            if col == 0:
+                return grp['group_code']
+            if col == 1:
+                return grp['group_description']
+            if col == 2:
+                return grp['class']
+            if col == 3:
+                return (grp['group_code'] + grp['group_description']).replace(" ", "")
+
+        if role == Qt.DecorationRole:
+            if col == 0:
+                return Ico.icon(Ico.AgsGroup)
+
+        if role == Qt.FontRole:
+            if col == 0:
+                f = QtGui.QFont()
+                f.setBold(True)
+                f.setFamily("monospace")
+                return f
+
+        return None
+
+    def headerData(self, p_int, orient, role=None):
+
+        if orient == Qt.Horizontal and role == Qt.DisplayRole:
+            heads = ["Code", "Description", "Classification", "Search"]
+            return heads[p_int]
+
 
 
     def load_data(self, groups):
