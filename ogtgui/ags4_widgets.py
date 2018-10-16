@@ -12,7 +12,7 @@ import app_globals as G
 #from ogt import utils
 from img import Ico
 import xwidgets
-from ags4_models import CG, CA, SHOW_NONE, AGS4_COLORS, HeadingsModel
+from ags4_models import CG,  SHOW_NONE, AGS4_COLORS, HeadingsModel, AbbrevItemsModel
 
 
 class AGS4DataDictBrowser( QtGui.QWidget ):
@@ -200,12 +200,11 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.splitter.addWidget(rightWidget)
 
 
-        self.agsHeadingDetailWidget = AGS4HeadingDetailWidget()
-        rightLayout.addWidget(self.agsHeadingDetailWidget)
+        #self.agsHeadingDetailWidget = AGS4HeadingDetailWidget()
+        #rightLayout.addWidget(self.agsHeadingDetailWidget)
 
         #self.init_setup()
         G.ags.sigLoaded.connect(self.on_loaded)
-        self.agsGroupViewWidget.sigHeadCodeSelected.connect(self.agsHeadingDetailWidget.load_heading)
 
     def on_splitter_moved(self, i, pos):
         G.settings.save_splitter(self.splitter)
@@ -316,7 +315,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 class AGS4GroupViewWidget( QtGui.QWidget ):
     """The GroupView contains the vertically the Group Label at top, headings and notes"""
 
-    sigHeadCodeSelected = pyqtSignal(object)
+    sigHeadingSelected = pyqtSignal(object)
 
     def __init__( self, parent=None, mode=None ):
         QtGui.QWidget.__init__( self, parent )
@@ -350,13 +349,6 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
 
         self.mainLayout.addSpacing(10)
 
-        #self.tabWidget = QtGui.QTabWidget()
-        #self.mainLayout.addWidget(self.tabWidget)
-
-        #self.lblHeadings = Widgets.Label(text="Headings")
-        #self.mainLayout.addWidget(self.lblHeadings, 0)
-
-
 
         self.agsHeadingsTable = AGS4HeadingsTable(self)
         self.mainLayout.addWidget(self.agsHeadingsTable, 10)
@@ -365,17 +357,32 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
         #self.lblNotes = Widgets.Label(text="Notes")
         #self.mainLayout.addWidget(self.lblNotes, 0)
 
+        self.splitBott = QtGui.QSplitter()
+        self.splitBott.setObjectName("ags_group_view_notes_picklist")
+        self.mainLayout.addWidget(self.splitBott)
 
         self.agsGroupNotesTable = AGS4GroupNotesWidget(self)
         self.agsGroupNotesTable.setFixedHeight(200)
-        self.mainLayout.addWidget(self.agsGroupNotesTable)
+        self.splitBott.addWidget(self.agsGroupNotesTable)
+
+        self.agsAbbrevsWidget = AGS4HeadingDetailWidget()
+        self.splitBott.addWidget(self.agsAbbrevsWidget)
+
         #self.tabWidget.addTab(self.agsGroupNotesTable, dIco.icon(dIco.AgsNotes), "Notes")
         #self.connect(self.agsGroupNotesTable, QtCore.SIGNAL("loaded"), self.on_notes_loaded)
 
-        self.agsHeadingsTable.sigHeadCodeSelected.connect(self.on_head_code)
+        self.splitBott.setStretchFactor(0, 1)
+        self.splitBott.setStretchFactor(1, 1)
+        #G.settings.restore_splitter(self.splitBott)
 
-    def on_head_code(self, head_code):
-        self.sigHeadCodeSelected.emit(head_code)
+        self.agsHeadingsTable.sigHeadingSelected.connect(self.on_heading_selection_changed)
+
+    def on_splitter_bott_moved(self, i, pos):
+        G.settings.save_splitter(self.splitBott)
+
+    def on_heading_selection_changed(self, head_code):
+        self.sigHeadingSelected.emit(head_code)
+        self.agsAbbrevsWidget.set_heading(head_code)
 
     def on_notes_loaded(self, c):
         self.tabWidget.setTabText(1, "Notes - %s" % (c if c > 0 else "None") )
@@ -437,13 +444,7 @@ class AGS4GroupViewDialog(QtGui.QDialog):
 
 class AGS4HeadingsTable( QtGui.QWidget ):
 
-    sigHeadCodeSelected = pyqtSignal(object)
-    """A row has been selected or delelected
-
-    :return: HeadCode or `None`
-    """
-
-
+    sigHeadingSelected = pyqtSignal(object)
 
     def __init__( self, parent ):
         QtGui.QWidget.__init__( self, parent )
@@ -473,7 +474,6 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.tree.setAlternatingRowColors(True)
         self.tree.setSortingEnabled(False)
 
-        #self.tree.setModel(self.proxy)
         self.model = HeadingsModel()
         self.tree.setModel(self.model)
 
@@ -495,32 +495,18 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         #self.statusBar.hide()
 
     def set_group(self, grp):
-
-        #if grp == None:
-
         self.model.set_group(grp)
 
-    def deadfilter_by_group(self, gc=None):
-
-        self.group_code = SHOW_NONE if gc == None else gc
-        self.proxy.setFilterFixedString(self.group_code)
 
     #=========================================
     def on_tree_selected(self, sel, desel):
 
         if not self.tree.selectionModel().hasSelection():
-             self.sigHeadCodeSelected.emit( None )
+             self.sigHeadingSelected.emit( None )
              return
 
-        tIdx = sel.indexes()[0]
-        #srcidx = self.proxy.mapToSource(selidx)
-
-        #model = self.proxy.sourceModel()
-        # tIdx = model.index(srcidx.row(), CH.head_code, srcidx.parent())
-        rec = self.model.rec_from_midx( tIdx )
-
-        #head_code = str(item.text())
-        self.sigHeadCodeSelected.emit(rec['head_code'])
+        rec = self.model.rec_from_midx( sel.indexes()[0] )
+        self.sigHeadingSelected.emit(rec)
 
 
 
@@ -666,12 +652,13 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
 
         self.debug = True
 
+        """
         self.proxy = QtGui.QSortFilterProxyModel()
         self.proxy.setSourceModel(G.ags.modelAbbrItems)
         self.proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.proxy.setFilterKeyColumn(CA.head_code)
         self.proxy.setFilterFixedString(SHOW_NONE)
-
+        """
         ##===============================================
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -689,11 +676,7 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
         self.lblAbbrCode = QtGui.QLabel(" ")
         self.lblAbbrCode.setStyleSheet("background-color: white; color: %s; font-weight: bold; font-family: monospace; padding: 3px;" % AGS4_COLORS.group)
         self.toolbar.addWidget(self.lblAbbrCode, 20)
-        #self.lblAbbrCode.setFixedWidth(50)
 
-
-        self.splitter = QtGui.QSplitter()
-        self.mainLayout.addWidget(self.splitter)
 
         ##===============================================================
         self.tree = QtGui.QTreeView()
@@ -703,14 +686,15 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
         self.tree.setAlternatingRowColors(True)
         self.tree.setSortingEnabled(False)
 
-        self.tree.setModel(self.proxy)
+        self.model = AbbrevItemsModel()
+        self.tree.setModel(self.model)
 
-
-        for c in [CA.head_code]:
-            self.tree.setColumnHidden(c, True)
+        CA = AbbrevItemsModel.CA
+        #for c in [CA.head_code]:
+        #    self.tree.setColumnHidden(c, True)
         self.tree.setColumnWidth(CA.code, 100)
         self.tree.setColumnWidth(CA.description, 50)
-        self.tree.setColumnWidth(CA.head_code, 40)
+        #self.tree.setColumnWidth(CA.head_code, 40)
 
 
         self.tree.header().setStretchLastSection(True)
@@ -718,12 +702,14 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
         # TODO fix sort to ags
         self.tree.setSortingEnabled(True)
 
-        self.load_heading(None)
+        self.set_heading(None)
 
 
-    def load_heading(self, head_code):
+    def set_heading(self, heading):
 
-        self.proxy.setFilterFixedString(SHOW_NONE if head_code == None else head_code)
+        self.model.set_heading(heading)
+
+        return
 
         # now check rowCount() to see if records
         # FIXME we need to check for PA, P? instead

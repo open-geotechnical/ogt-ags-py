@@ -144,8 +144,11 @@ class AGS4_DataDict:
 
         return self._groups_dict.get(group_code)
 
-    def abbrs(self):
+    def abbrs_all(self):
         return self._abbrs
+
+    def abbrs(self, head_code):
+        return self._abbrs.get(head_code)
 
     def types_list(self):
         return self._data_types

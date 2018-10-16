@@ -107,7 +107,7 @@ class Ags4Object(QtCore.QObject):
 
     def load(self):
 
-        self.modelAbbrItems.load_data(ags4.AGS4.abbrs())
+        #self.modelAbbrItems.load_data(ags4.AGS4.abbrs())
 
         self.modelClasses.set_ags4dd(ags4.AGS4)
         self.modelGroups.set_ags4dd(ags4.AGS4)
@@ -471,30 +471,95 @@ class HeadingsModel(QtCore.QAbstractItemModel):
 ## Abbrev Values
 ##===================================================================
 
-class CA:
-    """Columns no's for the :class:`~ogtgui.ags4_models.AbbrevItemsModel` """
-    code = 0
-    description = 1
-    head_code = 2
 
 
 
-class AbbrevItemsModel(xobjects.XStandardItemModel):
+class AbbrevItemsModel(QtCore.QAbstractItemModel):
+
+    class CA:
+        """Columns no's for the :class:`~ogtgui.ags4_models.AbbrevItemsModel` """
+        code = 0
+        description = 1
+        _col_count = 2
 
     def __init__( self, parent=None):
-        super(xobjects.XStandardItemModel, self).__init__(parent)
+        #super(xobjects.XStandardItemModel, self).__init__(parent)
+        super(QtCore.QAbstractItemModel, self).__init__(parent)
 
-        self.set_header(CA.code, "Code")
-        self.set_header(CA.description, "Description")
-        self.set_header(CA.head_code, "head_code")
+        self.abbrDD = None
+
+    def set_heading(self, heading):
 
 
-    def load_data(self, data):
+        # self.proxy.setFilterFixedString(SHOW_NONE if head_code == None else head_code)
+        self.abbrDD = None
+        if heading == None:
+            return
+        print heading.keys(), self
+
+
+        dic = ags4.AGS4.abbrs(heading['head_code'])
+        if dic:
+            self.abbrDD = dic.get("abbrs")
+
+        self.reset()
+        #if self.abbrDD == None:
+        #    return
+
+
+        #return
+
+        #self.ags4dd = ags4dd
+        #self.reset()
+
+    def index(self, row, col, parent=None):
+        return self.createIndex(row, col)
+
+    def parent(self, pidx=None):
+        return QtCore.QModelIndex()
+
+    def columnCount(self, midx=None):
+        return self.CA._col_count
+
+    def rowCount(self, midx=None):
+        if self.abbrDD == None:
+            return 0
+        return len(self.abbrDD)
+
+    def headerData(self, p_int, orient, role=None):
+        if orient == Qt.Horizontal and role == Qt.DisplayRole:
+            heads = ["Type", "Description"]
+            return heads[p_int]
+
+    def data(self, midxx, role):
+
+        col = midxx.column()
+
+        if role == Qt.DisplayRole:
+            # the the ags grp
+            rec = self.abbrDD[midxx.row()]
+            # print rec
+            if col == self.CA.code:
+                return rec['code']
+            if col == self.CA.description:
+                return rec['description']
+
+        if role == Qt.FontRole:
+            if col == self.CA.code:
+                f = QtGui.QFont()
+                f.setBold(True)
+                f.setFamily("monospace")
+                return f
+
+        return None
+
+
+    def deadload_data(self, data):
         self.remove_rows()
         for head_code, recs in data.iteritems():
             self.append_abbrv_items(head_code, data[head_code]['abbrs'])
 
-    def append_abbrv_items(self, head_code, recs):
+    def deadappend_abbrv_items(self, head_code, recs):
 
         for rec in recs:
             items = self.make_blank_row()
@@ -503,10 +568,10 @@ class AbbrevItemsModel(xobjects.XStandardItemModel):
             items[CA.head_code].set(head_code)
             self.appendRow(items)
 
-    def has_abbrev(self, head_code):
+    def deadhas_abbrev(self, head_code):
         return len(  self.findItems(head_code, Qt.MatchExactly, CA.head_code) ) > 0
 
-    def get_picklist(self, abbrev_code):
+    def deadget_picklist(self, abbrev_code):
         lst = []
         items = self.findItems(abbrev_code, Qt.MatchExactly, CA.code)
         for item in items:
@@ -518,7 +583,7 @@ class AbbrevItemsModel(xobjects.XStandardItemModel):
 
         return lst
 
-    def get_row(self, item):
+    def deadget_row(self, item):
         return self.get_row_from_item(item)
 
 ##===================================================================
@@ -641,10 +706,6 @@ class UnitsModel(QtCore.QAbstractItemModel):
                 return rec['unit']
             if col == self.CU.description:
                 return rec['description']
-
-        # if role == Qt.DecorationRole:
-        #     if col == 0:
-        #         return Ico.icon(Ico.AgsHeading)
 
         if role == Qt.FontRole:
             if col == self.CU.unit:
