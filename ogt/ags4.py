@@ -113,7 +113,7 @@ class AGS4_DataDict:
         self._abbrs = self._data['abbrs']
         self._groups = self._data['groups']
         self._groups_list = sorted(self._groups.keys())
-        self._types = self._data['types']
+        self._types = self._data['data_types']
         self._units = self._data['units']
 
         return None

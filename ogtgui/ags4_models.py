@@ -29,8 +29,8 @@ class AGS4_COLORS:
 SHOW_NONE = "##__NONE__##"
 """Used to filter for nothing"""
 
-def type_ico(ags_type):
-    """Returns an icon for the data type , see ,,TODO"""
+def data_type_ico(ags_type):
+    """Returns an icon filename for the data type"""
     v = ags_type.upper()
 
     # Date time
@@ -65,8 +65,9 @@ def type_ico(ags_type):
     # oopps
     return Ico.TypeUnknown
 
-def type_icon(ags_type):
-    return type_ico(ags_type)
+def data_type_icon(ags_type):
+    """Return a QIcon dfor and ags.data_type"""
+    return data_type_ico(ags_type)
 
 ##===================================================================
 ## Main
@@ -107,10 +108,10 @@ class Ags4Object(QtCore.QObject):
     def load(self):
 
         self.modelAbbrItems.load_data(ags4.AGS4.abbrs())
-        self.modelGroups.set_ags4(ags4.AGS4)
+        self.modelGroups.set_ags4dd(ags4.AGS4)
 
-        self.modelUnits.load_data(ags4.AGS4.units_list())
-        self.modelTypes.load_data(ags4.AGS4.types_list())
+        self.modelUnits.set_ags4dd(ags4.AGS4)
+        self.modelTypes.set_ags4dd(ags4.AGS4)
 
         self.modelNotes.init_words()
 
@@ -185,7 +186,7 @@ class NotesModel():
     def init_words(self):
 
         self.words = {}
-        print "TODO words", self
+        #print "TODO words", self
         #self.add_words( G.Ags.modelAbbrevs.get_words() )
         #self.add_words( G.ags.modelGroups.get_words() )
         #self.add_words( G.ags.modelHeadings.get_words() )
@@ -224,7 +225,7 @@ class GroupsModel(QtCore.QAbstractItemModel):
         #self.set_header(CG.cls, "Class")
         #self.set_header(CG.search, "Search")
 
-    def set_ags4(self, ags4dd):
+    def set_ags4dd(self, ags4dd):
         self.ags4dd = ags4dd
         self.reset()
 
@@ -272,8 +273,8 @@ class GroupsModel(QtCore.QAbstractItemModel):
 
         return None
 
-    def group_from_midx(self, midx):
-        print "get=", midx.row()
+    def rec_from_midx(self, midx):
+        #print "get=", midx.row()
         return self.ags4dd.group_by_row_index(midx.row())
 
     def headerData(self, p_int, orient, role=None):
@@ -284,7 +285,7 @@ class GroupsModel(QtCore.QAbstractItemModel):
 
 
 
-    def load_data(self, groups):
+    def load_dataDEAD(self, groups):
 
         self.remove_rows()
         G.ags.modelHeadings.remove_rows()
@@ -334,57 +335,41 @@ class GroupsModel(QtCore.QAbstractItemModel):
 ##===================================================================
 ## Headings
 ##===================================================================
-class CH:
-    """Columns NO's for the ;class:`~ogtgui.ags_models.HeadingsModel`"""
-    sort = 0
-    head_code = 1
-    status = 2
-    unit = 3
-    data_type = 4
 
-    description = 5
-    example = 6
-
-    group_code = 7
-    group_descr = 8
-    class_ = 9
 
 
 #class HeadingsModel(xobjects.XStandardItemModel):
 class HeadingsModel(QtCore.QAbstractItemModel):
 
+    class CH:
+        """Columns NO's for the ;class:`~ogtgui.ags_models.HeadingsModel`"""
+        head_code = 0
+        description = 1
+        unit = 2
+        data_type = 3
+        example = 4
+        status = 5
+        sort_order = 6
+        _col_count = 7
+
     def __init__( self, parent=None):
         super(QtCore.QAbstractItemModel, self).__init__(parent)
 
         self.grpDD = None
-        return
-        self.set_header(CH.head_code, "Heading")
-        self.set_header(CH.description, "Description")
-        self.set_header(CH.data_type, "Type", align=Qt.AlignCenter)
-        self.set_header(CH.unit, "Unit", align=Qt.AlignCenter)
-        self.set_header(CH.status, "Stat")
-        #hi.setTextAlignment(C.unit, QtCore.Qt.AlignHCenter)
 
-        self.set_header(CH.example, "Example")
-        self.set_header(CH.sort, "Srt", sort="int", align=Qt.AlignCenter)
-        self.set_header(CH.group_code, "Group")
-        self.set_header(CH.group_descr, "Group Description")
-        self.set_header(CH.class_, "Class")
+    def index(self, row, col, parent=None):
+        return self.createIndex(row, col)
 
-
-    def set_group(self, grp):
-
-        self.grpDD = grp
+    def set_group(self, grpdd):
+        self.grpDD = grpdd
         self.reset()
 
-
     def columnCount(self, midx):
-        return 9
+        return self.CH._col_count
 
     def rowCount(self, midx):
         if self.grpDD == None:
             return 0
-        print self.grpDD
         return len(self.grpDD.get("headings"))
 
     def index(self, row, col, parent=None):
@@ -398,23 +383,30 @@ class HeadingsModel(QtCore.QAbstractItemModel):
         col = midxx.column()
 
         if role == Qt.DisplayRole:
-            # the the ags grp
             rec = self.grpDD["headings"][midxx.row()]
-            print rec
-            if col == 0:
+
+            if col == self.CH.head_code:
                 return rec['head_code']
-            if col == 1:
+
+            if col == self.CH.description:
                 return rec['head_description']
-            if col == 2:
+
+            if col == self.CH.data_type:
                 return rec['data_type']
-            if col == 3:
+
+            if col == self.CH.unit:
                 return rec['unit']
-            if col == 4:
+
+            if col == self.CH.status:
                 return rec['head_status']
-            if col == 5:
+
+            if col == self.CH.example:
                 return rec['example']
-            if col == 6:
+
+            if col == self.CH.sort_order:
                 return rec['sort_order']
+
+
 
         if role == Qt.DecorationRole:
             if col == 0:
@@ -431,31 +423,17 @@ class HeadingsModel(QtCore.QAbstractItemModel):
 
 
 
-    def group_from_midx(self, midx):
-        print "get=", midx.row()
-        return self.ags4dd.group_by_row_index(midx.row())
+    def rec_from_midx(self, midx):
+        return self.grpDD.get("headings")[midx.row()]
 
     def headerData(self, p_int, orient, role=None):
 
         if orient == Qt.Horizontal and role == Qt.DisplayRole:
-            heads = ["Heading", "Description", "Type", "Unit", "Stat", "Example", "Srt"]
+            heads = ["Heading", "Description", "Unit", "Type",  "Example", "Stat", "Srt"]
             return heads[p_int]
 
 
-        # self.set_header(CH.head_code, "Heading")
-        # self.set_header(CH.description, "Description")
-        # self.set_header(CH.data_type, "Type", align=Qt.AlignCenter)
-        # self.set_header(CH.unit, "Unit", align=Qt.AlignCenter)
-        # self.set_header(CH.status, "Stat")
-        # #hi.setTextAlignment(C.unit, QtCore.Qt.AlignHCenter)
-        #
-        # self.set_header(CH.example, "Example")
-        # self.set_header(CH.sort, "Srt", sort="int", align=Qt.AlignCenter)
-        # self.set_header(CH.group_code, "Group")
-        # self.set_header(CH.group_descr, "Group Description")
-        # self.set_header(CH.class_, "Class")
-
-    def append_headings(self, grp):
+    def append_headingsDEAD(self, grp):
 
         for rec in grp['headings']:
             #print rec.keys()
@@ -593,49 +571,134 @@ class ClassesModel(xobjects.XStandardItemModel):
 ## Units + Types
 ##===================================================================
 
-class CU:
-    unit = 0
-    description = 1
-
-class UnitsModel(xobjects.XStandardItemModel):
-
-    sigLoaded = pyqtSignal()
-
-    def __init__( self, parent=None):
-        super(xobjects.XStandardItemModel, self).__init__(parent)
-
-        self.set_header(CU.unit, "Unit")
-        self.set_header(CU.description, "Description")
 
 
-    def load_data(self, recs):
+class UnitsModel(QtCore.QAbstractItemModel):
 
-        #recs = data['units']
-
-        for rec in recs:
-            items = self.make_blank_row()
-            items[CU.unit].set(rec['unit'], bold=True, font="monospace")
-            items[CU.description].set(rec['description'])
-            self.appendRow(items)
-
-        self.sigLoaded.emit()
-
-class CT:
-    type = 0
-    description = 1
-
-class TypesModel(xobjects.XStandardItemModel):
-
-    sigLoaded = pyqtSignal()
+    class CU:
+        unit = 0
+        description = 1
 
     def __init__( self, parent=None):
-        super(xobjects.XStandardItemModel, self).__init__(parent)
+        super(QtCore.QAbstractItemModel, self).__init__(parent)
 
-        self.set_header(CT.type, "Type")
-        self.set_header(CT.description, "Description")
+        self.ags4dd = None
+
+    def set_ags4dd(self, ags4dd):
+
+        self.ags4dd = ags4dd
+        self.reset()
+
+    def index(self, row, col, parent=None):
+        return self.createIndex(row, col)
+
+    def parent(self, pidx=None):
+        return QtCore.QModelIndex()
+
+    def columnCount(self, midx=None):
+        return 2
+
+    def rowCount(self, midx=None):
+        if self.ags4dd == None:
+            return 0
+        return len(self.ags4dd.units_list())
+
+    def headerData(self, p_int, orient, role=None):
+        if orient == Qt.Horizontal and role == Qt.DisplayRole:
+            heads = ["Type", "Description"]
+            return heads[p_int]
+
+    def data(self, midxx, role):
+
+        col = midxx.column()
+
+        if role == Qt.DisplayRole:
+            # the the ags grp
+            rec = self.ags4dd.units_list()[midxx.row()]
+            #print rec
+            if col == self.CU.unit:
+                return rec['unit']
+            if col == self.CU.description:
+                return rec['description']
+
+        # if role == Qt.DecorationRole:
+        #     if col == 0:
+        #         return Ico.icon(Ico.AgsHeading)
+
+        if role == Qt.FontRole:
+            if col == self.CU.unit:
+                f = QtGui.QFont()
+                f.setBold(True)
+                f.setFamily("monospace")
+                return f
+
+        return None
 
 
-    def load_data(self, recs):
+
+
+class TypesModel(QtCore.QAbstractItemModel):
+
+    class CT:
+        data_type = 0
+        description = 1
+
+    def __init__( self, parent=None):
+        super(QtCore.QAbstractItemModel, self).__init__(parent)
+
+        self.ags4dd = None
+
+    def set_ags4dd(self, ags4dd):
+        self.ags4dd = ags4dd
+        self.reset()
+
+    def index(self, row, col, parent=None):
+        return self.createIndex(row, col)
+
+    def parent(self, pidx=None):
+        return QtCore.QModelIndex()
+
+    def columnCount(self, midx=None):
+        return 2
+
+    def rowCount(self, midx=None):
+        if self.ags4dd == None:
+            return 0
+        return len(self.ags4dd.types_list())
+
+    def headerData(self, p_int, orient, role=None):
+
+        if orient == Qt.Horizontal and role == Qt.DisplayRole:
+            heads = ["Type", "Description"]
+            return heads[p_int]
+
+
+    def data(self, midxx, role):
+
+        col = midxx.column()
+
+        if role == Qt.DisplayRole:
+            rec = self.ags4dd.types_list()[midxx.row()]
+            if col == self.CT.data_type:
+                return rec['data_type']
+            if col == self.CT.description:
+                return rec['description']
+
+        # if role == Qt.DecorationRole:
+        #     if col == 0:
+        #         return Ico.icon(Ico.AgsHeading)
+
+        if role == Qt.FontRole:
+            if col == 0:
+                f = QtGui.QFont()
+                f.setBold(True)
+                f.setFamily("monospace")
+                return f
+
+        return None
+
+
+    def load_datadead(self, recs):
 
         #recs = data['units']
 

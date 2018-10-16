@@ -12,7 +12,7 @@ import app_globals as G
 #from ogt import utils
 from img import Ico
 import xwidgets
-from ags4_models import CG, CH,CA, SHOW_NONE, AGS4_COLORS, HeadingsModel
+from ags4_models import CG, CA, SHOW_NONE, AGS4_COLORS, HeadingsModel
 
 
 class AGS4DataDictBrowser( QtGui.QWidget ):
@@ -218,7 +218,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         #print selidx.row(), selidx.column()
         #print tIdx.row(), tIdx.column()
 
-        grp_dic = smodel.group_from_midx( tIdx )
+        grp_dic = smodel.rec_from_midx( tIdx )
         #print grp_dic
         #group_code = grp_dic.get("group_code")
         self.agsGroupViewWidget.set_group(grp_dic)
@@ -460,10 +460,8 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.model = HeadingsModel()
         self.tree.setModel(self.model)
 
-
-        for c in [CH.class_, CH.group_code, CH.group_descr]:
-           self.tree.setColumnHidden(c, True)
-        self.tree.setColumnWidth(CH.sort, 20)
+        CH = HeadingsModel.CH
+        self.tree.setColumnWidth(CH.sort_order, 20)
         self.tree.setColumnWidth(CH.head_code, 100)
         self.tree.setColumnWidth(CH.unit, 50)
         self.tree.setColumnWidth(CH.status, 40)
@@ -485,7 +483,7 @@ class AGS4HeadingsTable( QtGui.QWidget ):
 
         self.model.set_group(grp)
 
-    def filter_by_group(self, gc=None):
+    def deadfilter_by_group(self, gc=None):
 
         self.group_code = SHOW_NONE if gc == None else gc
         self.proxy.setFilterFixedString(self.group_code)
@@ -497,15 +495,15 @@ class AGS4HeadingsTable( QtGui.QWidget ):
              self.sigHeadCodeSelected.emit( None )
              return
 
-        selidx = sel.indexes()[0]
-        srcidx = self.proxy.mapToSource(selidx)
+        tIdx = sel.indexes()[0]
+        #srcidx = self.proxy.mapToSource(selidx)
 
-        model = self.proxy.sourceModel()
-        tIdx = model.index(srcidx.row(), CH.head_code, srcidx.parent())
-        item = model.itemFromIndex( tIdx )
+        #model = self.proxy.sourceModel()
+        # tIdx = model.index(srcidx.row(), CH.head_code, srcidx.parent())
+        rec = self.model.rec_from_midx( tIdx )
 
-        head_code = str(item.text())
-        self.sigHeadCodeSelected.emit(head_code)
+        #head_code = str(item.text())
+        self.sigHeadCodeSelected.emit(rec['head_code'])
 
 
 
