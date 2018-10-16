@@ -222,6 +222,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
     #=========================================
     def on_groups_tree_selected(self, sel=None, desel=None):
 
+        print "on_grp_sel", self
         if not self.treeGroups.selectionModel().hasSelection():
              self.agsGroupViewWidget.set_group( None )
              self.sigGroupSelected.emit( None )
@@ -394,24 +395,15 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
 
     def set_group(self, grp):
 
+        self.agsHeadingsTable.set_group(grp)
+        self.agsGroupNotesTable.set_group(grp)
+
         if grp == None:
             self.lblGroupCode.setText("")
             self.lblDescription.setText("")
             return
-
         self.lblGroupCode.setText(grp['group_code'])
         self.lblDescription.setText(grp['group_description'])
-
-        if False:
-            self.tabWidget.setTabText(0, "Headings - %s" % len(g['headings']))
-            if len(g['notes']) == 0:
-                s = "None"
-            else:
-                s = len(g['notes'])
-            self.tabWidget.setTabText(1, "Notes - %s" % s)
-
-        self.agsHeadingsTable.set_group(grp)
-        self.agsGroupNotesTable.set_group(grp)
 
 
 
@@ -584,15 +576,17 @@ class AGS4GroupNotesWidget( QtGui.QWidget ):
         self.update()
 
     def set_group(self, grp):
-        print "set_group, TODO", grp, self
 
 
+        self.clear()
+        if grp == None:
+            return
 
 
         lookup = G.ags.get_words()
 
+        print "lookup=", lookup
 
-        self.clear()
         notes = grp.get("notes")
         print notes
 

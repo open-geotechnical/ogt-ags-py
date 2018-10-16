@@ -536,11 +536,11 @@ class AbbrevItemsModel(QtCore.QAbstractItemModel):
         col = midxx.column()
 
         if role == Qt.DisplayRole:
-            # the the ags grp
             rec = self.abbrDD[midxx.row()]
-            # print rec
+
             if col == self.CA.code:
                 return rec['code']
+
             if col == self.CA.description:
                 return rec['description']
 
@@ -553,38 +553,6 @@ class AbbrevItemsModel(QtCore.QAbstractItemModel):
 
         return None
 
-
-    def deadload_data(self, data):
-        self.remove_rows()
-        for head_code, recs in data.iteritems():
-            self.append_abbrv_items(head_code, data[head_code]['abbrs'])
-
-    def deadappend_abbrv_items(self, head_code, recs):
-
-        for rec in recs:
-            items = self.make_blank_row()
-            items[CA.code].set(rec['code'], ico=Ico.AgsAbbrevItem, bold=True, font="monospace")
-            items[CA.description].set(rec['description'])
-            items[CA.head_code].set(head_code)
-            self.appendRow(items)
-
-    def deadhas_abbrev(self, head_code):
-        return len(  self.findItems(head_code, Qt.MatchExactly, CA.head_code) ) > 0
-
-    def deadget_picklist(self, abbrev_code):
-        lst = []
-        items = self.findItems(abbrev_code, Qt.MatchExactly, CA.code)
-        for item in items:
-            row = self.get_items_from_item(item)
-
-            lst.append( dict(	item_code = row[CA.item_code].s(),
-                                item_description = row[CA.item_description].s()
-                                ))
-
-        return lst
-
-    def deadget_row(self, item):
-        return self.get_row_from_item(item)
 
 ##===================================================================
 ## Classes

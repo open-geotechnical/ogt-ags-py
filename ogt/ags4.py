@@ -113,22 +113,34 @@ class AGS4_DataDict:
         self._abbrs = self._data['abbrs']
 
         self._groups_dict = self._data['groups']
-        self._groups_list = sorted(self._groups_dict.keys())
+        self._groups_index = sorted(self._groups_dict.keys())
 
         self._data_types = self._data['data_types']
         self._units = self._data['units']
 
-        return None
+        ## Walk groups/headings and create a _words dict for lookup
+        self._words = {}
+        for grp in self._groups_dict.itervalues():
+            self._words[grp['group_code']] = dict(type="group",
+                                                  code=grp['group_code'],
+                                                  description=grp['group_description'])
+            for head in grp['headings']:
+                if not head['head_code'] in self._words:
+                    self._words[head['head_code']] = dict(type="heading",
+                                                          code=head['head_code'],
+                                                          description=head['head_description'])
+
+
 
     def groups_count(self):
-        return len(self._groups_list)
+        return len(self._groups_index)
 
     def group_by_row_index(self, idx):
         ## Used by Gui
-        return self._groups_dict[ self._groups_list[idx] ]
+        return self._groups_dict[ self._groups_index[idx] ]
 
     def groups_list(self):
-        return [self._groups_dict[gki] for gki in self._groups_list]
+        return [self._groups_dict[gki] for gki in self._groups_index]
 
     def groups_dead(self):
         return self._groups
