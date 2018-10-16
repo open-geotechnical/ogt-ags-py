@@ -12,7 +12,7 @@ import app_globals as G
 #from ogt import utils
 from img import Ico
 import xwidgets
-from ags4_models import CG, CH,CA, SHOW_NONE, AGS4_COLORS
+from ags4_models import CG, CH,CA, SHOW_NONE, AGS4_COLORS, HeadingsModel
 
 
 class AGS4DataDictBrowser( QtGui.QWidget ):
@@ -144,8 +144,8 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.tree.setAlternatingRowColors(True)
         self.tree.setSortingEnabled(True)
 
-        #self.tree.setModel(self.proxy)
-        self.tree.setModel(G.ags.modelGroups)
+        self.tree.setModel(self.proxy)
+        #self.tree.setModel(G.ags.modelGroups)
 
         self.tree.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
@@ -210,15 +210,19 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
              return
 
         selidx = sel.indexes()[0]
-        srcidx = self.proxy.mapToSource(selidx)
+        tIdx = self.proxy.mapToSource(selidx)
 
-        model = self.proxy.sourceModel()
-        tIdx = model.index(srcidx.row(), CG.code, srcidx.parent())
-        item = model.itemFromIndex( tIdx )
+        smodel = self.proxy.sourceModel()
+        #tIdx = model.index(srcidx.row(), CG.code, srcidx.parent())
+        #print "_------------"
+        #print selidx.row(), selidx.column()
+        #print tIdx.row(), tIdx.column()
 
-        group_code = str(item.text())
-        self.agsGroupViewWidget.load_group(group_code)
-        self.sigGroupSelected.emit( group_code )
+        grp_dic = smodel.group_from_midx( tIdx )
+        #print grp_dic
+        #group_code = grp_dic.get("group_code")
+        self.agsGroupViewWidget.set_group(grp_dic)
+        self.sigGroupSelected.emit( grp_dic )
 
 
     def on_filter_col(self, idx):
@@ -357,22 +361,22 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
         self.lblDescription.setText("")
         self.agsGroupNotesTable.clear()
 
-    def load_group(self, group_code):
+    def set_group(self, grp):
 
-        if group_code == None:
+        if grp == None:
             self.agsHeadingsTable.filter_by_group(None)
             self.lblGroupCode.setText("")
             self.lblDescription.setText("")
             return
 
 
-        g = G.ags.get_group(group_code)
-        if g == None:
-            # not found..
-            g = dict(group_code=group_code, group_description="`%s` group not found" % group_code)
+        #g = G.ags.get_group(group_code)
+        #if g == None:
+        #    # not found..
+        #    g = dict(group_code=group_code, group_description="`%s` group not found" % group_code)
 
-        self.lblGroupCode.setText(g['group_code'])
-        self.lblDescription.setText(g['group_description'])
+        self.lblGroupCode.setText(grp['group_code'])
+        self.lblDescription.setText(grp['group_description'])
 
         if False:
             self.tabWidget.setTabText(0, "Headings - %s" % len(g['headings']))
@@ -382,8 +386,8 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
                 s = len(g['notes'])
             self.tabWidget.setTabText(1, "Notes - %s" % s)
 
-        self.agsHeadingsTable.filter_by_group(g['group_code'])
-        self.agsGroupNotesTable.load_notes(g['group_code'])
+        self.agsHeadingsTable.set_group(grp)
+        self.agsGroupNotesTable.set_group(grp)
 
 
 
@@ -431,11 +435,11 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.group_code = None
         self.cache = None
 
-        self.proxy = QtGui.QSortFilterProxyModel()
-        self.proxy.setSourceModel(G.ags.modelHeadings)
-        self.proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.proxy.setFilterKeyColumn(CH.group_code)
-        self.proxy.setFilterFixedString(SHOW_NONE)
+        # self.proxy = QtGui.QSortFilterProxyModel()
+        # self.proxy.setSourceModel(G.ags.modelHeadings)
+        # self.proxy.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        # self.proxy.setFilterKeyColumn(CH.group_code)
+        # self.proxy.setFilterFixedString(SHOW_NONE)
 
 
         self.mainLayout = QtGui.QVBoxLayout()
@@ -452,7 +456,9 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.tree.setAlternatingRowColors(True)
         self.tree.setSortingEnabled(False)
 
-        self.tree.setModel(self.proxy)
+        #self.tree.setModel(self.proxy)
+        self.model = HeadingsModel()
+        self.tree.setModel(self.model)
 
 
         for c in [CH.class_, CH.group_code, CH.group_descr]:
@@ -473,8 +479,11 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         #self.mainLayout.addWidget(self.statusBar, 0)
         #self.statusBar.hide()
 
+    def set_group(self, grp):
 
+        #if grp == None:
 
+        self.model.set_group(grp)
 
     def filter_by_group(self, gc=None):
 
@@ -573,7 +582,8 @@ class AGS4GroupNotesTable( QtGui.QWidget ):
         self.setUpdatesEnabled(True)
         self.update()
 
-
+    def set_group(self, grp):
+        print "set_group, TODO", grp, self
 
     def load_notes(self, group_code):
         """Loads group notes
