@@ -200,39 +200,28 @@ class NotesModel():
     def get_notes(self, group_code):
         return self.d.get(group_code)
 
-##===================================================================
-## Groupss
-##===================================================================
 class CG:
     code = 0
     description = 1
     cls = 2
     search = 3
-    x_id = 4
+    _col_count = 4
 
-
-
-#class GroupsModel(xobjects.XStandardItemModel):
+##===================================================================
+## Groups
+##===================================================================
 class GroupsModel(QtCore.QAbstractItemModel):
-    #sigClasses = pyqtSignal(list)
 
     def __init__( self, parent=None):
         QtCore.QAbstractItemModel.__init__( self, parent)
-
         self.ags4dd = None
-
-
-        #self.set_header(CG.code, "Group")
-        #self.set_header(CG.description, "Description")
-        #self.set_header(CG.cls, "Class")
-        #self.set_header(CG.search, "Search")
 
     def set_ags4dd(self, ags4dd):
         self.ags4dd = ags4dd
         self.reset()
 
     def columnCount(self, midx):
-        return 4
+        return CG._col_count
 
     def rowCount(self, midx):
         if self.ags4dd == None:
@@ -537,7 +526,7 @@ class AbbrevItemsModel(xobjects.XStandardItemModel):
 ##===================================================================
 class ClassesModel(xobjects.XStandardItemModel):
 
-    sigLoaded = pyqtSignal()
+    #sigLoaded = pyqtSignal()
 
     def __init__( self, parent=None):
         super(xobjects.XStandardItemModel, self).__init__(parent)
@@ -546,36 +535,34 @@ class ClassesModel(xobjects.XStandardItemModel):
 
         self.set_header(0, "Class")
 
+        ## make root node
         items = self.make_blank_row()
         items[0].set("All", ico=Ico.Folder)
         self.appendRow(items)
 
-        #return items
-
     def set_ags4dd(self, ags4dd):
         self.ags4dd = ags4dd
 
+        ## get unique list of classes by walking groups
         classes = []
         for g in self.ags4dd.groups_list():
             if not g['class'] in classes:
                 classes.append(g['class'])
         classes.sort()
 
-        print classes
+        rootItem = self.item(0, 0)  # 'All' parent
 
-        rootItem = self.item(0, 0)  # the 'All'
         ## remove existing nodes
         while rootItem.hasChildren():
             rootItem.removeRow(0)
+
+        ## add items
         for r in classes:
             citems = self.make_blank_row()
             citems[0].set(r)
             rootItem.appendRow(citems)
 
-            #print r
-
-
-        self.sigLoaded.emit()
+        #self.sigLoaded.emit()
 
     # def deadcolumnCount(self, midx):
     #     return 1

@@ -113,7 +113,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
             rad = QtGui.QRadioButton()
             rad.setText(s)
             grpFilter.grid.addWidget(rad, ridx, 0, 1, 2)
-            self.buttGroupFilter.addButton(rad, ridx)
+            self.buttGroupFilter.addButton(rad, 3 if ridx == 2 else ridx)
 
         self.buttGroupFilter.button(0).setChecked(True)
         self.buttGroupFilter.buttonClicked.connect(self.on_filter_col)
@@ -131,6 +131,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.txtFilter.setMaximumWidth(100)
         grpFilter.grid.addWidget(self.txtFilter, 3, 1)
         self.txtFilter.textChanged.connect(self.on_txt_changed)
+
 
         grpFilter.grid.addWidget(QtGui.QLabel(), 4, 2)
 
@@ -157,31 +158,28 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
 
 
-        ##===============================================
+        ##== Groups Tree
         self.treeGroups = QtGui.QTreeView()
         leftLayout.addWidget(self.treeGroups, 10)
+        self.treeGroups.setModel(self.proxy)
+
+
         self.treeGroups.setUniformRowHeights(True)
         self.treeGroups.setRootIsDecorated(False)
         self.treeGroups.setAlternatingRowColors(True)
-        self.treeGroups.setSortingEnabled(True)
-
-        self.treeGroups.setModel(self.proxy)
-        #self.treeGroups.setModel(G.ags.modelGroups)
-
-        self.treeGroups.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
         self.treeGroups.header().setStretchLastSection(True)
-        for c in [CG.search, CG.x_id]:
-            pass #self.treeGroups.setColumnHidden(c, True)
-
+        self.treeGroups.setColumnHidden(CG.search, True)
         self.treeGroups.setColumnWidth(CG.code, 120)
         self.treeGroups.setColumnWidth(CG.description, 250)
 
         self.treeGroups.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.treeGroups.selectionModel().selectionChanged.connect(self.on_groups_tree_selected)
+        self.treeGroups.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
+        self.treeGroups.setSortingEnabled(True)
         self.treeGroups.sortByColumn(CG.code)
 
+        self.treeGroups.selectionModel().selectionChanged.connect(self.on_groups_tree_selected)
 
         self.agsGroupViewWidget = AGS4GroupViewWidget(self)
         self.splitter.addWidget(self.agsGroupViewWidget)
@@ -302,12 +300,16 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
     def on_loaded(self):
 
-        # expand first row, set sort orders
+        ## expand first row
         self.treeClass.setExpanded( self.treeClass.model().item(0,0).index(), True)
         self.treeClass.sortByColumn(0, Qt.AscendingOrder)
 
+        ## set sort orders
         self.treeGroups.sortByColumn(CG.code, Qt.AscendingOrder)
         self.treeGroups.resizeColumnToContents(CG.code)
+
+        # TODO #
+        self.txtFilter.setText("SAMP")
 
 
 
@@ -364,7 +366,7 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
         #self.mainLayout.addWidget(self.lblNotes, 0)
 
 
-        self.agsGroupNotesTable = AGS4GroupNotesTable(self)
+        self.agsGroupNotesTable = AGS4GroupNotesWidget(self)
         self.agsGroupNotesTable.setFixedHeight(200)
         self.mainLayout.addWidget(self.agsGroupNotesTable)
         #self.tabWidget.addTab(self.agsGroupNotesTable, dIco.icon(dIco.AgsNotes), "Notes")
@@ -545,7 +547,7 @@ class CN:
     so = 2
 
 
-class AGS4GroupNotesTable( QtGui.QWidget ):
+class AGS4GroupNotesWidget( QtGui.QWidget ):
 
     sigLoaded = pyqtSignal(int, object)
 
