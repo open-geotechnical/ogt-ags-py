@@ -58,7 +58,7 @@ class AGS4DataDictBrowser( QtGui.QWidget ):
 
 
 class AGS4GroupsBrowser( QtGui.QWidget ):
-    """The left panel with the classes, search and groups view"""
+    """The left panel with the classes, filter and groups table underneath"""
 
     sigGroupSelected = pyqtSignal(object)
 
@@ -172,7 +172,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
         self.treeGroups.header().setStretchLastSection(True)
         for c in [CG.search, CG.x_id]:
-            self.treeGroups.setColumnHidden(c, True)
+            pass #self.treeGroups.setColumnHidden(c, True)
 
         self.treeGroups.setColumnWidth(CG.code, 120)
         self.treeGroups.setColumnWidth(CG.description, 250)
@@ -554,7 +554,7 @@ class AGS4GroupNotesTable( QtGui.QWidget ):
 
         self.debug = True
 
-        self.cache = None
+        #self.cache = None
 
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -598,18 +598,15 @@ class AGS4GroupNotesTable( QtGui.QWidget ):
     def set_group(self, grp):
         print "set_group, TODO", grp, self
 
-    def load_notes(self, group_code):
-        """Loads group notes
 
-        :param group_code: The four character group code
 
-        """
+
         lookup = G.ags.get_words()
 
 
         self.clear()
-        notes = G.ags.get_notes(group_code)
-        #print notes
+        notes = grp.get("notes")
+        print notes
 
         if notes == None:
             return
@@ -632,7 +629,8 @@ class AGS4GroupNotesTable( QtGui.QWidget ):
             widget.setTextFormat(QtCore.Qt.RichText)
             widget.setWordWrap(True)
             widget.setMargin(0)
-            widget.setStyleSheet("background-color: #C3F6A9; padding: 2px; margin: 0; border-bottom:1px solid #dddddd;")
+            sty = "background-color: #E3FFD5; padding: 2px; margin: 0; border-bottom:1px solid #dddddd; font-size: 11pt;"
+            widget.setStyleSheet(sty)
             widget.setAlignment(QtCore.Qt.AlignTop)
 
             self.scrollLayout.addWidget(w, 0)
