@@ -122,6 +122,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         ## Classification Tree
         topLayout = QtGui.QVBoxLayout()
         leftLayout.addLayout(topLayout, 0)
+
         self.treeClass = QtGui.QTreeView()
         topLayout.addWidget(self.treeClass, 3)
         self.treeClass.setModel(G.ags.modelClasses)
@@ -137,29 +138,29 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
 
         ##===============================================
-        self.tree = QtGui.QTreeView()
-        leftLayout.addWidget(self.tree, 10)
-        self.tree.setUniformRowHeights(True)
-        self.tree.setRootIsDecorated(False)
-        self.tree.setAlternatingRowColors(True)
-        self.tree.setSortingEnabled(True)
+        self.treeGroups = QtGui.QTreeView()
+        leftLayout.addWidget(self.treeGroups, 10)
+        self.treeGroups.setUniformRowHeights(True)
+        self.treeGroups.setRootIsDecorated(False)
+        self.treeGroups.setAlternatingRowColors(True)
+        self.treeGroups.setSortingEnabled(True)
 
-        self.tree.setModel(self.proxy)
-        #self.tree.setModel(G.ags.modelGroups)
+        self.treeGroups.setModel(self.proxy)
+        #self.treeGroups.setModel(G.ags.modelGroups)
 
-        self.tree.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.treeGroups.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 
-        self.tree.header().setStretchLastSection(True)
+        self.treeGroups.header().setStretchLastSection(True)
         for c in [CG.search, CG.x_id]:
-            self.tree.setColumnHidden(c, True)
+            self.treeGroups.setColumnHidden(c, True)
 
-        self.tree.setColumnWidth(CG.code, 120)
-        self.tree.setColumnWidth(CG.description, 250)
+        self.treeGroups.setColumnWidth(CG.code, 120)
+        self.treeGroups.setColumnWidth(CG.description, 250)
 
-        self.tree.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.tree.selectionModel().selectionChanged.connect(self.on_groups_tree_selected)
+        self.treeGroups.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.treeGroups.selectionModel().selectionChanged.connect(self.on_groups_tree_selected)
 
-        self.tree.sortByColumn(CG.code)
+        self.treeGroups.sortByColumn(CG.code)
 
 
         self.agsGroupViewWidget = AGS4GroupViewWidget(self)
@@ -204,7 +205,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
     #=========================================
     def on_groups_tree_selected(self, sel=None, desel=None):
 
-        if not self.tree.selectionModel().hasSelection():
+        if not self.treeGroups.selectionModel().hasSelection():
              self.agsGroupViewWidget.load_group( None )
              self.sigGroupSelected.emit( None )
              return
@@ -255,8 +256,8 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
 
     def on_clear_filter(self):
-        self.txtCode.setText("")
-        self.txtCode.setFocus()
+        self.txtFilter.setText("")
+        self.txtFilter.setFocus()
 
 
 
@@ -280,12 +281,13 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         pass
 
     def on_loaded(self):
+
         # expand first row, set sort orders
         self.treeClass.setExpanded( self.treeClass.model().item(0,0).index(), True)
         self.treeClass.sortByColumn(0, Qt.AscendingOrder)
-        self.tree.sortByColumn(CG.code, Qt.AscendingOrder)
 
-        self.tree.resizeColumnToContents(CG.code)
+        self.treeGroups.sortByColumn(CG.code, Qt.AscendingOrder)
+        self.treeGroups.resizeColumnToContents(CG.code)
 
 
 
@@ -715,6 +717,7 @@ class AGS4HeadingDetailWidget( QtGui.QWidget ):
         dis = self.proxy.rowCount() == 0
         self.lblAbbrCode.setText("" if dis else head_code)
         self.setDisabled(dis)
+
 
 class PickListComboDelegate(QtGui.QItemDelegate):
     """A combobox for a table that whos the abrreviations picklist"""

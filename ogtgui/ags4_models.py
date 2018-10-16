@@ -65,9 +65,9 @@ def data_type_ico(ags_type):
     # oopps
     return Ico.TypeUnknown
 
-def data_type_icon(ags_type):
-    """Return a QIcon dfor and ags.data_type"""
-    return data_type_ico(ags_type)
+def data_type_qicon(ags_type):
+    """Return a QIcon for and ags.data_type"""
+    return Ico.icon(data_type_ico(ags_type))
 
 ##===================================================================
 ## Main
@@ -92,7 +92,7 @@ class Ags4Object(QtCore.QObject):
 
         self.modelAbbrItems = AbbrevItemsModel(self)
 
-        self.modelGroups.sigClasses.connect(self.modelClasses.load_classes)
+        #self.modelGroups.sigClasses.connect(self.modelClasses.load_classes)
 
         #self.connect(self.modelAbbrevs, QtCore.SIGNAL("classes"), self.modelAbbrevClasses.load_classes)
 
@@ -108,6 +108,8 @@ class Ags4Object(QtCore.QObject):
     def load(self):
 
         self.modelAbbrItems.load_data(ags4.AGS4.abbrs())
+
+        self.modelClasses.set_ags4dd(ags4.AGS4)
         self.modelGroups.set_ags4dd(ags4.AGS4)
 
         self.modelUnits.set_ags4dd(ags4.AGS4)
@@ -212,7 +214,7 @@ class CG:
 
 #class GroupsModel(xobjects.XStandardItemModel):
 class GroupsModel(QtCore.QAbstractItemModel):
-    sigClasses = pyqtSignal(list)
+    #sigClasses = pyqtSignal(list)
 
     def __init__( self, parent=None):
         QtCore.QAbstractItemModel.__init__( self, parent)
@@ -235,7 +237,7 @@ class GroupsModel(QtCore.QAbstractItemModel):
     def rowCount(self, midx):
         if self.ags4dd == None:
             return 0
-        return len(self.ags4dd.groups())
+        return self.ags4dd.groups_count()
 
     def index(self, row, col, parent=None):
         return self.createIndex(row, col)
@@ -409,11 +411,11 @@ class HeadingsModel(QtCore.QAbstractItemModel):
 
 
         if role == Qt.DecorationRole:
-            if col == 0:
-                return Ico.icon(Ico.AgsHeading)
+            if col == self.CH.head_code:
+                return data_type_qicon( self.grpDD["headings"][midxx.row()]['data_type'] )
 
         if role == Qt.FontRole:
-            if col == 0:
+            if col == self.CH.head_code:
                 f = QtGui.QFont()
                 f.setBold(True)
                 f.setFamily("monospace")
@@ -540,33 +542,65 @@ class ClassesModel(xobjects.XStandardItemModel):
     def __init__( self, parent=None):
         super(xobjects.XStandardItemModel, self).__init__(parent)
 
+        self.ags4dd = None
+
         self.set_header(0, "Class")
-
-        self.make_root()
-
-    def make_root(self):
 
         items = self.make_blank_row()
         items[0].set("All", ico=Ico.Folder)
         self.appendRow(items)
 
-        return items
+        #return items
 
-    def load_classes(self, classes):
-        rootItem = self.item(0, 0) # the 'All'
+    def set_ags4dd(self, ags4dd):
+        self.ags4dd = ags4dd
+
+        classes = []
+        for g in self.ags4dd.groups_list():
+            if not g['class'] in classes:
+                classes.append(g['class'])
+        classes.sort()
+
+        print classes
+
+        rootItem = self.item(0, 0)  # the 'All'
         ## remove existing nodes
         while rootItem.hasChildren():
             rootItem.removeRow(0)
-
         for r in classes:
             citems = self.make_blank_row()
             citems[0].set(r)
             rootItem.appendRow(citems)
 
+            #print r
+
+
         self.sigLoaded.emit()
 
-    def remove_rows(self):
-        print catch
+    # def deadcolumnCount(self, midx):
+    #     return 1
+    #
+    # def rowCount(self, midx):
+    #     if self.ags4dd == None:
+    #         return 0
+    #     return len(self.classes)
+    #
+    # def index(self, row, col, parent=None):
+    #     return self.createIndex(row, col)
+    #
+    # def parent(self, child=None):
+    #     print "p=", child.row(), child.column() #, pidx.parent()
+    #     return QtCore.QModelIndex()
+    #
+    # def data(self, midxx, role):
+    #
+    #     col = midxx.column()
+    #
+    #     if role == Qt.DisplayRole:
+    #         # the the ags grp
+    #         print "<<", midxx.row(), midxx.column(), midxx.parent()
+    #         return "XXX %s" % midxx.row()
+
 ##===================================================================
 ## Units + Types
 ##===================================================================

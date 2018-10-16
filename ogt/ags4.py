@@ -111,19 +111,26 @@ class AGS4_DataDict:
             return err
 
         self._abbrs = self._data['abbrs']
-        self._groups = self._data['groups']
-        self._groups_list = sorted(self._groups.keys())
-        self._types = self._data['data_types']
+
+        self._groups_dict = self._data['groups']
+        self._groups_list = sorted(self._groups_dict.keys())
+
+        self._data_types = self._data['data_types']
         self._units = self._data['units']
 
         return None
 
+    def groups_count(self):
+        return len(self._groups_list)
+
     def group_by_row_index(self, idx):
         ## Used by Gui
-        return self._groups[ self._groups_list[idx] ]
+        return self._groups_dict[ self._groups_list[idx] ]
 
+    def groups_list(self):
+        return [self._groups_dict[gki] for gki in self._groups_list]
 
-    def groups(self):
+    def groups_dead(self):
         return self._groups
 
     def group(self, group_code):
@@ -135,13 +142,13 @@ class AGS4_DataDict:
         :return:  the data if successful, else `None`
         """
 
-        return self._groups.get(group_code)
+        return self._groups_dict.get(group_code)
 
     def abbrs(self):
         return self._abbrs
 
     def types_list(self):
-        return self._types
+        return self._data_types
 
     def types_dict(self):
         dic = {}
