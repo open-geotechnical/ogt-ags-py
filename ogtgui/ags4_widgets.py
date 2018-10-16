@@ -89,34 +89,54 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         leftWidget.setLayout(leftLayout)
         self.splitter.addWidget(leftWidget)
 
+
+        self.tabFilter = QtGui.QTabWidget()
+        leftLayout.addWidget(self.tabFilter)
+
         ##================================
         ## Filter
-        grpFilter = xwidgets.GroupHBox("Filter by")
+        grpFilter = xwidgets.GroupGridBox()
         mmm = 5
         grpFilter.setContentsMargins(mmm, mmm, mmm, mmm)
         # grpFilter.grid.setSpacing(5)
         # grpFilter.setFixedWidth(150)
-        leftLayout.addWidget(grpFilter)
+        self.tabFilter.addTab(grpFilter, "Filter")
+
 
         # filter combo
-        self.comboSearchFor = QtGui.QComboBox()
-        grpFilter.addWidget(self.comboSearchFor)
+        self.buttGroupFilter = QtGui.QButtonGroup()
+        self.buttGroupFilter.setExclusive(True)
 
-        self.comboSearchFor.addItem("Code", CG.code)
-        self.comboSearchFor.addItem("Description", CG.description)
-        self.comboSearchFor.addItem("Code + Description", CG.search)
-        self.comboSearchFor.setMaximumWidth(150)
+        #self.comboSearchFor = QtGui.QComboBox()
+        #grpFilter.addWidget(self.comboSearchFor)
+        for ridx, s in enumerate(["Code", "Description", "Code + Description"]):
+            rad = QtGui.QRadioButton()
+            rad.setText(s)
+            grpFilter.grid.addWidget(rad, ridx, 0, 1, 2)
+            self.buttGroupFilter.addButton(rad, ridx)
+
+        self.buttGroupFilter.button(0).setChecked(True)
+        self.buttGroupFilter.buttonClicked.connect(self.on_filter_col)
+
+        #self.comboSearchFor.addItem("Code", CG.code)
+        #self.comboSearchFor.addItem("Description", CG.description)
+        #self.comboSearchFor.addItem("Code + Description", CG.search)
+        #self.comboSearchFor.setMaximumWidth(150)
         # clear button
         self.buttClear = xwidgets.ClearButton(self, callback=self.on_clear_filter)
-        grpFilter.addWidget(self.buttClear)
+        grpFilter.grid.addWidget(self.buttClear, 3, 0)
 
         ## filter text
         self.txtFilter = QtGui.QLineEdit()
         self.txtFilter.setMaximumWidth(100)
-        grpFilter.addWidget(self.txtFilter, )
+        grpFilter.grid.addWidget(self.txtFilter, 3, 1)
         self.txtFilter.textChanged.connect(self.on_txt_changed)
 
-        grpFilter.layout.addStretch(3)
+        grpFilter.grid.addWidget(QtGui.QLabel(), 4, 2)
+
+        #grpFilter.layout.addStretch(3)
+        grpFilter.grid.setColumnStretch(0, 0)
+        grpFilter.grid.setColumnStretch(1, 10)
 
         ##================================
         ## Classification Tree
@@ -124,13 +144,13 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         leftLayout.addLayout(topLayout, 0)
 
         self.treeClass = QtGui.QTreeView()
-        topLayout.addWidget(self.treeClass, 3)
+        self.tabFilter.addTab(self.treeClass, "By classification")
         self.treeClass.setModel(G.ags.modelClasses)
         self.treeClass.setRootIsDecorated(False)
 
         self.treeClass.setExpandsOnDoubleClick(False)
 
-        self.treeClass.setFixedHeight(250)
+        self.treeClass.setFixedHeight(220)
 
         self.treeClass.selectionModel().selectionChanged.connect(self.on_class_tree_selected)
 
@@ -206,7 +226,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
     def on_groups_tree_selected(self, sel=None, desel=None):
 
         if not self.treeGroups.selectionModel().hasSelection():
-             self.agsGroupViewWidget.load_group( None )
+             self.agsGroupViewWidget.set_group( None )
              self.sigGroupSelected.emit( None )
              return
 
@@ -228,7 +248,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
     def on_filter_col(self, idx):
         self.update_filter()
-        self.txtCode.setFocus()
+        self.txtFilter.setFocus()
 
     def on_txt_changed(self, x):
         self.update_filter()
@@ -238,7 +258,7 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         self.treeClass.clearSelection()
         self.treeClass.blockSignals(False)
 
-        cidx = self.comboSearchFor.itemData(self.comboSearchFor.currentIndex()).toInt()[0]
+        cidx = self.buttGroupFilter.checkedId()
         self.proxy.setFilterKeyColumn(cidx)
 
         txt = str(self.txtFilter.text()).strip()
@@ -366,16 +386,9 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
     def set_group(self, grp):
 
         if grp == None:
-            self.agsHeadingsTable.filter_by_group(None)
             self.lblGroupCode.setText("")
             self.lblDescription.setText("")
             return
-
-
-        #g = G.ags.get_group(group_code)
-        #if g == None:
-        #    # not found..
-        #    g = dict(group_code=group_code, group_description="`%s` group not found" % group_code)
 
         self.lblGroupCode.setText(grp['group_code'])
         self.lblDescription.setText(grp['group_description'])
