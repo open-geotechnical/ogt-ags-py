@@ -2,7 +2,6 @@
 ags-data-dict
 
 public/
-docs/_static/
 
 example_files/ags4/*.json
 example_files/ags4/*.js
