@@ -79,9 +79,9 @@ class Ags4Object(QtCore.QObject):
     def __init__( self, parent=None):
         super(QtCore.QObject, self).__init__(parent)
 
-        self.modelNotes = NotesModel()
+        #self.modelNotes = NotesModel()
         self.modelUnits = UnitsModel(self)
-        self.modelTypes = TypesModel(self)
+        self.modelTypes = DataTypesModel(self)
 
         self.modelClasses = ClassesModel(self)
         self.modelGroups = GroupsModel(self)
@@ -115,7 +115,7 @@ class Ags4Object(QtCore.QObject):
         self.modelUnits.set_ags4dd(ags4.AGS4)
         self.modelTypes.set_ags4dd(ags4.AGS4)
 
-        self.modelNotes.init_words()
+        #self.modelNotes.init_words()
 
         self.sigLoaded.emit()
 
@@ -136,7 +136,7 @@ class Ags4Object(QtCore.QObject):
         """
         return self.modelAbbrevItems.has_abbrev(head_code)
 #
-    def get_words(self):
+    def deadget_words(self):
         return self.modelNotes.get_words()
 
     def get_notes(self, group_code):
@@ -160,6 +160,7 @@ class Ags4Object(QtCore.QObject):
 
         return None
         """
+"""
 class NotesModel():
 
     def __init__(self):
@@ -199,7 +200,7 @@ class NotesModel():
 
     def get_notes(self, group_code):
         return self.d.get(group_code)
-
+"""
 class CG:
     code = 0
     description = 1
@@ -334,14 +335,15 @@ class HeadingsModel(QtCore.QAbstractItemModel):
 
     class CH:
         """Columns NO's for the ;class:`~ogtgui.ags_models.HeadingsModel`"""
-        head_code = 0
-        description = 1
-        unit = 2
-        data_type = 3
-        example = 4
+        strip = 0
+        head_code = 1
+        description = 2
+        unit = 3
+        data_type = 4
         status = 5
         sort_order = 6
-        _col_count = 7
+        example = 7
+        _col_count = 8
 
     def __init__( self, parent=None):
         super(QtCore.QAbstractItemModel, self).__init__(parent)
@@ -372,9 +374,9 @@ class HeadingsModel(QtCore.QAbstractItemModel):
     def data(self, midxx, role):
 
         col = midxx.column()
+        rec = self.grpDD["headings"][midxx.row()]
 
         if role == Qt.DisplayRole:
-            rec = self.grpDD["headings"][midxx.row()]
 
             if col == self.CH.head_code:
                 return rec['head_code']
@@ -403,6 +405,12 @@ class HeadingsModel(QtCore.QAbstractItemModel):
             if col == self.CH.head_code:
                 return data_type_qicon( self.grpDD["headings"][midxx.row()]['data_type'] )
 
+        if role == Qt.BackgroundRole:
+            if col == self.CH.strip:
+                if rec['head_code'].split("_")[0] == self.grpDD['group_code']:
+                    return QtGui.QColor("#0FBA00")
+                return QtGui.QColor("#efefef")
+
         if role == Qt.FontRole:
             if col == self.CH.head_code:
                 f = QtGui.QFont()
@@ -420,52 +428,9 @@ class HeadingsModel(QtCore.QAbstractItemModel):
     def headerData(self, p_int, orient, role=None):
 
         if orient == Qt.Horizontal and role == Qt.DisplayRole:
-            heads = ["Heading", "Description", "Unit", "Type",  "Example", "Stat", "Srt"]
+            heads = ["", "Heading", "Description", "Unit", "Type", "Stat", "Srt", "Example"]
             return heads[p_int]
 
-
-    def append_headingsDEAD(self, grp):
-
-        for rec in grp['headings']:
-            #print rec.keys()
-            # print rec
-            ico = type_ico(rec['type'])
-
-            items = self.make_blank_row()
-            items[CH.head_code].set(rec['head_code'], ico=ico, bold=True, font="monospace")
-
-            items[CH.data_type].set(rec['type'])
-            items[CH.unit].set( rec['unit'])
-            items[CH.description].set( rec['head_description'])
-            items[CH.sort].set(rec['sort_order'])
-            items[CH.example].set(rec['example'])
-
-            items[CH.group_code].set(grp['group_code'])
-            items[CH.group_descr].set(grp['group_description'])
-            items[CH.class_].set(grp['class'])
-
-            self.appendRow(items)
-
-
-    def get_words(self):
-
-        lst = []
-        for ridx in range(0, self.rowCount()):
-            lst.append( dict(type=AGS4_TYPE.heading, description=self.item(ridx, CH.description).s(),
-                            code=self.item(ridx, CH.head_code).s()))
-        return lst
-
-    def get_heading(self, code):
-        items = self.findItems(code, Qt.MatchExactly, CH.head_code)
-        if len(items) == 0:
-            return None
-        #print "GET+", code, items
-        ridx = items[0].index().row()
-        return dict(	head_code=self.item(ridx, CH.head_code).s(),
-                        head_description=self.item(ridx, CH.description).s(),
-                        group_code=self.item(ridx, CH.group_code).s(),
-                        #group_code=self.item(ridx, CH.group_code).s(),
-                        data_type=self.item(ridx, CH.data_type).s())
 
 ##===================================================================
 ## Abbrev Values
@@ -483,34 +448,22 @@ class AbbrevItemsModel(QtCore.QAbstractItemModel):
         _col_count = 2
 
     def __init__( self, parent=None):
-        #super(xobjects.XStandardItemModel, self).__init__(parent)
         super(QtCore.QAbstractItemModel, self).__init__(parent)
-
         self.abbrDD = None
 
     def set_heading(self, heading):
 
-
-        # self.proxy.setFilterFixedString(SHOW_NONE if head_code == None else head_code)
         self.abbrDD = None
         if heading == None:
+            self.reset()
             return
-        print heading.keys(), self
 
-
+        ## get abbrs from DD
         dic = ags4.AGS4.abbrs(heading['head_code'])
         if dic:
             self.abbrDD = dic.get("abbrs")
 
         self.reset()
-        #if self.abbrDD == None:
-        #    return
-
-
-        #return
-
-        #self.ags4dd = ags4dd
-        #self.reset()
 
     def index(self, row, col, parent=None):
         return self.createIndex(row, col)
@@ -528,7 +481,7 @@ class AbbrevItemsModel(QtCore.QAbstractItemModel):
 
     def headerData(self, p_int, orient, role=None):
         if orient == Qt.Horizontal and role == Qt.DisplayRole:
-            heads = ["Type", "Description"]
+            heads = ["Code", "Description"]
             return heads[p_int]
 
     def data(self, midxx, role):
@@ -558,8 +511,6 @@ class AbbrevItemsModel(QtCore.QAbstractItemModel):
 ## Classes
 ##===================================================================
 class ClassesModel(xobjects.XStandardItemModel):
-
-    #sigLoaded = pyqtSignal()
 
     def __init__( self, parent=None):
         super(xobjects.XStandardItemModel, self).__init__(parent)
@@ -595,37 +546,10 @@ class ClassesModel(xobjects.XStandardItemModel):
             citems[0].set(r)
             rootItem.appendRow(citems)
 
-        #self.sigLoaded.emit()
-
-    # def deadcolumnCount(self, midx):
-    #     return 1
-    #
-    # def rowCount(self, midx):
-    #     if self.ags4dd == None:
-    #         return 0
-    #     return len(self.classes)
-    #
-    # def index(self, row, col, parent=None):
-    #     return self.createIndex(row, col)
-    #
-    # def parent(self, child=None):
-    #     print "p=", child.row(), child.column() #, pidx.parent()
-    #     return QtCore.QModelIndex()
-    #
-    # def data(self, midxx, role):
-    #
-    #     col = midxx.column()
-    #
-    #     if role == Qt.DisplayRole:
-    #         # the the ags grp
-    #         print "<<", midxx.row(), midxx.column(), midxx.parent()
-    #         return "XXX %s" % midxx.row()
 
 ##===================================================================
 ## Units + Types
 ##===================================================================
-
-
 
 class UnitsModel(QtCore.QAbstractItemModel):
 
@@ -687,11 +611,12 @@ class UnitsModel(QtCore.QAbstractItemModel):
 
 
 
-class TypesModel(QtCore.QAbstractItemModel):
+class DataTypesModel(QtCore.QAbstractItemModel):
 
     class CT:
         data_type = 0
         description = 1
+        _col_count = 2
 
     def __init__( self, parent=None):
         super(QtCore.QAbstractItemModel, self).__init__(parent)
@@ -709,7 +634,7 @@ class TypesModel(QtCore.QAbstractItemModel):
         return QtCore.QModelIndex()
 
     def columnCount(self, midx=None):
-        return 2
+        return self.CT._col_count
 
     def rowCount(self, midx=None):
         if self.ags4dd == None:
@@ -717,7 +642,6 @@ class TypesModel(QtCore.QAbstractItemModel):
         return len(self.ags4dd.types_list())
 
     def headerData(self, p_int, orient, role=None):
-
         if orient == Qt.Horizontal and role == Qt.DisplayRole:
             heads = ["Type", "Description"]
             return heads[p_int]

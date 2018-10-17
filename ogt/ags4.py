@@ -119,14 +119,14 @@ class AGS4_DataDict:
         self._units = self._data['units']
 
         ## Walk groups/headings and create a _words dict for lookup
-        self._words = {}
+        self.words = {}
         for grp in self._groups_dict.itervalues():
-            self._words[grp['group_code']] = dict(type="group",
+            self.words[grp['group_code']] = dict(type="group",
                                                   code=grp['group_code'],
                                                   description=grp['group_description'])
             for head in grp['headings']:
-                if not head['head_code'] in self._words:
-                    self._words[head['head_code']] = dict(type="heading",
+                if not head['head_code'] in self.words: # not add dupes
+                    self.words[head['head_code']] = dict(type="heading",
                                                           code=head['head_code'],
                                                           description=head['head_description'])
 
@@ -732,7 +732,7 @@ def validate_upper(raw_str, lidx=None, cidx=None):
     return  ustr, err_list
 
 
-A2Z = "ABCDEFGHIJKLMNOPQRSTUVWZYZ"
+A2Z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NUMBERS = "0123456789"
 CHARS = A2Z + NUMBERS
 
