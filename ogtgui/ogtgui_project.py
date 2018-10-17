@@ -17,7 +17,7 @@ import xwidgets
 import ogtgui_doc
 import ogtgui_groups
 import ogtgui_widgets
-import map_widgets
+#import map_widgets
 
 class OGTProjectWidget( QtGui.QWidget ):
 
