@@ -1,6 +1,7 @@
 
 ags-data-dict
 
+docs_build/
 docs/_static/
 
 example_files/ags4/*.json

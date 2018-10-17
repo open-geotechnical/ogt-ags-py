@@ -38,7 +38,8 @@ def docs_clean():
 def docs_build(clear=None):
     """Build the documentation to temp dir"""
     #build_dir = "%s/docs_build" % TEMP_LOCAL
-    build_dir = "/home/opengeo/open-geotechnical.github.io/ogt-ags-py"
+    build_dir = "./docs_build"
+    #build_dir = "/home/git/open-geotechnical.gitlab.io/ogt-ags-py"
     # copy some stuff
     local("cp ./static/images/favicon.* ./docs/_static/")
     local("cp ./static/images/logo.* ./docs/_static/")
