@@ -262,7 +262,6 @@ class GroupHBox(QtGui.QGroupBox):
 
 class GroupVBox(QtGui.QGroupBox):
 
-
     def __init__(self, parent=None, bold=False):
         QtGui.QGroupBox.__init__(self, parent)
 

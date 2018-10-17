@@ -374,7 +374,7 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
                 # its a heading, so select it if its in within this group eg SAMP_ID is almost everywhere
                 found = self.agsHeadingsTable.select_heading(code)
                 if not found:
-                    # so its not in this group
+                    # so its not in this group, so open other group
                     parts = code.split("_")
                     d = AGS4GroupViewDialog(group_code=parts[0], head_code=code)
                     d.exec_()
@@ -393,6 +393,9 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
     def on_heading_selection_changed(self, head_code):
         self.sigHeadingSelected.emit(head_code)
         self.agsAbbrevsWidget.set_heading(head_code)
+
+    def select_heading(self, head_code):
+        self.agsHeadingsTable.select_heading(head_code)
 
 
     def clear(self):
@@ -421,10 +424,9 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
 class AGS4GroupViewDialog(QtGui.QDialog):
 
 
-    def __init__(self, parent=None, group_code=None):
+    def __init__(self, parent=None, group_code=None, head_code=None):
         QtGui.QDialog.__init__(self, parent)
 
-        #self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWindowTitle(group_code)
         self.setWindowIcon(Ico.icon(Ico.Ags4))
 
@@ -439,10 +441,14 @@ class AGS4GroupViewDialog(QtGui.QDialog):
         self.setLayout(self.mainLayout)
 
 
-        grp = ags4.AGS4.group(group_code)
+
         self.groupViewWidget = AGS4GroupViewWidget(self)
         self.mainLayout.addWidget(self.groupViewWidget)
+
+        grp = ags4.AGS4.group(group_code)
         self.groupViewWidget.set_group(grp)
+        if head_code:
+            self.groupViewWidget.select_heading(head_code)
 
 
 
@@ -498,7 +504,13 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         self.popMenu.exec_(self.tree.mapToGlobal(qPoint))
 
     def on_act_open_group(self):
-        ds
+        selidx = self.tree.selectionModel().selectedIndexes()
+        rec = self.model.rec_from_midx(selidx[0])
+        hc = rec.get("head_code")
+        gc = hc.split("_")[0]
+        d = AGS4GroupViewDialog(self, group_code=gc, head_code=hc)
+        d.exec_()
+
 
     def set_group(self, grp):
         self.model.set_group(grp)
@@ -533,8 +545,7 @@ class AGS4HeadingsTable( QtGui.QWidget ):
 
 
     def select_heading(self, head_code):
-        print "select_heading", head_code, self
-        print self.model.get_heading_index(head_code)
+
         midx = self.model.get_heading_index(head_code)
         if midx != None:
             self.tree.selectionModel().setCurrentIndex(midx,
