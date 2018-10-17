@@ -1,7 +1,7 @@
 AGS Toolkit in Python
 ===========================================
 
-This project is some R&D for converting AGS data using Python. Circa Jan 2017 is in active development.
+This project is some R&D for converting AGS data using Python.
 
 - See :ref:`ogt-cli.py` for command line examples
 
