@@ -2,7 +2,7 @@ image: alpine
 
 pages:
   script:
-  - apk --no-cache add py2-pip python-dev graphviz
+  - apk --no-cache add py2-pip python-dev
   - pip install -r requirements.txt
   - sh build_docs.sh
   artifacts:
