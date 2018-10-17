@@ -388,7 +388,7 @@ texinfo_documents = [
 #intersphinx_mapping = {'https://docs.python.org/': None}
 intersphinx_mapping = {
     'python': ('https://docs.python.org/2', None),
-    'www': ('http://open-geotechnical.github.io', None)
+    'www': ('http://open-geotechnical.gitlab.io', None)
 }
 
 
