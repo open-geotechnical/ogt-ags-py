@@ -12,6 +12,6 @@ flask
 sphinx
 sphinxcontrib-fulltoc
 sphinxcontrib-autoprogram
+sphinxcontrib-blockdiag
 
-# sphinxcontrib-blockdiag
 

@@ -69,7 +69,6 @@ The base API converts ags4 files into various formats, and provided validation (
     - the class :class:`~ogt.ogt_doc.OGTDocument`
 - **Groups**
     - represents and ags group and headings
-    - the module :mod:`ogt.ogt_group`
     - the class :class:`~ogt.ogt_group.OGTGroup`
 - **AGS**
     - the ags data dict
@@ -89,7 +88,6 @@ Index
 
     ogt_init.rst
     ogt_doc.rst
-    ogt_group.rst
     utils.rst
     ags4.rst
     notes.rst
