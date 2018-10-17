@@ -9,17 +9,17 @@ import tempfile
 
 PROJECT_VERSION = "0.0.1"
 
-PROJECT_SHORT = "ogt-ags-py"
-PROJECT_LONG = "Open GeoTechnical AGS Tools"
+PROJECT_SHORT = "Aggregator"
+PROJECT_LONG = "AggreGgator"
 
-PROJECT_DESCRIPTION = "Lib and tools for playing geotechnical stuff"
+PROJECT_DESCRIPTION = "Eats your geotehcnical data"
 PROJECT_CONTACT = "ogt@daffodil.uk.com"
 
 PROJECT_DOMAIN = "ogt.daffodil.uk.com"
-PROJECT_WWW = "http://open-geotechnical.github.io/"
-PROJECT_HOME = "https://github.com/open-geotechnical/ogt-ags-py"
-PROJECT_ISSUES = "https://github.com/open-geotechnical/ogt-ags-py/issues"
-PROJECT_API_DOCS = "http://open-geotechnical.github.io/ogt-ags-py"
+PROJECT_WWW = "http://open-geotechnical.gitlab.io/"
+PROJECT_HOME = "https://gitlab.com/open-geotechnical/aggregator"
+PROJECT_ISSUES = "https://gitlab.com/open-geotechnical/aggregator/issues"
+PROJECT_API_DOCS = "http://open-geotechnical.gitlab.io/aggregator"
 
 
 def get_project_info():

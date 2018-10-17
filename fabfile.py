@@ -27,7 +27,7 @@ env.shell = "/bin/bash -l -c"
 
 def docs_server(port=8080):
     """Run simple local HTTP server with docs"""
-    with lcd(TEMP_LOCAL + "/docs_build"):
+    with lcd("public"):
         local("python -m SimpleHTTPServer %s" % port)
 
 def docs_clean():
