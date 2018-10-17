@@ -15,7 +15,7 @@ PROJECT_LONG = "AggreGgator"
 PROJECT_DESCRIPTION = "Eats your geotehcnical data"
 PROJECT_CONTACT = "ogt@daffodil.uk.com"
 
-PROJECT_DOMAIN = "ogt.daffodil.uk.com"
+PROJECT_DOMAIN = "open-geotechnical.gitlab.io"
 PROJECT_WWW = "http://open-geotechnical.gitlab.io/"
 PROJECT_HOME = "https://gitlab.com/open-geotechnical/aggregator"
 PROJECT_ISSUES = "https://gitlab.com/open-geotechnical/aggregator/issues"
