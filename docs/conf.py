@@ -36,7 +36,7 @@ sys.path.insert(0, HERE_PATH)
 
 ROOT_PATH = os.path.abspath( os.path.join(HERE_PATH, "..") )
 if sys.path.count(ROOT_PATH) == 0:
-	sys.path.insert(0, ROOT_PATH)
+    sys.path.insert(0, ROOT_PATH)
 
 #print "ROOT_PATH", ROOT_PATH, sys.path
 
@@ -64,7 +64,7 @@ extensions = [
     #'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.graphviz',
-    'autoprogram',
+    #'autoprogram',
     #'sphinx.ext.inheritance_diagram',
         #'ogt_ext',
 ]
@@ -74,13 +74,13 @@ autodoc_member_order = "alphabetical"
 
 ## Flags for the stuff to document..
 autodoc_default_flags = [
-	'members',
-	'undoc-members',
-	#'private-members',
-	#'special-members',
-	#'inherited-members',
+    'members',
+    'undoc-members',
+    #'private-members',
+    #'special-members',
+    #'inherited-members',
     #"exclude-members ",
-	'show-inheritance'
+    'show-inheritance'
 ]
 autoclass_content = "both"
 
