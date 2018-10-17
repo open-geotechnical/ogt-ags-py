@@ -2,7 +2,8 @@ image: ubuntu
 
 pages:
   script:
-  - apt-get install python-pip python-dev py-pillow graphviz
+  - apt-get update -qq
+  - apt-get install -y -qq python-pip python-dev py-pillow graphviz
   - pip install -r requirements.txt
   - sh build_docs.sh
   artifacts:
