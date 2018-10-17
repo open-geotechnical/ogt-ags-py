@@ -47,6 +47,7 @@ class AGS4DataDictBrowser( QtGui.QWidget ):
         #self.tabWidget.addTab(self.agsUnitsWidget, dIco.icon(dIco.AgsUnits), "Units")
 
 
+
     def init_load(self):
 
         # load data dict
@@ -205,6 +206,8 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
         #self.init_setup()
         G.ags.sigLoaded.connect(self.on_loaded)
 
+        self.txtFilter.setText("DETL")
+
     def on_splitter_moved(self, i, pos):
         G.settings.save_splitter(self.splitter)
 
@@ -213,32 +216,21 @@ class AGS4GroupsBrowser( QtGui.QWidget ):
 
 
     def init(self):
-        print "init", self
+        print "init", selfs
 
     def on_proxy_changed(self, tl, br):
-        print "changes", tl, br
+        print "changes", tl, bsr
 
     #=========================================
     def on_groups_tree_selected(self, sel=None, desel=None):
 
-        print "on_grp_sel", self
         if not self.treeGroups.selectionModel().hasSelection():
              self.agsGroupViewWidget.set_group( None )
              self.sigGroupSelected.emit( None )
              return
 
-        selidx = sel.indexes()[0]
-        tIdx = self.proxy.mapToSource(selidx)
-
-        smodel = self.proxy.sourceModel()
-        #tIdx = model.index(srcidx.row(), CG.code, srcidx.parent())
-        #print "_------------"
-        #print selidx.row(), selidx.column()
-        #print tIdx.row(), tIdx.column()
-
-        grp_dic = smodel.rec_from_midx( tIdx )
-        #print grp_dic
-        #group_code = grp_dic.get("group_code")
+        tIdx = self.proxy.mapToSource( sel.indexes()[0] )
+        grp_dic = self.proxy.sourceModel().rec_from_midx( tIdx )
         self.agsGroupViewWidget.set_group(grp_dic)
         self.sigGroupSelected.emit( grp_dic )
 
@@ -318,11 +310,7 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
     def __init__( self, parent=None, mode=None ):
         QtGui.QWidget.__init__( self, parent )
 
-        self.debug = True
-
-        self.cache = None
-
-        self.group_by = "none"
+        self.group_code = None
 
         self.mainLayout = QtGui.QVBoxLayout()
         self.mainLayout.setSpacing(0)
@@ -359,9 +347,9 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
         self.mainLayout.addWidget(self.splitBott)
 
         ## Notes
-        self.agsGroupNotesTable = AGS4GroupNotesWidget(self)
-        self.agsGroupNotesTable.setFixedHeight(200)
-        self.splitBott.addWidget(self.agsGroupNotesTable)
+        self.agsGroupNotesWidget = AGS4GroupNotesWidget(self)
+        self.agsGroupNotesWidget.setFixedHeight(200)
+        self.splitBott.addWidget(self.agsGroupNotesWidget)
 
         ## Abbrs Picklist
         self.agsAbbrevsWidget = AGS4AbbrevsWidget()
@@ -375,6 +363,29 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
         self.splitBott.splitterMoved.connect(self.on_splitter_bott_moved)
 
         self.agsHeadingsTable.sigHeadingSelected.connect(self.on_heading_selection_changed)
+        self.agsGroupNotesWidget.sigWordClicked.connect(self.on_word_clicked)
+
+    def on_word_clicked(self, code):
+        code = str(code) # WTF!, its a QString not str as sent !
+        rec = ags4.AGS4.words.get(code)
+        if rec:
+
+            if rec['type'] == "heading":
+                # its a heading, so select it if its in within this group eg SAMP_ID is almost everywhere
+                found = self.agsHeadingsTable.select_heading(code)
+                if not found:
+                    # so its not in this group
+                    parts = code.split("_")
+                    d = AGS4GroupViewDialog(group_code=parts[0], head_code=code)
+                    d.exec_()
+
+            if rec['type'] == "group":
+                if code != self.group_code:
+                    # Dialog only if its not this group
+                    d = AGS4GroupViewDialog(group_code=self.group_code)
+                    d.exec_()
+
+
 
     def on_splitter_bott_moved(self):
         G.settings.save_splitter(self.splitBott)
@@ -392,13 +403,16 @@ class AGS4GroupViewWidget( QtGui.QWidget ):
 
     def set_group(self, grp):
 
+        ## load subwidgets, even if grp==None
         self.agsHeadingsTable.set_group(grp)
-        self.agsGroupNotesTable.set_group(grp)
+        self.agsGroupNotesWidget.set_group(grp)
 
         if grp == None:
+            self.group_code = None
             self.lblGroupCode.setText("")
             self.lblDescription.setText("")
             return
+        self.group_code = grp['group_code']
         self.lblGroupCode.setText(grp['group_code'])
         self.lblDescription.setText(grp['group_description'])
 
@@ -410,13 +424,12 @@ class AGS4GroupViewDialog(QtGui.QDialog):
     def __init__(self, parent=None, group_code=None):
         QtGui.QDialog.__init__(self, parent)
 
-
+        #self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setWindowTitle(group_code)
         self.setWindowIcon(Ico.icon(Ico.Ags4))
 
-
         self.setMinimumWidth(1100)
-
+        self.setMinimumHeight(500)
 
 
         self.mainLayout = QtGui.QHBoxLayout()
@@ -425,9 +438,11 @@ class AGS4GroupViewDialog(QtGui.QDialog):
         self.mainLayout.setContentsMargins(margarine, margarine, margarine, margarine)
         self.setLayout(self.mainLayout)
 
+
+        grp = ags4.AGS4.group(group_code)
         self.groupViewWidget = AGS4GroupViewWidget(self)
         self.mainLayout.addWidget(self.groupViewWidget)
-        self.groupViewWidget.load_group(group_code)
+        self.groupViewWidget.set_group(grp)
 
 
 
@@ -466,17 +481,28 @@ class AGS4HeadingsTable( QtGui.QWidget ):
 
         self.tree.setSortingEnabled(False)
 
+        self.tree.setContextMenuPolicy( Qt.CustomContextMenu )
+        self.tree.customContextMenuRequested.connect(self.on_tree_context_menu )
         self.tree.selectionModel().selectionChanged.connect(self.on_tree_selected)
 
-        #self.statusBar = StatusBar(self, True)
-        #self.mainLayout.addWidget(self.statusBar, 0)
-        #self.statusBar.hide()
+        self.popMenu = QtGui.QMenu()
+        self.actOpenGroup = self.popMenu.addAction(Ico.icon(Ico.AgsGroup), "CODEEEEE", self.on_act_open_group)
+
+    def on_tree_context_menu(self, qPoint):
+        idx = self.tree.indexAt(qPoint)
+
+        rec = self.model.rec_from_midx(idx)
+        gc = rec['head_code'].split("_")[0]
+        self.actOpenGroup.setDisabled(gc == self.model.grpDD['group_code'])
+        self.actOpenGroup.setText("Open: %s" % gc)
+        self.popMenu.exec_(self.tree.mapToGlobal(qPoint))
+
+    def on_act_open_group(self):
+        ds
 
     def set_group(self, grp):
         self.model.set_group(grp)
 
-
-    #=========================================
     def on_tree_selected(self, sel, desel):
 
         if not self.tree.selectionModel().hasSelection():
@@ -488,10 +514,11 @@ class AGS4HeadingsTable( QtGui.QWidget ):
 
 
 
-    def on_tree_context_menu(self, point):
+    def deadon_tree_context_menu(self, point):
 
         if not self.tree.selectionModel().hasSelection():
             return
+
 
     def deadon_butt_pop(self, butt):
         code =  str(butt.property("code").toString())
@@ -505,6 +532,16 @@ class AGS4HeadingsTable( QtGui.QWidget ):
         d.exec_()
 
 
+    def select_heading(self, head_code):
+        print "select_heading", head_code, self
+        print self.model.get_heading_index(head_code)
+        midx = self.model.get_heading_index(head_code)
+        if midx != None:
+            self.tree.selectionModel().setCurrentIndex(midx,
+                                                   QtGui.QItemSelectionModel.SelectCurrent|QtGui.QItemSelectionModel.Rows)
+
+
+
 class CN:
     node = 0
     note_id = 1
@@ -513,12 +550,10 @@ class CN:
 
 class AGS4GroupNotesWidget( QtGui.QWidget ):
 
-    sigLoaded = pyqtSignal(int, object)
+    sigWordClicked = pyqtSignal(str)
 
     def __init__( self, parent, mode=None ):
         QtGui.QWidget.__init__( self, parent )
-
-        self.debug = True
 
 
         self.mainLayout = QtGui.QVBoxLayout()
@@ -590,7 +625,7 @@ class AGS4GroupNotesWidget( QtGui.QWidget ):
             widget.setTextFormat(QtCore.Qt.RichText)
             widget.setWordWrap(True)
             widget.setMargin(0)
-            sty = "background-color: #E3FFD5; padding: 2px; margin: 0; border-bottom:1px solid #dddddd; font-size: 11pt;"
+            sty = "background-color: #EEF1F8; padding: 2px; margin:0; border-bottom:1px solid #dddddd;"
             widget.setStyleSheet(sty)
             widget.setAlignment(QtCore.Qt.AlignTop)
 
@@ -602,19 +637,13 @@ class AGS4GroupNotesWidget( QtGui.QWidget ):
         self.scrollLayout.addStretch(10)
         self.setUpdatesEnabled(True)
 
-        self.sigLoaded.emit(len(notes), self)
-        #self.emit(QtCore.SIGNAL("loaded"), len(notes), self)
 
-    def DEADon_link_hover(self, lnk):
-        #print "link=", lnk
-        #self.statusBar.showMessage(lnk)
-        print "TODO", lnk
-        QtGui.QToolTip.showText(self.mapToGlobal(QtCore.QPoint(0, 0)), lnk  + "~~~~~~~~~~~~~~~~~~~~~~~~")
+    def on_link_activated(self, lnkq):
 
-    def on_link_activated(self, lnk):
-        print "act", lnk
-
-
+        lnk = str(lnkq)
+        parts = lnk[1:].split("-", 1 )
+        print "act", lnk, parts, type(parts[1])
+        self.sigWordClicked.emit( parts[1] )
 
 
 

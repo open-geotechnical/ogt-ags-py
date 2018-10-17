@@ -402,7 +402,7 @@ class HeadingsModel(QtCore.QAbstractItemModel):
 
 
         if role == Qt.DecorationRole:
-            if col == self.CH.head_code:
+            if col == self.CH.data_type:
                 return data_type_qicon( self.grpDD["headings"][midxx.row()]['data_type'] )
 
         if role == Qt.BackgroundRole:
@@ -420,7 +420,11 @@ class HeadingsModel(QtCore.QAbstractItemModel):
 
         return None
 
-
+    def get_heading_index(self, code):
+        for ridx, rec in enumerate(self.grpDD["headings"]):
+            if rec['head_code'] == code:
+                return self.index(ridx, 0)
+        return None
 
     def rec_from_midx(self, midx):
         return self.grpDD.get("headings")[midx.row()]

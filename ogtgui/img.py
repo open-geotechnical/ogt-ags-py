@@ -70,7 +70,7 @@ class Ico:
 
     Export = "fill.png"
 
-    FavIcon = "user-worker-boss.png"
+    FavIcon = "aggregator.png"
 
     FilterOn = "bullet_yellow.png"
     FilterOff = "bullet_blue.png"

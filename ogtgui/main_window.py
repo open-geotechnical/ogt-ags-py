@@ -20,6 +20,7 @@ import ogtgui_project
 import ogtgui_projects
 from img import Ico
 
+APP_TITLE = "AggreGator"
 
 class MainWindow( QtGui.QMainWindow ):
     """Inherited by all other main windows"""
@@ -41,7 +42,7 @@ class MainWindow( QtGui.QMainWindow ):
         fn =  "/home/ogt/AGS4-example-wrd.ags"
         if G.args.dev:
             fn = "/home/ogt/ags-play/example_files/pete_stuff/pete_tests.ags"
-            fn = "/home/geo2lab/z_drive/jobs/40101-40200/40153/AGS/40153 AGS.ags"
+            #fn = "/home/geo2lab/z_drive/jobs/40101-40200/40153/AGS/40153 AGS.ags"
             #self.load_ags4_file(fn)
 
         #w = ogtgui_widgets.ExpPortalWidget()
@@ -69,7 +70,7 @@ class MainWindow( QtGui.QMainWindow ):
         # Main window stuff
         self.setObjectName("OGTMainWindow")
         QtGui.QApplication.setStyle( QtGui.QStyleFactory.create( 'Cleanlooks' ) )
-        self.setWindowTitle("Open GeoTechnical Desktop - %s" % G.version)
+        self.setWindowTitle("%s - %s" % (APP_TITLE,G.version))
         self.setWindowIcon(Ico.icon(Ico.FavIcon))
 
 
@@ -80,7 +81,7 @@ class MainWindow( QtGui.QMainWindow ):
         ## File
         self.menuFile = self.menuBar().addMenu("File")
 
-        self.actionOpen = self.menuFile.addAction("Open Ags File", self.on_open_ags_file)
+        self.actionOpen = self.menuFile.addAction("Open Ags4 File", self.on_open_ags_file)
         self.actionRecent = self.menuFile.addAction("Recent")
         self.actionRecent.setMenu(QtGui.QMenu())
         self.actionRecent.menu().triggered.connect(self.on_open_recent)
@@ -161,21 +162,27 @@ class MainWindow( QtGui.QMainWindow ):
 
         ### add a Banner for coolnees...
         self.lblBanner = QtGui.QLabel()
-        self.lblBanner.setText("Open GeoTechnical")
+        self.lblBanner.setText(APP_TITLE)
         self.lblBanner.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
         self.lblBanner.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Minimum)
 
-        sty = "font-style:italic; font-weight: bold;  color: #444444; margin: 0; font-size: 10pt; font-family: arial;"
+        final_color = "#C9F7F3"
+        sty = "font-style:italic; font-weight: bold;  color: #444444; margin: 0; font-size: 12pt; font-family: arial;"
         sty += "padding: 2px;"
-        if False:
+        if True:
             sty += "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, "
-            sty += "stop: 0 #FFE8CB "
-            sty += ", stop: 0.3 #FFD7A4 "
-            sty += "stop: 1 #C48C45"
+            sty += "stop: 0 transparent "
+            sty += ", stop: 0.7 #efefef "
+            sty += "stop: 1 %s" % final_color
             sty += ");"
         self.lblBanner.setStyleSheet(sty)
         self.toolBar.addWidget(self.lblBanner)
 
+        iconLabel = QtGui.QLabel()
+        iconLabel.setStyleSheet("padding: 3px; background-color: %s" % final_color)
+        icon = Ico.icon(Ico.FavIcon)
+        iconLabel.setPixmap( icon.pixmap(QtCore.QSize( 25, 25 )) )
+        self.toolBar.addWidget(iconLabel)
 
 
         ##===============================================

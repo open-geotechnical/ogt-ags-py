@@ -131,7 +131,6 @@ class AGS4_DataDict:
                                                           description=head['head_description'])
 
 
-
     def groups_count(self):
         return len(self._groups_index)
 
