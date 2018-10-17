@@ -328,9 +328,6 @@ class GroupsModel(QtCore.QAbstractItemModel):
 ## Headings
 ##===================================================================
 
-
-
-#class HeadingsModel(xobjects.XStandardItemModel):
 class HeadingsModel(QtCore.QAbstractItemModel):
 
     class CH:

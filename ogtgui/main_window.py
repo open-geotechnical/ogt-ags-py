@@ -124,7 +124,7 @@ class MainWindow( QtGui.QMainWindow ):
         self.actionAgs4Browse.setCheckable(True)
 
         #self.actionAgs3Browse = self.menuViews.addAction(Ico.icon(Ico.Ags4), "AGS 3: data dict", self.on_ags3_browse)
-        #self.actionAgs3Browse.setCheckable(True)s
+        #self.actionAgs3Browse.setCheckable(True)sss
         #self.actionAgs3Browse.setDisabled(True)
 
         #=======
