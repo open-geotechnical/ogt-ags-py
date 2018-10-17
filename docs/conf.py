@@ -223,6 +223,7 @@ html_use_smartypants = False
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
 
+html_baseurl = "agg.gstl.co.uk"
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 #

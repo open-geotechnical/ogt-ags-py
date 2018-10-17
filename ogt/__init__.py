@@ -10,9 +10,9 @@ import tempfile
 PROJECT_VERSION = "0.0.1"
 
 PROJECT_SHORT = "Aggregator"
-PROJECT_LONG = "AggreGgator"
+PROJECT_LONG = "AggreGator"
 
-PROJECT_DESCRIPTION = "Eats your geotehcnical data"
+PROJECT_DESCRIPTION = "Eats your geotechcical data"
 PROJECT_CONTACT = "ogt@daffodil.uk.com"
 
 PROJECT_DOMAIN = "open-geotechnical.gitlab.io"
