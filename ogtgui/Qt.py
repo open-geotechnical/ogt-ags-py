@@ -11,7 +11,7 @@ from PyQt4.QtCore import Qt
 
 from PyQt4 import QtGui
 from PyQt4 import QtNetwork
-from PyQt4 import QtWebKit
+#from PyQt4 import QtWebKit
 #from PyQt4 import QtSql
 
 
